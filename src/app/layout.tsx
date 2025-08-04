@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import StructuredData from "@/components/structured-data";
+import Navigation from "@/components/navigation";
 import "./globals.css";
 
 const inter = Inter({
@@ -9,12 +10,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "sencodev - Fast-track MVPs with Vibe Coding™ | Designer-Engineer for Startups",
-  description: "Fast-track MVPs and startup infrastructures with full-stack Vibe Coding™, integrated branding, and scalable tech setup – built by a designer-engineer for rapid growth. No WordPress limitations.",
-  keywords: "MVP development, startup development, React development, Next.js, AI integration, branding design, technical infrastructure, Vibe Coding, designer engineer, startup growth",
-  authors: [{ name: "sencodev" }],
-  creator: "sencodev",
-  publisher: "sencodev",
+  title: "SenDev™ - Where Vision Meets Velocity | Full-Package Development",
+  description: "The designer's eye sees what others miss. Full-package delivery from idea to launch. No agencies, no translations, just pure execution. SenDev™ - proactive development for entrepreneurs.",
+  keywords: "MVP development, startup development, React development, Next.js, AI integration, branding design, technical infrastructure, SenDev, designer engineer, startup growth, full package development",
+  authors: [{ name: "SenDev" }],
+  creator: "SenDev",
+  publisher: "SenDev",
   robots: {
     index: true,
     follow: true,
@@ -30,14 +31,14 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://sencodev.com',
-    title: 'sencodev - Fast-track MVPs with Vibe Coding™',
-    description: 'Fast-track MVPs and startup infrastructures with full-stack Vibe Coding™, integrated branding, and scalable tech setup – built by a designer-engineer for rapid growth.',
-    siteName: 'sencodev',
+    title: 'SenDev™ - Where Vision Meets Velocity',
+    description: 'The designer\'s eye sees what others miss. Full-package delivery from idea to launch. No agencies, no translations, just pure execution.',
+    siteName: 'SenDev',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'sencodev - Fast-track MVPs with Vibe Coding™',
-    description: 'Fast-track MVPs and startup infrastructures with full-stack Vibe Coding™, integrated branding, and scalable tech setup – built by a designer-engineer for rapid growth.',
+    title: 'SenDev™ - Where Vision Meets Velocity',
+    description: 'The designer\'s eye sees what others miss. Full-package delivery from idea to launch. No agencies, no translations, just pure execution.',
   },
 };
 
@@ -54,6 +55,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} font-sans antialiased`}
       >
+        <Navigation />
         {children}
       </body>
     </html>

@@ -1,15 +1,21 @@
-import HeroSection from "@/components/hero-section"
-import ServicesOverview from "@/components/services-overview"
-import ClientProjects from "@/components/client-projects"
-import WhyVibeCoding from "@/components/why-vibe-coding"
+import HeroDynamic from "@/components/hero-dynamic"
+import PhilosophySection from "@/components/philosophy-section"
+import ProductBundles from "@/components/product-bundles"
+import ProjectShowcaseDynamic from "@/components/project-showcase-dynamic"
 
 export default function Home() {
   return (
     <div className="min-h-screen">
-      <HeroSection />
-      <ServicesOverview />
-      <ClientProjects />
-      <WhyVibeCoding />
+      <HeroDynamic />
+      <div id="philosophy">
+        <PhilosophySection />
+      </div>
+      <div id="packages">
+        <ProductBundles />
+      </div>
+      <div id="showcase">
+        <ProjectShowcaseDynamic />
+      </div>
     </div>
   );
 }
