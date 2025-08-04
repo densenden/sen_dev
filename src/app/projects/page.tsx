@@ -140,9 +140,8 @@ export default function ProjectsPage() {
     fetchProjects()
   }, [])
 
-  // Get unique random images for this page
-  const uniqueImages = getUniqueRandomImages(6)
-  const [heroImage, projectsImage, statsImage, ...extraImages] = uniqueImages
+  // Only hero section needs backdrop image  
+  const heroImage = "/random/hero-1.jpg"
 
   return (
     <div className="min-h-screen ">
@@ -240,16 +239,8 @@ export default function ProjectsPage() {
       </section>
 
       {/* Projects Grid */}
-      <section className="py-32 relative overflow-hidden">
-        <div className="absolute inset-0 z-0 ">
-          <Image
-            src={projectsImage}
-            alt="Projects grid background"
-            fill
-            className="object-cover opacity-100"
-          />
-        </div>
-        <div className="container mx-auto px-8 relative z-10">
+      <section className="py-32">
+        <div className="container mx-auto px-8">
           <div className="max-w-7xl mx-auto">
             
             <motion.div
@@ -431,16 +422,8 @@ export default function ProjectsPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-32 relative overflow-hidden">
-        <div className="absolute inset-0 z-0 ">
-          <Image
-            src={statsImage}
-            alt="Stats background"
-            fill
-            className="object-cover opacity-100"
-          />
-        </div>
-        <div className="container mx-auto px-8 relative z-10">
+      <section className="py-32">
+        <div className="container mx-auto px-8">
           <div className="max-w-6xl mx-auto">
             
             <motion.div
