@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import StructuredData from "@/components/structured-data";
-import Navigation from "@/components/navigation";
+import NavigationClean from "@/components/navigation-clean";
+import Footer from "@/components/footer";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  weight: ["300", "400"], // Light and Regular only
 });
 
 export const metadata: Metadata = {
@@ -55,8 +58,16 @@ export default function RootLayout({
       <body
         className={`${inter.variable} font-sans antialiased`}
       >
-        <Navigation />
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <NavigationClean />
+          {children}
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );
