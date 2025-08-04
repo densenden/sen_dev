@@ -1,0 +1,10 @@
+{
+    "autoImplement": true,
+    "confirmBeforeCreate": false,
+    "preferredLanguage": "de",
+    "codeStyle": {
+      "indent": 2,
+      "quotes": "single",
+      "semicolons": true
+    }
+  }

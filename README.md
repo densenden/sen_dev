@@ -89,12 +89,12 @@ Optimized for modern AI search engines including ChatGPT with:
 
 ## 🔗 Related Projects
 
-- [shop.sen.studio](https://shop.sen.studio) - Sister e-commerce platform
+- [sen.studio](https://sen.studio) - Sister platform for legal documentation
 - sen-shop-mvp - Design reference storefront
 
 ## 📄 Legal
 
-Legal documents sourced from sen.studio family:
+Legal documents sourced from sen.studio:
 - Imprint (Impressum)
 - Terms & Conditions (AGB)
 - Privacy Policy (Datenschutz)
