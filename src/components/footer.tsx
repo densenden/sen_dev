@@ -3,8 +3,8 @@
 import Link from "next/link"
 import Image from "next/image"
 import { motion } from "framer-motion"
-import { useTheme } from "next-themes"
-import { Sun, Moon } from "lucide-react"
+import { useThemeTransition } from "@/hooks/use-theme-transition"
+import { Sun, Moon, Code } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 
@@ -38,7 +38,7 @@ const footerLinks = [
 ]
 
 export default function Footer() {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme } = useThemeTransition()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -65,11 +65,11 @@ export default function Footer() {
                   alt="SenDev Logo"
                   width={32}
                   height={32}
-                  className="w-8 h-8 brightness-0 dark:brightness-0 dark:invert"
+                  className="w-8 h-8 brightness-0 dark:brightness-0 dark:invert code:brightness-0 code:invert"
                 />
                 <div className="text-3xl font-light tracking-tight">
-                  <span className="text-black dark:text-white">Sen</span>
-                  <span className="text-black dark:text-white">Dev</span>
+                  <span className="text-black dark:text-white code:text-white">Sen</span>
+                  <span className="text-black dark:text-white code:text-white">Dev</span>
                 </div>
               </Link>
               
@@ -141,12 +141,18 @@ export default function Footer() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                onClick={() => {
+                  if (theme === "light") setTheme("dark")
+                  else if (theme === "dark") setTheme("code")
+                  else setTheme("light")
+                }}
                 className="p-2 h-auto text-muted-foreground hover:text-primary transition-colors duration-300"
               >
                 {mounted ? (
                   theme === "dark" ? (
                     <Sun className="w-4 h-4" />
+                  ) : theme === "code" ? (
+                    <Code className="w-4 h-4" />
                   ) : (
                     <Moon className="w-4 h-4" />
                   )

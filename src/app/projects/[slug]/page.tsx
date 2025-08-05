@@ -234,75 +234,84 @@ export default function ProjectPage({ params }: ProjectPageProps) {
           <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-accent/20 to-secondary/30 mix-blend-multiply" />
         </div>
 
-        <div className="container mx-auto px-8 py-32 relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32 relative z-10">
           <div className="max-w-6xl mx-auto">
             
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
-              className="glass-primary rounded-3xl p-16"
+              className="glass-primary rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-16"
             >
               {/* Back Button */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
-                className="mb-12"
+                className="mb-8 sm:mb-12"
               >
                 <Button 
                   variant="ghost" 
+                  size="sm"
                   className="glass-secondary backdrop-blur-md bg-white/10 hover:bg-white/20 text-white border border-white/20"
                   asChild
                 >
                   <Link href="/projects">
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Projects
+                    <span className="hidden sm:inline">Back to Projects</span>
+                    <span className="sm:hidden">Back</span>
                   </Link>
                 </Button>
               </motion.div>
 
-              <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Mobile-First Layout */}
+              <div className="space-y-8 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-12 lg:items-center">
                 {/* Project Info */}
                 <motion.div
-                  initial={{ opacity: 0, x: -50 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1.2, delay: 0.6 }}
-                  className="space-y-8"
+                  className="space-y-6 lg:space-y-8"
                 >
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-16 h-16 rounded-full glass-secondary backdrop-blur-md bg-white/10 border border-white/30 flex items-center justify-center shadow-lg">
-                      <IconComponent className="w-8 h-8 text-white" />
+                  {/* Title Section - Stacked on Mobile */}
+                  <div className="text-center lg:text-left">
+                    <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-4 mb-4 sm:mb-6">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full glass-secondary backdrop-blur-md bg-white/10 border border-white/30 flex items-center justify-center shadow-lg">
+                        <IconComponent className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                      </div>
+                      <div>
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-light text-white mb-1 sm:mb-2">
+                          {project.title}
+                        </h1>
+                        <p className="text-sm sm:text-base lg:text-lg font-light text-white/80">
+                          {project.client_name}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h1 className="text-4xl md:text-5xl font-light text-white mb-2">
-                        {project.title}
-                      </h1>
-                      <p className="text-lg font-light text-white/80">
-                        {project.client_name}
-                      </p>
-                    </div>
+
+                    <p className="text-base sm:text-lg lg:text-xl font-light text-white/90 leading-relaxed">
+                      {project.summary}
+                    </p>
                   </div>
 
-                  <p className="text-xl font-light text-white/90 leading-relaxed">
-                    {project.summary}
-                  </p>
-
-                  <div className="flex flex-wrap gap-3">
+                  {/* Tags */}
+                  <div className="flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-3">
                     {project.tags?.map((tag, index) => (
                       <Badge 
                         key={index}
-                        className="bg-accent/20 text-accent border-accent/30 font-light border"
+                        className="bg-accent/20 text-accent border-accent/30 font-light border text-xs sm:text-sm"
                       >
                         {tag}
                       </Badge>
                     ))}
                   </div>
 
-                  <div className="flex gap-4">
+                  {/* Buttons - Stack on Small Mobile */}
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
                     {project.link_live && (
                       <Button 
-                        className="glass-accent border-line-accent bg-accent/10 hover:bg-accent/20 text-accent border px-8 py-4 font-light rounded-full"
+                        size="sm"
+                        className="glass-accent border-line-accent bg-accent/10 hover:bg-accent/20 text-accent border px-6 sm:px-8 py-3 sm:py-4 font-light rounded-full text-sm sm:text-base"
                         asChild
                       >
                         <Link href={project.link_live} target="_blank">
@@ -312,7 +321,8 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                       </Button>
                     )}
                     <Button 
-                      className="glass-secondary border-line-secondary bg-white/10 hover:bg-white/20 text-white border px-8 py-4 font-light rounded-full"
+                      size="sm"
+                      className="glass-secondary border-line-secondary bg-white/10 hover:bg-white/20 text-white border px-6 sm:px-8 py-3 sm:py-4 font-light rounded-full text-sm sm:text-base"
                       asChild
                     >
                       <Link href="#case-study">
@@ -323,26 +333,26 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                   </div>
                 </motion.div>
 
-                {/* Project Image */}
+                {/* Project Image - Responsive */}
                 <motion.div
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1.2, delay: 0.8 }}
-                  className="flex justify-center"
+                  className="flex justify-center lg:justify-end"
                 >
-                  <div className="relative">
-                    <div className="w-96 h-96 rounded-3xl overflow-hidden glass-primary border border-white/20 shadow-2xl">
+                  <div className="relative w-full max-w-sm sm:max-w-md lg:max-w-lg">
+                    <div className="aspect-square rounded-2xl sm:rounded-3xl overflow-hidden glass-primary border border-white/20 shadow-2xl">
                       {project.screenshots?.[0] ? (
                         <Image
                           src={project.screenshots[0]}
                           alt={`${project.title} screenshot`}
-                          width={384}
-                          height={384}
+                          width={400}
+                          height={400}
                           className="w-full h-full object-cover"
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center">
-                          <IconComponent className="w-24 h-24 text-white/30" />
+                          <IconComponent className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 text-white/30" />
                         </div>
                       )}
                     </div>
@@ -355,8 +365,8 @@ export default function ProjectPage({ params }: ProjectPageProps) {
       </section>
 
       {/* Project Details */}
-      <section id="case-study" className="py-32">
-        <div className="container mx-auto px-8">
+      <section id="case-study" className="py-16 sm:py-24 lg:py-32">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             
             <motion.div
@@ -364,27 +374,27 @@ export default function ProjectPage({ params }: ProjectPageProps) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
-              className="text-center mb-20"
+              className="text-center mb-12 sm:mb-16 lg:mb-20"
             >
-              <h2 className="text-4xl md:text-5xl font-light mb-6">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light mb-4 sm:mb-6">
                 Project <span className="text-primary">Overview</span>
               </h2>
             </motion.div>
 
-            <div className="grid lg:grid-cols-3 gap-8 mb-20">
+            <div className="grid gap-6 sm:gap-8 lg:grid-cols-3 mb-12 sm:mb-16 lg:mb-20">
               {/* Challenge */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
-                className="white-tile p-8 rounded-3xl"
+                className="white-tile p-6 sm:p-8 rounded-2xl sm:rounded-3xl"
               >
-                <div className="w-12 h-12 rounded-full glass-primary bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-6">
-                  <Target className="w-6 h-6 text-red-500" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full glass-primary bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4 sm:mb-6">
+                  <Target className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
                 </div>
-                <h3 className="text-2xl font-light mb-4 text-foreground">Challenge</h3>
-                <p className="text-sm font-light text-muted-foreground leading-relaxed">
+                <h3 className="text-xl sm:text-2xl font-light mb-3 sm:mb-4 text-foreground">Challenge</h3>
+                <p className="text-sm sm:text-base font-light text-muted-foreground leading-relaxed">
                   {project.challenge}
                 </p>
               </motion.div>
@@ -395,13 +405,13 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="white-tile p-8 rounded-3xl"
+                className="white-tile p-6 sm:p-8 rounded-2xl sm:rounded-3xl"
               >
-                <div className="w-12 h-12 rounded-full glass-primary bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-6">
-                  <Brain className="w-6 h-6 text-blue-500" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full glass-primary bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-4 sm:mb-6">
+                  <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
                 </div>
-                <h3 className="text-2xl font-light mb-4 text-foreground">Solution</h3>
-                <p className="text-sm font-light text-muted-foreground leading-relaxed">
+                <h3 className="text-xl sm:text-2xl font-light mb-3 sm:mb-4 text-foreground">Solution</h3>
+                <p className="text-sm sm:text-base font-light text-muted-foreground leading-relaxed">
                   {project.solution}
                 </p>
               </motion.div>
@@ -412,16 +422,16 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="white-tile p-8 rounded-3xl"
+                className="white-tile p-6 sm:p-8 rounded-2xl sm:rounded-3xl"
               >
-                <div className="w-12 h-12 rounded-full glass-primary bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-6">
-                  <TrendingUp className="w-6 h-6 text-green-500" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full glass-primary bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-4 sm:mb-6">
+                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
                 </div>
-                <h3 className="text-2xl font-light mb-4 text-foreground">Results</h3>
-                <ul className="space-y-2">
+                <h3 className="text-xl sm:text-2xl font-light mb-3 sm:mb-4 text-foreground">Results</h3>
+                <ul className="space-y-2 sm:space-y-3">
                   {project.results?.map((result, index) => (
-                    <li key={index} className="text-sm font-light text-muted-foreground flex items-start">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 mr-3 flex-shrink-0"></span>
+                    <li key={index} className="text-xs sm:text-sm font-light text-muted-foreground flex items-start">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5 sm:mt-2 mr-3 flex-shrink-0"></span>
                       {result}
                     </li>
                   ))}

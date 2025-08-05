@@ -8,6 +8,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { getRandomImage } from "@/lib/images-client"
 import { useState, useEffect } from "react"
+import ThemeToggleHero from "./theme-toggle-hero"
 
 export default function HeroElegant() {
   const [randomImage, setRandomImage] = useState("/random/hero-1.jpg")
@@ -113,6 +114,28 @@ export default function HeroElegant() {
                   No agencies. No translations. Just pure execution.
                 </p>
               </motion.div>
+            </motion.div>
+
+            {/* Theme Toggle Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1.4 }}
+              className="mt-16 pt-8 border-t border-white/20"
+            >
+              <div className="text-center space-y-8">
+                <div className="space-y-3">
+                  <h3 className="text-2xl font-light text-white/90">
+                    Choose Your Experience
+                  </h3>
+                  <p className="text-lg text-white/70 max-w-2xl mx-auto">
+                    Switch between <span className="text-yellow-400">Light</span>, <span className="text-purple-400">Dark</span>, and <span className="text-orange-400">Code</span> modes. 
+                    Each theme offers a unique perspective on the same powerful content.
+                  </p>
+                </div>
+                
+                <ThemeToggleHero />
+              </div>
             </motion.div>
           </motion.div>
 
