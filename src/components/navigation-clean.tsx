@@ -7,6 +7,7 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 
 const navItems = [
+  { label: "About", href: "/about" },
   { label: "Philosophy", href: "/philosophy" },
   { label: "Services", href: "/services" },
   { label: "Packages", href: "/packages" },
@@ -31,7 +32,7 @@ export default function NavigationClean() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled ? 'glass-primary' : 'bg-transparent'
+        scrolled ? 'bg-white/90 dark:bg-black/80 backdrop-blur-md' : 'bg-transparent'
       }`}
     >
       <div className="container mx-auto px-8">
@@ -48,11 +49,11 @@ export default function NavigationClean() {
                 alt="SenDev Logo"
                 width={32}
                 height={32}
-                className="w-8 h-8 dark:brightness-0 dark:invert"
+                className="w-8 h-8 brightness-0 dark:brightness-0 dark:invert"
               />
               <div className="text-3xl font-light tracking-tight">
-                <span className="text-foreground dark:text-white">Sen</span>
-                <span className="text-primary">Dev</span>
+                <span className="text-black dark:text-white">Sen</span>
+                <span className="text-black dark:text-white">Dev</span>
               </div>
             </motion.div>
           </Link>
@@ -68,7 +69,7 @@ export default function NavigationClean() {
               >
                 <Link 
                   href={item.href}
-                  className="relative group font-light text-sm tracking-wide text-muted-foreground hover:text-foreground transition-colors duration-300"
+                  className="relative group font-light text-sm tracking-wide text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white transition-colors duration-300"
                 >
                   {item.label}
                   <motion.div

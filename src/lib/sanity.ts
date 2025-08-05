@@ -1,17 +1,22 @@
 import { createClient } from '@sanity/client'
 import imageUrlBuilder from '@sanity/image-url'
 
-export const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'tfdiq2zl',
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
-  apiVersion: '2024-01-01',
-  useCdn: process.env.NODE_ENV === 'production',
-})
+// Temporarily disabled Sanity client due to projectId validation error
+// export const client = createClient({
+//   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'tfdiq2zl',
+//   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
+//   apiVersion: '2024-01-01',
+//   useCdn: process.env.NODE_ENV === 'production',
+// })
 
-const builder = imageUrlBuilder(client)
+// Temporary mock client
+export const client = null as any
+
+// const builder = imageUrlBuilder(client)
 
 export function urlFor(source: any) {
-  return builder.image(source)
+  // return builder.image(source)
+  return { url: () => '' } as any // Temporary mock
 }
 
 export interface SanityImage {

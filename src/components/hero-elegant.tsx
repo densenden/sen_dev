@@ -7,9 +7,14 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
 import { getRandomImage } from "@/lib/images-client"
+import { useState, useEffect } from "react"
 
 export default function HeroElegant() {
-  const randomImage = getRandomImage()
+  const [randomImage, setRandomImage] = useState("/random/hero-1.jpg")
+
+  useEffect(() => {
+    setRandomImage(getRandomImage())
+  }, [])
 
   return (
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
@@ -20,7 +25,7 @@ export default function HeroElegant() {
           src={randomImage}
           alt="Hero background"
           fill
-          className="object-cover opacity-100"
+          className="object-cover opacity-80 saturate-75"
           priority
           onError={() => {
             // Fallback to gradient if image fails to load
@@ -99,7 +104,7 @@ export default function HeroElegant() {
                 className="max-w-3xl mx-auto space-y-6"
               >
                 <p className="text-2xl font-light text-white/90 leading-relaxed">
-                  The designer's eye sees what others miss.
+                  Turn your vision into reality.
                 </p>
                 <p className="text-xl font-light text-white/80">
                   <span className="text-accent">Full-package delivery</span> from idea to launch.
@@ -116,7 +121,7 @@ export default function HeroElegant() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 1 }}
-            className="mb-16 max-w-4xl mx-auto"
+            className="mb-16 mt-24 max-w-4xl mx-auto"
           >
             <blockquote className="text-2xl md:text-3xl font-light italic text-white/95 leading-relaxed text-center">
               "Speed beats perfection. Execution trumps planning. 

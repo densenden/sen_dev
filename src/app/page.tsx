@@ -15,7 +15,9 @@ import {
   Star,
   CheckCircle,
   Clock,
-  Globe
+  Globe,
+  Play,
+  Sparkles
 } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
@@ -23,34 +25,83 @@ import Image from "next/image"
 import HeroElegant from "@/components/hero-elegant"
 import SectionBackground from "@/components/section-background"
 import { getUniqueRandomImages } from "@/lib/images-client"
+import { useState, useEffect } from "react"
 
-// Sample projects for preview - images will be assigned in component
-const featuredProjectsTemplate = [
+// All available projects with actual images
+const allProjects = [
   {
     id: "senflix",
-    title: "Senflix",
-    category: "AI Streaming Platform",
-    description: "Netflix-inspired platform with AI-driven content recommendations",
-    tags: ["AI", "Streaming", "Next.js"],
-    outcome: "Demonstrated advanced AI integration capabilities"
+    title: "Senflix", 
+    category: "Senflix - Community Streaming",
+    description: "Community-driven streaming platform with gamified TV interface optimized for tvOS",
+    tags: ["Streaming", "Social", "tvOS"],
+    outcome: "21+ user profiles with seamless tvOS integration",
+    image: "/projects/senflix.jpg",
+    logo: "/logos/senflix.svg",
+    logoType: "svg"
   },
   {
-    id: "synapsee", 
+    id: "meme-machine",
+    title: "Meme Machine",
+    category: "Meme Machine - WhatsApp Chatbot", 
+    description: "Revolutionary WhatsApp-based AI meme generator without app downloads",
+    tags: ["AI", "Chatbot", "WhatsApp"],
+    outcome: "Instant meme creation via WhatsApp messaging",
+    image: "/projects/mememachine.png",
+    logo: "/logos/mm_dark.svg",
+    logoType: "svg"
+  },
+  {
+    id: "beautymachine",
+    title: "BeautyMachine",
+    category: "BeautyMachine - Mobile Beauty Service",
+    description: "Premium mobile makeup services for executive women in Frankfurt", 
+    tags: ["Beauty", "Business", "Mobile Service"],
+    outcome: "100% punctuality guarantee starting at €89",
+    image: "/projects/beautymachine.jpeg",
+    logo: "BM",
+    logoType: "text"
+  },
+  {
+    id: "synapsee",
     title: "Synapsee",
-    category: "Knowledge Management",
-    description: "Intelligent workspace connecting ideas through AI-powered graphs",
-    tags: ["AI", "Collaboration", "React"],
-    outcome: "40% increase in team productivity"
+    category: "Synapsee - Relationship AI",
+    description: "Privacy-focused AI app that analyzes interaction patterns to provide personalized relationship insights",
+    tags: ["AI", "Relationships", "Privacy"],
+    outcome: "Beta launching late 2025 with on-device AI processing",
+    image: "/projects/synapsee.jpg",
+    logo: "/logos/synapsee.svg",
+    logoType: "svg"
   },
   {
-    id: "kria",
+    id: "kria-training",
     title: "Kria Training",
-    category: "Fitness AI Platform",
-    description: "Personalized training with computer vision and AI coaching",
-    tags: ["AI", "Mobile", "Computer Vision"],
-    outcome: "85% user retention rate achieved"
+    category: "Kria Training - Fitness Community",
+    description: "Mindful fitness community platform with smart member connections and diverse training programs",
+    tags: ["Fitness", "Community", "Wellness"],
+    outcome: "500+ active members with 98% satisfaction rate",
+    image: "/projects/kria.png",
+    logo: "/logos/KRIA.svg",
+    logoType: "svg"
+  },
+  {
+    id: "forkit",
+    title: "Fork:it",
+    category: "Fork:it - Digital Independence",
+    description: "Platform empowering entrepreneurs to achieve digital independence from large tech platforms",
+    tags: ["Privacy", "Self-Hosting", "Independence"],
+    outcome: "Empowering entrepreneurs with digital sovereignty tools",
+    image: "/projects/forkit.jpg",
+    logo: "/logos/forkit_dark_logo.svg",
+    logoType: "svg"
   }
 ]
+
+// Function to randomly select 3 projects
+function getRandomProjects(projects: typeof allProjects, count: number = 3) {
+  const shuffled = [...projects].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, count)
+}
 
 const targetAudiences = [
   {
@@ -107,12 +158,12 @@ const coreValues = [
 ]
 
 export default function Home() {
-  // Get unique images for featured projects
-  const projectImages = getUniqueRandomImages(3)
-  const featuredProjects = featuredProjectsTemplate.map((project, index) => ({
-    ...project,
-    image: projectImages[index]
-  }))
+  // Random project selection with hydration-safe approach
+  const [featuredProjects, setFeaturedProjects] = useState(allProjects.slice(0, 3))
+
+  useEffect(() => {
+    setFeaturedProjects(getRandomProjects(allProjects, 3))
+  }, [])
 
   return (
     <div className="min-h-screen">
@@ -151,8 +202,8 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="glass-primary rounded-3xl overflow-hidden hover:scale-105 transition-all duration-300 group"
                 >
+                  <Link href={`/projects/${project.id}`} className="block glass-primary rounded-3xl overflow-hidden hover:scale-105 transition-all duration-300 group">
                   <div className="aspect-video relative overflow-hidden">
                     <Image
                       src={project.image}
@@ -190,6 +241,7 @@ export default function Home() {
                       </p>
                     </div>
                   </div>
+                  </Link>
                 </motion.div>
               ))}
             </div>

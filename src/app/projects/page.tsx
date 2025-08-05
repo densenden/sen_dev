@@ -14,7 +14,10 @@ import {
   Brain,
   TrendingUp,
   Users,
-  Zap
+  Zap,
+  Sparkles,
+  Building2,
+  CheckCircle
 } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
@@ -29,81 +32,133 @@ const fallbackProjects = [
     id: "1",
     title: "Senflix",
     slug: "senflix",
-    summary: "AI-powered content recommendation platform",
-    description: "A Netflix-inspired streaming platform with AI-driven content recommendations and personalized user experiences.",
-    tech_stack: ["Next.js", "TypeScript", "OpenAI", "Supabase", "Tailwind CSS", "Framer Motion"],
-    screenshots: ["/projects/senflix-1.jpg", "/projects/senflix-2.jpg"],
+    summary: "Community-driven streaming platform with gamified TV interface",
+    description: "A Netflix-inspired streaming platform where communities share recommendations through a gamified interface optimized for tvOS and Apple TV experiences.",
+    tech_stack: ["Next.js", "TypeScript", "tvOS", "React Native", "Supabase", "Tailwind CSS"],
+    screenshots: ["/projects/senflix.jpg"],
     video_demo: null,
-    tags: ["AI", "Streaming", "Personalization", "Web App"],
-    client_name: "SenDev Internal",
-    outcome: "Demonstrated advanced AI integration capabilities and modern streaming UI patterns",
-    link_live: "https://senflix.demo.com",
+    tags: ["Streaming", "Social", "tvOS", "Web App"],
+    client_name: "Entertainment Tech", 
+    outcome: "Created engaging community-driven content discovery with 21+ user profiles and seamless tvOS integration",
+    link_live: "https://flix.sen.studio",
     created_at: "2024-01-15T00:00:00Z",
-    updated_at: "2024-01-15T00:00:00Z"
+    updated_at: "2024-01-15T00:00:00Z",
+    icon: Play,
+    logo: "/logos/senflix.svg",
+    logoType: "svg",
+    headline: "Senflix - Community Streaming",
+    subline: "Gamified TV Interface",
+    features: ["21+ Profiles", "tvOS Native", "Social Sharing"]
   },
   {
     id: "2", 
     title: "Synapsee",
     slug: "synapsee",
-    summary: "Collaborative knowledge management platform",
-    description: "An intelligent workspace that connects ideas, people, and projects through AI-powered knowledge graphs.",
-    tech_stack: ["React", "Node.js", "PostgreSQL", "GraphQL", "D3.js", "OpenAI"],
-    screenshots: ["/projects/synapsee-1.jpg", "/projects/synapsee-2.jpg"],
+    summary: "AI-powered relationship insights for couples",
+    description: "Privacy-focused AI app that analyzes interaction patterns to provide personalized relationship insights and communication improvements for couples.",
+    tech_stack: ["React Native", "Apple Intelligence", "On-Device AI", "Swift", "Core ML", "Privacy APIs"],
+    screenshots: ["/projects/synapsee.jpg"],
     video_demo: null,
-    tags: ["Knowledge Management", "Collaboration", "AI", "Graph Database"],
-    client_name: "Tech Startup",
-    outcome: "Increased team productivity by 40% and improved knowledge sharing across departments",
-    link_live: "https://synapsee.app",
+    tags: ["AI", "Relationships", "Privacy", "Mobile App"],
+    client_name: "Relationship Tech",
+    outcome: "Launching beta in late 2025 with on-device AI processing that respects user privacy completely",
+    link_live: "https://synapsee.sen.studio",
     created_at: "2024-02-10T00:00:00Z",
-    updated_at: "2024-02-10T00:00:00Z"
+    updated_at: "2024-02-10T00:00:00Z",
+    icon: Brain,
+    logo: "/logos/synapsee.svg",
+    logoType: "svg",
+    headline: "Synapsee - Relationship AI",
+    subline: "Privacy-First Insights",
+    features: ["On-Device AI", "100% Private", "Beta 2025"]
   },
   {
     id: "3",
     title: "Kria Training",
     slug: "kria-training", 
-    summary: "AI-powered fitness and wellness platform",
-    description: "Personalized training programs powered by computer vision and AI coaching for optimal fitness results.",
-    tech_stack: ["React Native", "Python", "TensorFlow", "Firebase", "Stripe", "Computer Vision"],
-    screenshots: ["/projects/kria-1.jpg", "/projects/kria-2.jpg"],
+    summary: "Mindful fitness community platform with smart connections",
+    description: "Community-driven fitness platform offering diverse training programs from swimming to HIIT, with smart member connections and flexible scheduling.",
+    tech_stack: ["Next.js", "Supabase", "Stripe", "Calendar APIs", "Community Features", "React"],
+    screenshots: ["/projects/kria.png"],
     video_demo: null,
-    tags: ["Fitness", "AI", "Mobile App", "Computer Vision"],
-    client_name: "Fitness Startup",
-    outcome: "Achieved 85% user retention rate and 200% increase in training completion",
-    link_live: "https://kriatraining.com",
+    tags: ["Fitness", "Community", "Web App", "Wellness"],
+    client_name: "Fitness Community",
+    outcome: "Built thriving community with 500+ active members, 50+ weekly courses, and 98% satisfaction rate",
+    link_live: "https://community.kria-training.de",
     created_at: "2024-03-05T00:00:00Z",
-    updated_at: "2024-03-05T00:00:00Z"
+    updated_at: "2024-03-05T00:00:00Z",
+    icon: TrendingUp,
+    logo: "/logos/KRIA.svg",
+    logoType: "svg",
+    headline: "Kria Training - Mindful Fitness",
+    subline: "Smart Community",
+    features: ["500+ Members", "50+ Courses", "98% Satisfaction"]
   },
   {
     id: "4",
     title: "Meme Machine",
     slug: "meme-machine",
-    summary: "AI-powered meme generation and social platform",
-    description: "Creative platform that generates viral memes using AI, with social features and trend analysis.",
-    tech_stack: ["Next.js", "OpenAI DALL-E", "Prisma", "Vercel", "Tailwind CSS", "Social APIs"],
-    screenshots: ["/projects/meme-machine-1.jpg", "/projects/meme-machine-2.jpg"],
+    summary: "Innovative WhatsApp meme generation chatbot",
+    description: "Revolutionary WhatsApp-based AI meme generator that creates instant memes from user text without any app downloads - just send a message.",
+    tech_stack: ["WhatsApp Business API", "OpenAI", "Node.js", "AI Image Generation", "Chatbot APIs"],
+    screenshots: ["/projects/mememachine.png"],
     video_demo: null,
-    tags: ["AI", "Social", "Creative", "Viral Marketing"],
-    client_name: "Creative Agency",
-    outcome: "Generated over 1M memes and achieved viral status with 50K+ daily active users",
+    tags: ["AI", "Social", "Chatbot", "WhatsApp"],
+    client_name: "Social Media Innovation",
+    outcome: "Revolutionized meme creation with instant WhatsApp integration, eliminating app barriers completely",
     link_live: "https://meme-machine.app",
     created_at: "2024-04-12T00:00:00Z", 
-    updated_at: "2024-04-12T00:00:00Z"
+    updated_at: "2024-04-12T00:00:00Z",
+    icon: Brain,
+    logo: "/logos/mm_dark.svg",
+    logoType: "svg",
+    headline: "Meme Machine - WhatsApp Bot",
+    subline: "Instant Memes",
+    features: ["No App Needed", "AI Generated", "Viral Ready"]
   },
   {
     id: "5",
+    title: "BeautyMachine",
+    slug: "beautymachine",
+    summary: "Premium mobile makeup services for executive women",
+    description: "High-end mobile makeup service targeting professional women in Frankfurt, offering on-site beauty services with 100% punctuality guarantee starting at €89.",
+    tech_stack: ["Next.js", "Supabase", "Stripe", "Booking System", "Tailwind CSS", "Mobile Optimization"],
+    screenshots: ["/projects/beautymachine.jpeg"],
+    video_demo: null,
+    tags: ["Beauty", "Business", "Mobile Service", "Luxury"],
+    client_name: "Beauty Industry",
+    outcome: "Established premium mobile beauty service serving executive women across Frankfurt's business districts",
+    link_live: "https://beautymachine.sen.studio",
+    created_at: "2024-03-20T00:00:00Z",
+    updated_at: "2024-03-20T00:00:00Z",
+    icon: Sparkles,
+    logo: "BM",
+    logoType: "text",
+    headline: "BeautyMachine - Mobile Beauty",
+    subline: "Executive Service",
+    features: ["€89 Starting", "100% Punctual", "Frankfurt"]
+  },
+  {
+    id: "6",
     title: "Fork:it",
     slug: "forkit",
-    summary: "Developer collaboration and code review platform",
-    description: "Streamlined code review and collaboration platform with AI-powered code analysis and team workflows.",
-    tech_stack: ["Vue.js", "FastAPI", "PostgreSQL", "Docker", "GitHub API", "AI Code Analysis"],
-    screenshots: ["/projects/forkit-1.jpg", "/projects/forkit-2.jpg"], 
+    summary: "Digital independence platform for entrepreneurs",
+    description: "Platform empowering entrepreneurs to achieve digital independence from large tech platforms through decentralized tools and self-hosted solutions.",
+    tech_stack: ["Next.js", "Self-Hosting", "Docker", "Privacy Tools", "Decentralized Tech", "Open Source"],
+    screenshots: ["/projects/forkit.jpg"], 
     video_demo: null,
-    tags: ["Developer Tools", "Code Review", "Collaboration", "AI"],
-    client_name: "Software Company",
-    outcome: "Reduced code review time by 60% and improved code quality scores across all teams",
-    link_live: "https://forkit.dev",
+    tags: ["Digital Independence", "Privacy", "Self-Hosting", "Web App"],
+    client_name: "Independent Entrepreneurs",
+    outcome: "Empowering entrepreneurs with tools for digital sovereignty and platform independence",
+    link_live: "https://forkit.sen.studio",
     created_at: "2024-05-20T00:00:00Z",
-    updated_at: "2024-05-20T00:00:00Z"
+    updated_at: "2024-05-20T00:00:00Z",
+    icon: Globe,
+    logo: "/logos/forkit_dark_logo.svg",
+    logoType: "svg",
+    headline: "Fork:it - Digital Independence",
+    subline: "Platform Freedom",
+    features: ["Self-Hosted", "Open Source", "Privacy First"]
   }
 ]
 
@@ -117,7 +172,9 @@ const projectIcons = {
   "Developer Tools": Code,
   "Fitness": TrendingUp,
   "Knowledge Management": Eye,
-  "Collaboration": Users
+  "Collaboration": Users,
+  "Beauty": Sparkles,
+  "Business": Building2
 }
 
 export default function ProjectsPage() {
@@ -152,7 +209,7 @@ export default function ProjectsPage() {
             src={heroImage}
             alt="Projects hero background"
             fill
-            className="object-cover opacity-100"
+            className="object-cover opacity-80 saturate-75"
             priority
           />
         </div>
@@ -281,112 +338,112 @@ export default function ProjectsPage() {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.6, delay: index * 0.1 }}
-                      className="glass-primary rounded-3xl overflow-hidden hover:scale-105 transition-all duration-300 group relative"
+                      className="glass-primary backdrop-blur-md bg-white/80 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-3xl overflow-hidden hover:scale-105 transition-all duration-300 group relative shadow-xl"
                     >
-                      {/* Project Backdrop Image */}
-                      <div className="absolute inset-0 h-[60%]">
-                        {project.screenshots && project.screenshots[0] ? (
-                          <>
-                            <Image
-                              src={project.screenshots[0]}
-                              alt={`${project.title} screenshot`}
-                              fill
-                              className="object-cover opacity-90"
+                      {/* Top Section - Icon, Logo, Headlines */}
+                      <div className="p-6 pb-4">
+                        <div className="flex items-center gap-4 mb-4">
+                          <div className="w-12 h-12 rounded-full glass-secondary backdrop-blur-md bg-white/90 dark:bg-white/10 border border-white/30 dark:border-white/20 flex items-center justify-center shadow-lg">
+                            <IconComponent className="w-6 h-6 text-black dark:text-white" />
+                          </div>
+                          {project.logoType === "svg" ? (
+                            <img 
+                              src={project.logo} 
+                              alt={`${project.title} logo`}
+                              className="max-h-8 w-auto filter brightness-0 dark:invert"
+                              style={{ maxHeight: '32px' }}
                             />
-                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/60 to-background" />
-                          </>
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10 relative">
-                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/60 to-background" />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <IconComponent className="w-16 h-16 text-primary/30" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-2xl glass-accent bg-accent/10 border border-accent/20 flex items-center justify-center">
+                              <span className="text-sm font-medium text-accent">{project.logo}</span>
                             </div>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="relative z-10 p-8">
-                        {/* Project Header */}
-                        <div className="flex items-start justify-between mb-[180px]">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-white/90 dark:bg-white/10 backdrop-blur-md flex items-center justify-center">
-                              <IconComponent className="w-6 h-6 text-primary" />
-                            </div>
-                            <div>
-                              <h3 className="text-xl font-light text-foreground group-hover:text-primary transition-colors duration-300">
-                                {project.title}
-                              </h3>
-                              <p className="text-xs font-light text-muted-foreground">
-                                {project.client_name}
-                              </p>
-                            </div>
-                          </div>
+                          )}
                           {project.link_live && (
                             <Button 
                               size="sm"
                               variant="ghost"
-                              className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/80 dark:bg-white/10 backdrop-blur-md"
+                              className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 glass-secondary backdrop-blur-md bg-white/90 dark:bg-white/10 border border-white/30 dark:border-white/20 shadow-lg hover:bg-white/95 dark:hover:bg-white/15"
                               asChild
                             >
                               <Link href={project.link_live} target="_blank">
-                                <ExternalLink className="w-4 h-4" />
+                                <ExternalLink className="w-4 h-4 text-black dark:text-white" />
                               </Link>
                             </Button>
                           )}
                         </div>
+                        <h3 className="text-xl font-light text-foreground mb-1">{project.headline}</h3>
+                        <p className="text-sm font-light text-muted-foreground">{project.subline}</p>
+                      </div>
 
-                      {/* Project Description */}
-                      <p className="text-sm font-light text-muted-foreground mb-6 leading-relaxed">
-                        {project.summary}
-                      </p>
+                      {/* Image Section with Feature Bubbles */}
+                      <div className="aspect-video relative overflow-hidden mx-6 rounded-2xl">
+                        {project.screenshots && project.screenshots[0] ? (
+                          <Image
+                            src={project.screenshots[0]}
+                            alt={`${project.title} screenshot`}
+                            fill
+                            className="object-cover saturate-75 dark:saturate-100 group-hover:saturate-100 transition-all duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center">
+                            <IconComponent className="w-16 h-16 text-primary/30" />
+                          </div>
+                        )}
+                        
+                        {/* Feature Bubbles */}
+                        {project.features?.map((feature, featureIndex) => (
+                          <div
+                            key={featureIndex}
+                            className={`absolute ${
+                              featureIndex === 0 ? 'top-4 left-4' :
+                              featureIndex === 1 ? 'top-4 right-4' :
+                              'bottom-4 left-4'
+                            } glass-primary backdrop-blur-md bg-white/90 dark:bg-black/50 border border-white/30 dark:border-white/20 rounded-full px-3 py-2 shadow-lg`}
+                            style={{
+                              transform: `scale(${0.8 + featureIndex * 0.1})`,
+                              opacity: 0.9
+                            }}
+                          >
+                            <span className="text-xs font-light text-black dark:text-white">
+                              {feature}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
 
-                      {/* Tech Stack */}
-                      <div className="mb-6">
-                        <div className="flex flex-wrap gap-2">
-                          {project.tech_stack?.slice(0, 4).map((tech, techIndex) => (
+                      {/* Bottom Section - Impact & Buttons */}
+                      <div className="p-6 pt-4">
+                        {/* Project Outcome */}
+                        <div className="glass-secondary rounded-2xl p-4 mb-4">
+                          <p className="text-xs font-light text-muted-foreground">
+                            <CheckCircle className="w-3 h-3 inline mr-1 text-accent" />
+                            {project.outcome}
+                          </p>
+                        </div>
+
+                        {/* Tech Stack Preview */}
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {project.tech_stack?.slice(0, 3).map((tech, techIndex) => (
                             <Badge 
                               key={techIndex}
-                              variant="outline"
+                              variant="outline" 
                               className="bg-secondary/5 text-secondary border-secondary/20 font-light text-xs"
                             >
                               {tech}
                             </Badge>
                           ))}
-                          {project.tech_stack && project.tech_stack.length > 4 && (
+                          {project.tech_stack && project.tech_stack.length > 3 && (
                             <Badge 
-                              variant="outline"
-                              className="bg-muted/5 text-muted-foreground border-muted/20 font-light text-xs"
+                              variant="outline" 
+                              className="bg-secondary/5 text-secondary border-secondary/20 font-light text-xs"
                             >
-                              +{project.tech_stack.length - 4}
+                              +{project.tech_stack.length - 3}
                             </Badge>
                           )}
                         </div>
-                      </div>
 
-                      {/* Project Tags */}
-                      <div className="mb-6">
-                        <div className="flex flex-wrap gap-2">
-                          {project.tags?.map((tag, tagIndex) => (
-                            <Badge 
-                              key={tagIndex}
-                              className="bg-accent/10 text-accent border-accent/20 font-light text-xs"
-                            >
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Outcome */}
-                      <div className="glass-secondary rounded-2xl p-4 mb-6">
-                        <h4 className="text-sm font-light text-foreground mb-2">Project Impact</h4>
-                        <p className="text-xs font-light text-muted-foreground leading-relaxed">
-                          {project.outcome}
-                        </p>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex gap-3">
+                        {/* Action Buttons */}
+                        <div className="flex gap-3">
                         {project.link_live && (
                           <Button 
                             size="sm"

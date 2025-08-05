@@ -6,11 +6,13 @@ import { motion } from "framer-motion"
 import { useTheme } from "next-themes"
 import { Sun, Moon } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
 
 const footerLinks = [
   {
     title: "Services",
     links: [
+      { label: "About", href: "/about" },
       { label: "Philosophy", href: "/philosophy" },
       { label: "Services", href: "/services" },
       { label: "Packages", href: "/packages" },
@@ -20,7 +22,7 @@ const footerLinks = [
   {
     title: "Company",
     links: [
-      { label: "About", href: "/philosophy" },
+      { label: "About Denis", href: "/about" },
       { label: "Contact", href: "/contact" },
       { label: "Portfolio", href: "/projects" },
     ]
@@ -37,6 +39,11 @@ const footerLinks = [
 
 export default function Footer() {
   const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   return (
     <footer className="border-t border-primary/10 bg-background">
@@ -58,11 +65,11 @@ export default function Footer() {
                   alt="SenDev Logo"
                   width={32}
                   height={32}
-                  className="w-8 h-8 dark:brightness-0 dark:invert"
+                  className="w-8 h-8 brightness-0 dark:brightness-0 dark:invert"
                 />
                 <div className="text-3xl font-light tracking-tight">
-                  <span className="text-foreground dark:text-white">Sen</span>
-                  <span className="text-primary">Dev</span>
+                  <span className="text-black dark:text-white">Sen</span>
+                  <span className="text-black dark:text-white">Dev</span>
                 </div>
               </Link>
               
@@ -137,10 +144,14 @@ export default function Footer() {
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                 className="p-2 h-auto text-muted-foreground hover:text-primary transition-colors duration-300"
               >
-                {theme === "dark" ? (
-                  <Sun className="w-4 h-4" />
+                {mounted ? (
+                  theme === "dark" ? (
+                    <Sun className="w-4 h-4" />
+                  ) : (
+                    <Moon className="w-4 h-4" />
+                  )
                 ) : (
-                  <Moon className="w-4 h-4" />
+                  <div className="w-4 h-4" />
                 )}
               </Button>
               <div className="w-px h-4 bg-primary/20"></div>

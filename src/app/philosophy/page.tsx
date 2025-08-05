@@ -90,7 +90,7 @@ export default function PhilosophyPage() {
             src={heroImage}
             alt="Philosophy hero background"
             fill
-            className="object-cover opacity-100"
+            className="object-cover opacity-80 saturate-75"
             priority
           />
         </div>
@@ -185,11 +185,7 @@ export default function PhilosophyPage() {
                       />
                     </div>
                     <div className="relative z-10">
-                      <div className={`w-12 h-12 rounded-full ${
-                      principle.color === 'text-primary' ? 'bg-primary/20' :
-                      principle.color === 'text-accent' ? 'bg-accent/20' :
-                      'bg-secondary/20'
-                    } flex items-center justify-center mb-6`}>
+                      <div className="w-12 h-12 rounded-full glass-primary border border-primary/20 flex items-center justify-center mb-6">
                       <Icon className={`w-6 h-6 ${principle.color}`} />
                     </div>
                     <h3 className="text-xl font-light mb-4 text-foreground">{principle.title}</h3>
@@ -212,7 +208,7 @@ export default function PhilosophyPage() {
             src={processImage}
             alt="Process background"
             fill
-            className="object-cover opacity-100"
+            className="object-cover opacity-80 saturate-75"
           />
         </div>
         <div className="container mx-auto px-8 relative z-10">

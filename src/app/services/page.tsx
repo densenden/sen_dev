@@ -132,7 +132,7 @@ export default function ServicesPage() {
             src={heroImage}
             alt="Services hero background"
             fill
-            className="object-cover opacity-100"
+            className="object-cover opacity-80 saturate-75"
             priority
           />
         </div>
@@ -251,11 +251,7 @@ export default function ServicesPage() {
                     className="white-tile p-8 hover:scale-105 transition-all duration-300"
                   >
                     <div className="flex items-start gap-6">
-                      <div className={`w-16 h-16 rounded-full ${
-                        category.color === 'primary' ? 'bg-primary/20' :
-                        category.color === 'accent' ? 'bg-accent/20' :
-                        'bg-secondary/20'
-                      } flex items-center justify-center flex-shrink-0`}>
+                      <div className="w-16 h-16 rounded-full glass-primary border border-primary/20 flex items-center justify-center flex-shrink-0">
                         <Icon className={`w-8 h-8 ${
                           category.color === 'primary' ? 'text-primary' :
                           category.color === 'accent' ? 'text-accent' :
@@ -296,7 +292,7 @@ export default function ServicesPage() {
             src={techImage}
             alt="Tech stack background"
             fill
-            className="object-cover opacity-100"
+            className="object-cover opacity-80 saturate-75"
           />
         </div>
         <div className="container mx-auto px-8 relative z-10">
@@ -353,7 +349,7 @@ export default function ServicesPage() {
             src={processImage}
             alt="Process background"
             fill
-            className="object-cover opacity-100"
+            className="object-cover opacity-80 saturate-75"
           />
         </div>
         <div className="container mx-auto px-8 relative z-10">

@@ -158,7 +158,7 @@ export default function ContactPage() {
             src={heroImage}
             alt="Success background"
             fill
-            className="object-cover opacity-100"
+            className="object-cover opacity-80 saturate-75"
           />
         </div>
         
@@ -200,7 +200,7 @@ export default function ContactPage() {
             src={heroImage}
             alt="Contact hero background"
             fill
-            className="object-cover opacity-100"
+            className="object-cover opacity-80 saturate-75"
             priority
           />
         </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import { useState, useEffect } from "react"
 
 const heroImages = [
   "/random/hero-1.jpg",
@@ -20,7 +21,11 @@ export default function SectionBackground({
   blur = true,
   className = "" 
 }: SectionBackgroundProps) {
-  const randomImage = heroImages[Math.floor(Math.random() * heroImages.length)]
+  const [randomImage, setRandomImage] = useState("/random/hero-1.jpg")
+
+  useEffect(() => {
+    setRandomImage(heroImages[Math.floor(Math.random() * heroImages.length)])
+  }, [])
 
   return (
     <div className={`absolute inset-0 z-0 ${className}`}>
