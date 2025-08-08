@@ -23,7 +23,7 @@ import {
 import { motion } from "framer-motion"
 import Link from "next/link"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 const packages = [
   { value: "impulse", label: "Impulse Sprint (€1,500 - €3,000)", duration: "2-3 days" },
@@ -35,36 +35,83 @@ const packages = [
   { value: "custom", label: "Custom Project", duration: "TBD" }
 ]
 
-// Generate time slots for the next 14 days (excluding weekends)
-const generateTimeSlots = () => {
+// Generate time slots for the next 14 days with business hours
+const generateTimeSlots = async () => {
   const slots = []
   const now = new Date()
-  const startTime = 9 // 9 AM
-  const endTime = 17 // 5 PM
   const slotDuration = 30 // 30 minutes
+  
+  // Business hours: 10-12 and 14-17 weekdays, 14-17 Saturday
+  const businessHours = {
+    weekday: [
+      { start: 10, end: 12 },
+      { start: 14, end: 17 }
+    ],
+    saturday: [
+      { start: 14, end: 17 }
+    ]
+  }
+  
+  // Get existing appointments to block slots
+  let bookedSlots = []
+  try {
+    const response = await fetch('/api/appointments')
+    if (response.ok) {
+      const data = await response.json()
+      bookedSlots = data.appointments.map(apt => ({
+        date: apt.appointment_date,
+        time: apt.appointment_time.substring(0, 5) // HH:MM format
+      }))
+    }
+  } catch (error) {
+    console.error('Failed to fetch booked appointments:', error)
+  }
   
   for (let day = 1; day <= 14; day++) {
     const date = new Date(now)
     date.setDate(now.getDate() + day)
     
-    // Skip weekends
-    if (date.getDay() === 0 || date.getDay() === 6) continue
+    let hours = []
     
-    for (let hour = startTime; hour < endTime; hour++) {
-      for (let minute = 0; minute < 60; minute += slotDuration) {
-        const slotTime = new Date(date)
-        slotTime.setHours(hour, minute, 0, 0)
-        
-        // Skip past slots
-        if (slotTime <= now) continue
-        
-        slots.push({
-          id: `${date.toISOString().split('T')[0]}-${hour}-${minute}`,
-          date: date.toISOString().split('T')[0],
-          time: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
-          datetime: slotTime,
-          available: Math.random() > 0.3 // 70% of slots available (simulate real booking system)
-        })
+    // Skip Sunday (0)
+    if (date.getDay() === 0) continue
+    
+    // Saturday (6) - afternoon only
+    if (date.getDay() === 6) {
+      hours = businessHours.saturday
+    } else {
+      // Weekdays (1-5)
+      hours = businessHours.weekday
+    }
+    
+    // Generate slots for each business hour period
+    for (const period of hours) {
+      for (let hour = period.start; hour < period.end; hour++) {
+        for (let minute = 0; minute < 60; minute += slotDuration) {
+          const slotTime = new Date(date)
+          slotTime.setHours(hour, minute, 0, 0)
+          
+          // Skip past slots
+          if (slotTime <= now) continue
+          
+          const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+          const dateString = date.toISOString().split('T')[0]
+          
+          // Check if slot is already booked
+          const isBooked = bookedSlots.some(slot => 
+            slot.date === dateString && slot.time === timeString
+          )
+          
+          if (!isBooked) {
+            slots.push({
+              id: `${dateString}-${hour}-${minute}`,
+              date: dateString,
+              time: timeString,
+              datetime: slotTime,
+              available: true
+            })
+          }
+        }
       }
     }
   }
@@ -79,14 +126,27 @@ export default function ContactPage() {
     company: "",
     package: "",
     message: "",
-    preferredContact: "email"
+    preferredContact: "email",
+    consultationMethod: "zoom" // zoom, teams, phone
   })
   
   const [currentStep, setCurrentStep] = useState<'contact' | 'schedule'>('contact')
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
-  const [timeSlots] = useState(generateTimeSlots())
+  const [timeSlots, setTimeSlots] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false)
+
+  // Load time slots when consultation is selected
+  useEffect(() => {
+    if (formData.package === 'consultation' && currentStep === 'schedule') {
+      setIsLoadingSlots(true)
+      generateTimeSlots().then(slots => {
+        setTimeSlots(slots)
+        setIsLoadingSlots(false)
+      })
+    }
+  }, [formData.package, currentStep])
   
   // Use contact.jpg for the hero backdrop
   const heroImage = "/contact.jpg"
@@ -119,11 +179,26 @@ export default function ContactPage() {
   const handleFinalSubmit = async () => {
     setIsSubmitting(true)
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    setIsSubmitting(false)
-    setIsSubmitted(true)
+    try {
+      const response = await fetch('/api/send-contact-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to send email')
+      }
+
+      setIsSubmitted(true)
+    } catch (error) {
+      console.error('Error sending email:', error)
+      // You might want to show an error message to the user here
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleScheduleSubmit = async () => {
@@ -134,20 +209,33 @@ export default function ContactPage() {
     
     setIsSubmitting(true)
     
-    // Here you would typically send the appointment data to your backend
-    console.log('Booking appointment:', {
-      ...formData,
-      appointment: {
-        date: slot.date,
-        time: slot.time,
-        datetime: slot.datetime
+    try {
+      const response = await fetch('/api/send-appointment-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          appointment: {
+            date: slot.date,
+            time: slot.time,
+            datetime: slot.datetime
+          }
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to send appointment email')
       }
-    })
-    
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    setIsSubmitting(false)
-    setIsSubmitted(true)
+
+      setIsSubmitted(true)
+    } catch (error) {
+      console.error('Error sending appointment email:', error)
+      // You might want to show an error message to the user here
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (isSubmitted) {
@@ -288,7 +376,7 @@ export default function ContactPage() {
                         <div className="grid md:grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label htmlFor="mobile" className="text-sm font-light text-white/70">
-                              Mobile Number
+                              Mobile Number {formData.package === 'consultation' && formData.consultationMethod === 'phone' && '*'}
                             </Label>
                             <Input
                               id="mobile"
@@ -297,7 +385,13 @@ export default function ContactPage() {
                               onChange={(e) => setFormData({...formData, mobile: e.target.value})}
                               className="glass-secondary border-line-secondary bg-secondary/10 font-light text-white placeholder:text-white/50"
                               placeholder="+49 123 456 7890"
+                              required={formData.package === 'consultation' && formData.consultationMethod === 'phone'}
                             />
+                            {formData.package === 'consultation' && formData.consultationMethod === 'phone' && (
+                              <p className="text-xs text-white/60">
+                                Mobile number is required for phone consultations
+                              </p>
+                            )}
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="company" className="text-sm font-light text-white/70">
@@ -335,6 +429,31 @@ export default function ContactPage() {
                             </SelectContent>
                           </Select>
                         </div>
+
+                        {/* Consultation Method - Only show for consultation package */}
+                        {formData.package === 'consultation' && (
+                          <div className="space-y-2">
+                            <Label className="text-sm font-light text-white/70">
+                              Preferred Consultation Method *
+                            </Label>
+                            <Select value={formData.consultationMethod} onValueChange={(value) => setFormData({...formData, consultationMethod: value})} required>
+                              <SelectTrigger className="glass-secondary border-line-secondary bg-secondary/10 font-light text-white">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background/95 backdrop-blur-md">
+                                <SelectItem value="zoom" className="font-light">
+                                  🎥 Zoom Meeting (Video Call)
+                                </SelectItem>
+                                <SelectItem value="teams" className="font-light">
+                                  💼 Microsoft Teams (Video Call)
+                                </SelectItem>
+                                <SelectItem value="phone" className="font-light">
+                                  📞 Phone Call (Voice Only)
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
 
                         {/* Message */}
                         <div className="space-y-2">
@@ -485,7 +604,12 @@ export default function ContactPage() {
                     
                     {/* Calendar */}
                     <div className="space-y-6">
-                      {Object.entries(slotsByDate).slice(0, 7).map(([date, slots]) => (
+                      {isLoadingSlots ? (
+                        <div className="text-center py-8">
+                          <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4" />
+                          <p className="text-white/70">Loading available time slots...</p>
+                        </div>
+                      ) : Object.entries(slotsByDate).slice(0, 7).map(([date, slots]) => (
                         <div key={date} className="space-y-4">
                           <h3 className="text-lg font-light text-white border-b border-white/10 pb-2">
                             {formatDate(date)}

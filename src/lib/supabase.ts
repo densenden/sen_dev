@@ -17,6 +17,56 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          mobile: string | null
+          company: string | null
+          package_name: string
+          message: string
+          preferred_contact: string
+          appointment_date: string
+          appointment_time: string
+          status: 'scheduled' | 'completed' | 'cancelled'
+          reminder_sent: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          mobile?: string | null
+          company?: string | null
+          package_name: string
+          message: string
+          preferred_contact: string
+          appointment_date: string
+          appointment_time: string
+          status?: 'scheduled' | 'completed' | 'cancelled'
+          reminder_sent?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          mobile?: string | null
+          company?: string | null
+          package_name?: string
+          message?: string
+          preferred_contact?: string
+          appointment_date?: string
+          appointment_time?: string
+          status?: 'scheduled' | 'completed' | 'cancelled'
+          reminder_sent?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
       projects: {
         Row: {
           id: string
