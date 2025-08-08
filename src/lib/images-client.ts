@@ -36,8 +36,7 @@ export function getUniqueRandomImages(count: number): string[] {
   const allImages = getAllRandomImages()
   const shuffled = shuffleArray(allImages)
   
-  console.log(`Requesting ${count} unique images from ${allImages.length} available images`)
-  console.log('Selected images:', shuffled.slice(0, count))
+  // Requesting ${count} unique images from ${allImages.length} available images
   
   // If we need more images than available, repeat the shuffled array
   if (count > shuffled.length) {

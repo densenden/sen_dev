@@ -189,7 +189,7 @@ export default function ProjectsPage() {
           setProjects(data)
         }
       } catch (error) {
-        console.log("Using fallback project data")
+        // Using fallback project data
       } finally {
         setLoading(false)
       }
