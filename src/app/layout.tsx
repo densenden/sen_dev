@@ -4,6 +4,7 @@ import StructuredData from "@/components/structured-data";
 import NavigationClean from "@/components/navigation-clean";
 import Footer from "@/components/footer";
 import { ThemeProvider } from "@/components/theme-provider";
+import { GoogleTagManager, GoogleTagManagerNoscript } from "@/components/GoogleTagManager";
 import "./globals.css";
 
 const inter = Inter({
@@ -63,10 +64,12 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="icon" href="/favicon-light.svg" type="image/svg+xml" media="(prefers-color-scheme: light)" />
         <link rel="icon" href="/favicon-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)" />
+        <GoogleTagManager />
       </head>
       <body
         className={`${inter.variable} ${firaCode.variable} font-sans antialiased`}
       >
+        <GoogleTagManagerNoscript />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
