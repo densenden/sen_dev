@@ -4,9 +4,14 @@ import { useState, useEffect } from 'react';
 import { Upload, FileText, Copy, Check, Share2, Download, Trash2 } from 'lucide-react';
 
 interface UploadedFile {
+  id: string;
   filename: string;
+  original_name: string;
   url: string;
-  timestamp: number;
+  file_size: number;
+  download_count: number;
+  uploaded_at: string;
+  last_downloaded_at?: string;
 }
 
 export default function UploadsPage() {
@@ -18,11 +23,30 @@ export default function UploadsPage() {
   const [deletingFile, setDeletingFile] = useState<string | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem('uploadedPDFs');
-    if (stored) {
-      setUploadedFiles(JSON.parse(stored));
-    }
+    loadUploadedFiles();
   }, []);
+
+  const loadUploadedFiles = async () => {
+    try {
+      const response = await fetch('/api/list-pdfs');
+      const data = await response.json();
+      
+      if (response.ok) {
+        setUploadedFiles(data.pdfs.map((pdf: any) => ({
+          id: pdf.id,
+          filename: pdf.filename,
+          original_name: pdf.original_name,
+          url: pdf.public_url,
+          file_size: pdf.file_size,
+          download_count: pdf.download_count,
+          uploaded_at: pdf.uploaded_at,
+          last_downloaded_at: pdf.last_downloaded_at
+        })));
+      }
+    } catch (err) {
+      console.error('Failed to load uploaded files:', err);
+    }
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -55,15 +79,8 @@ export default function UploadsPage() {
         throw new Error(data.error || 'Upload failed');
       }
 
-      const newFile: UploadedFile = {
-        filename: data.filename,
-        url: data.url,
-        timestamp: Date.now(),
-      };
-
-      const updatedFiles = [newFile, ...uploadedFiles];
-      setUploadedFiles(updatedFiles);
-      localStorage.setItem('uploadedPDFs', JSON.stringify(updatedFiles));
+      // Reload the files list to get the updated data
+      await loadUploadedFiles();
       
       setSelectedFile(null);
       const fileInput = document.getElementById('file-input') as HTMLInputElement;
@@ -76,9 +93,8 @@ export default function UploadsPage() {
   };
 
   const copyToClipboard = async (url: string) => {
-    const fullUrl = `${window.location.origin}${url}`;
     try {
-      await navigator.clipboard.writeText(fullUrl);
+      await navigator.clipboard.writeText(url);
       setCopiedUrl(url);
       setTimeout(() => setCopiedUrl(null), 2000);
     } catch (err) {
@@ -87,13 +103,12 @@ export default function UploadsPage() {
   };
 
   const shareUrl = async (url: string) => {
-    const fullUrl = `${window.location.origin}${url}`;
     if (navigator.share) {
       try {
         await navigator.share({
           title: 'PDF Document',
           text: 'Check out this PDF',
-          url: fullUrl,
+          url: url,
         });
       } catch (err) {
         console.error('Share failed:', err);
@@ -103,22 +118,43 @@ export default function UploadsPage() {
     }
   };
 
+  const handleDownload = async (file: UploadedFile) => {
+    try {
+      // Track the download
+      await fetch('/api/track-download', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ fileId: file.id }),
+      });
+
+      // Open the file in a new tab
+      window.open(file.url, '_blank');
+
+      // Refresh the file list to show updated download count
+      await loadUploadedFiles();
+    } catch (err) {
+      console.error('Failed to track download:', err);
+      // Still open the file even if tracking fails
+      window.open(file.url, '_blank');
+    }
+  };
+
   const handleDelete = async (file: UploadedFile) => {
-    if (!confirm(`Are you sure you want to delete ${file.filename.replace(/^\d+-/, '')}?`)) {
+    if (!confirm(`Are you sure you want to delete ${file.original_name}?`)) {
       return;
     }
 
-    setDeletingFile(file.filename);
+    setDeletingFile(file.id);
     
     try {
-      const response = await fetch(`/api/delete-pdf?filename=${encodeURIComponent(file.filename)}`, {
+      const response = await fetch(`/api/delete-pdf?id=${encodeURIComponent(file.id)}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
-        const updatedFiles = uploadedFiles.filter(f => f.filename !== file.filename);
-        setUploadedFiles(updatedFiles);
-        localStorage.setItem('uploadedPDFs', JSON.stringify(updatedFiles));
+        await loadUploadedFiles();
       } else {
         const data = await response.json();
         console.error('Delete failed:', data.error);
@@ -193,31 +229,31 @@ export default function UploadsPage() {
               <div className="space-y-4">
                 {uploadedFiles.map((file) => (
                   <div
-                    key={file.timestamp}
+                    key={file.id}
                     className="flex items-center justify-between p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
                   >
                     <div className="flex items-center space-x-3">
                       <FileText className="w-8 h-8 text-primary" />
                       <div>
                         <p className="font-medium text-sm">
-                          {file.filename.replace(/^\d+-/, '')}
+                          {file.original_name}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {new Date(file.timestamp).toLocaleString()}
+                          {new Date(file.uploaded_at).toLocaleString()} • 
+                          {(file.file_size / 1024 / 1024).toFixed(2)} MB • 
+                          {file.download_count} downloads
                         </p>
                       </div>
                     </div>
                     
                     <div className="flex items-center space-x-2">
-                      <a
-                        href={file.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        onClick={() => handleDownload(file)}
                         className="p-2 hover:bg-background rounded-md transition-colors"
-                        title="Download"
+                        title="Download & track"
                       >
                         <Download className="w-4 h-4" />
-                      </a>
+                      </button>
                       
                       <button
                         onClick={() => shareUrl(file.url)}
@@ -241,7 +277,7 @@ export default function UploadsPage() {
                       
                       <button
                         onClick={() => handleDelete(file)}
-                        disabled={deletingFile === file.filename}
+                        disabled={deletingFile === file.id}
                         className="p-2 hover:bg-destructive/10 rounded-md transition-colors disabled:opacity-50"
                         title="Delete"
                       >
