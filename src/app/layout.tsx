@@ -4,6 +4,7 @@ import StructuredData from "@/components/structured-data";
 import NavigationClean from "@/components/navigation-clean";
 import Footer from "@/components/footer";
 import { ThemeProvider } from "@/components/theme-provider";
+import GTProviderWrapper from "@/components/gt-provider-wrapper";
 import { GoogleTagManager, GoogleTagManagerNoscript } from "@/components/GoogleTagManager";
 import "./globals.css";
 
@@ -70,17 +71,19 @@ export default function RootLayout({
         className={`${inter.variable} ${firaCode.variable} font-sans antialiased`}
       >
         <GoogleTagManagerNoscript />
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-          themes={['light', 'dark', 'code']}
-        >
-          <NavigationClean />
-          {children}
-          <Footer />
-        </ThemeProvider>
+        <GTProviderWrapper>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+            themes={['light', 'dark', 'code']}
+          >
+            <NavigationClean />
+            {children}
+            <Footer />
+          </ThemeProvider>
+        </GTProviderWrapper>
       </body>
     </html>
   );
