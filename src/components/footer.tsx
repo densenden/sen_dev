@@ -7,32 +7,37 @@ import { useThemeTransition } from "@/hooks/use-theme-transition"
 import { Sun, Moon, Code } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
+import { T } from "gt-next"
+import LanguageToggle from "./language-toggle"
 
 const footerLinks = [
   {
     title: "Services",
+    titleId: "footer-services",
     links: [
-      { label: "About", href: "/about" },
-      { label: "Philosophy", href: "/philosophy" },
-      { label: "Services", href: "/services" },
-      { label: "Packages", href: "/packages" },
-      { label: "Projects", href: "/projects" },
+      { label: "About", labelId: "footer-about", href: "/about" },
+      { label: "Philosophy", labelId: "footer-philosophy", href: "/philosophy" },
+      { label: "Services", labelId: "footer-services-link", href: "/services" },
+      { label: "Packages", labelId: "footer-packages", href: "/packages" },
+      { label: "Projects", labelId: "footer-projects", href: "/projects" },
     ]
   },
   {
     title: "Company",
+    titleId: "footer-company",
     links: [
-      { label: "About Denis", href: "/about" },
-      { label: "Contact", href: "/contact" },
-      { label: "Portfolio", href: "/projects" },
+      { label: "About Denis", labelId: "footer-about-denis", href: "/about" },
+      { label: "Contact", labelId: "footer-contact", href: "/contact" },
+      { label: "Portfolio", labelId: "footer-portfolio", href: "/projects" },
     ]
   },
   {
     title: "Legal",
+    titleId: "footer-legal",
     links: [
-      { label: "Imprint", href: "https://www.sen.studio/content/legal/imprint.html" },
-      { label: "Privacy Policy", href: "https://www.sen.studio/content/legal/privacy.html" },
-      { label: "Terms of Service", href: "https://www.sen.studio/content/legal/terms.html" },
+      { label: "Imprint", labelId: "footer-imprint", href: "https://www.sen.studio/content/legal/imprint.html" },
+      { label: "Privacy Policy", labelId: "footer-privacy", href: "https://www.sen.studio/content/legal/privacy.html" },
+      { label: "Terms of Service", labelId: "footer-terms", href: "https://www.sen.studio/content/legal/terms.html" },
     ]
   }
 ]
@@ -74,7 +79,7 @@ export default function Footer() {
               </Link>
               
               <p className="text-sm font-light text-muted-foreground leading-relaxed max-w-sm">
-                Where vision meets velocity. Full-package development for ambitious entrepreneurs.
+                <T id="footer-tagline">Where vision meets velocity. Full-package development for ambitious entrepreneurs.</T>
               </p>
               
               <div className="text-xs font-light text-muted-foreground">
@@ -96,7 +101,9 @@ export default function Footer() {
                   className="space-y-4"
                 >
                   <h3 className="text-sm font-light text-foreground tracking-wide">
-                    {section.title}
+                    {sectionIndex === 0 && <T id="footer-services">Services</T>}
+                    {sectionIndex === 1 && <T id="footer-company">Company</T>}
+                    {sectionIndex === 2 && <T id="footer-legal">Legal</T>}
                   </h3>
                   <ul className="space-y-3">
                     {section.links.map((link, linkIndex) => (
@@ -107,7 +114,22 @@ export default function Footer() {
                           rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                           className="text-xs font-light text-muted-foreground hover:text-primary transition-colors duration-300"
                         >
-                          {link.label}
+                          {/* Services Section */}
+                          {sectionIndex === 0 && linkIndex === 0 && <T id="footer-about">About</T>}
+                          {sectionIndex === 0 && linkIndex === 1 && <T id="footer-philosophy">Philosophy</T>}
+                          {sectionIndex === 0 && linkIndex === 2 && <T id="footer-services-link">Services</T>}
+                          {sectionIndex === 0 && linkIndex === 3 && <T id="footer-packages">Packages</T>}
+                          {sectionIndex === 0 && linkIndex === 4 && <T id="footer-projects">Projects</T>}
+                          
+                          {/* Company Section */}
+                          {sectionIndex === 1 && linkIndex === 0 && <T id="footer-about-denis">About Denis</T>}
+                          {sectionIndex === 1 && linkIndex === 1 && <T id="footer-contact">Contact</T>}
+                          {sectionIndex === 1 && linkIndex === 2 && <T id="footer-portfolio">Portfolio</T>}
+                          
+                          {/* Legal Section */}
+                          {sectionIndex === 2 && linkIndex === 0 && <T id="footer-imprint">Imprint</T>}
+                          {sectionIndex === 2 && linkIndex === 1 && <T id="footer-privacy">Privacy Policy</T>}
+                          {sectionIndex === 2 && linkIndex === 2 && <T id="footer-terms">Terms of Service</T>}
                         </Link>
                       </li>
                     ))}
@@ -128,7 +150,7 @@ export default function Footer() {
         >
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-xs font-light text-muted-foreground">
-              Built with passion in Germany 🇩🇪
+              <T id="footer-germany">Built with passion in Germany 🇩🇪</T>
             </div>
             <div className="flex items-center gap-6">
               <Link
@@ -137,6 +159,15 @@ export default function Footer() {
               >
                 dev@sen.studio
               </Link>
+              <div className="w-px h-4 bg-primary/20"></div>
+              <Link
+                href="tel:+4915566179807"
+                className="text-xs font-light text-muted-foreground hover:text-primary transition-colors duration-300"
+              >
+                +49 15566179807
+              </Link>
+              <div className="w-px h-4 bg-primary/20"></div>
+              <LanguageToggle compact={true} />
               <div className="w-px h-4 bg-primary/20"></div>
               <Button
                 variant="ghost"
@@ -165,7 +196,7 @@ export default function Footer() {
                 href="/contact"
                 className="text-xs font-light text-primary hover:text-accent transition-colors duration-300"
               >
-                Start Your Project
+                <T id="footer-cta">Start Your Project</T>
               </Link>
             </div>
           </div>

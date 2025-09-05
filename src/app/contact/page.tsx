@@ -24,6 +24,7 @@ import { motion } from "framer-motion"
 import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
+import { T } from "gt-next"
 
 const packages = [
   { value: "impulse", label: "Impulse Sprint (€1,500 - €3,000)", duration: "2-3 days" },
@@ -260,19 +261,19 @@ export default function ContactPage() {
             <CheckCircle className="w-10 h-10 text-accent" />
           </div>
           <h1 className="text-4xl font-light mb-6 text-white">
-            {selectedSlot ? 'Appointment Scheduled!' : 'Message Sent!'}
+            {selectedSlot ? <T id="contact-success-appointment">Appointment Scheduled!</T> : <T id="contact-success-message">Message Sent!</T>}
           </h1>
           <p className="text-lg font-light text-white/80 mb-8">
             {selectedSlot 
-              ? `Your consultation is scheduled for ${formatDate(timeSlots.find(s => s.id === selectedSlot)?.date || '')} at ${timeSlots.find(s => s.id === selectedSlot)?.time}. We will send you a calendar invite shortly.`
-              : 'Thank you for reaching out. We will review your project details and get back to you within 24 hours.'
+              ? <T id="contact-success-appointment-desc" variables={{date: formatDate(timeSlots.find(s => s.id === selectedSlot)?.date || ''), time: timeSlots.find(s => s.id === selectedSlot)?.time || ''}}>Your consultation is scheduled for {"{date}"} at {"{time}"}. We will send you a calendar invite shortly.</T>
+              : <T id="contact-success-message-desc">Thank you for reaching out. We will review your project details and get back to you within 24 hours.</T>
             }
           </p>
           <Button 
             className="glass-accent border-line-accent bg-accent/20 text-accent hover:bg-accent/30 font-light rounded-full px-8 border"
             asChild
           >
-            <Link href="/">Return Home</Link>
+            <Link href="/"><T id="contact-return-home">Return Home</T></Link>
           </Button>
         </motion.div>
       </div>
@@ -305,18 +306,17 @@ export default function ContactPage() {
             >
               <Badge className="glass-accent border-line-accent bg-accent/20 text-accent px-6 py-3 text-xs tracking-wider font-light mb-8 border">
                 <MessageCircle className="w-3 h-3 mr-2" />
-                {currentStep === 'contact' ? 'Get In Touch' : 'Schedule Your Call'}
+                {currentStep === 'contact' ? <T id="contact-badge-touch">Get In Touch</T> : <T id="contact-badge-schedule">Schedule Your Call</T>}
               </Badge>
               
               <h1 className="text-6xl md:text-7xl font-light leading-none tracking-wide mb-8 text-white">
-                <span className="text-white">Let's Build </span>
-                <span className="text-primary">Together</span>
+                <T id="contact-title"><span className="text-white">Let's Build </span><span className="text-primary">Together</span></T>
               </h1>
 
               <p className="text-xl font-light text-white/80 leading-relaxed max-w-3xl mx-auto">
                 {currentStep === 'contact' 
-                  ? 'Ready to transform your vision into reality? Tell us about your project and we will find the perfect approach.'
-                  : 'Choose your preferred time for a 30-minute discovery call. We will discuss your project and explore how we can help.'
+                  ? <T id="contact-desc-form">Ready to transform your vision into reality? Tell us about your project and we will find the perfect approach.</T>
+                  : <T id="contact-desc-schedule">Choose your preferred time for a 30-minute discovery call. We will discuss your project and explore how we can help.</T>
                 }
               </p>
             </motion.div>
@@ -336,7 +336,7 @@ export default function ContactPage() {
                     <CardHeader className="pb-8">
                       <CardTitle className="text-2xl font-light text-white flex items-center gap-3">
                         <User className="w-6 h-6 text-primary" />
-                        Project Details
+                        <T id="contact-form-title">Project Details</T>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -346,7 +346,7 @@ export default function ContactPage() {
                         <div className="grid md:grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label htmlFor="name" className="text-sm font-light text-white/70">
-                              Full Name *
+                              <T id="contact-label-name">Full Name *</T>
                             </Label>
                             <Input
                               id="name"
@@ -538,8 +538,8 @@ export default function ContactPage() {
                       </div>
                       <div className="flex items-center gap-3">
                         <Phone className="w-4 h-4 text-primary" />
-                        <Link href="tel:+4915123456789" className="text-sm font-light text-white/80 hover:text-primary transition-colors">
-                          +49 151 2345 6789
+                        <Link href="tel:+4915566179807" className="text-sm font-light text-white/80 hover:text-primary transition-colors">
+                          +49 15566179807
                         </Link>
                       </div>
                       <div className="flex items-center gap-3">

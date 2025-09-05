@@ -17,7 +17,8 @@ import {
   Eye,
   Zap,
   Building2,
-  Sparkles
+  Sparkles,
+  Github
 } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
@@ -40,8 +41,8 @@ const projects = [
     client_name: "Entertainment Tech",
     outcome: "Created engaging community-driven content discovery with 21+ user profiles and seamless tvOS integration",
     link_live: "https://flix.sen.studio",
-    created_at: "2024-01-15T00:00:00Z",
-    updated_at: "2024-01-15T00:00:00Z",
+    created_at: "2024-04-15T00:00:00Z",
+    updated_at: "2024-12-15T00:00:00Z",
     challenge: "Traditional streaming platforms like Netflix and Prime Video lack meaningful social interaction. Users consume content in isolation, missing the shared experience of discovering and discussing shows with friends and family. The rigid, algorithm-driven recommendation systems don't account for social dynamics or community preferences.",
     solution: "Built Senflix as a community-first streaming platform with a gamified interface optimized for tvOS and Apple TV. The platform features personalized user profiles with unique avatars, social recommendation sharing, and community-driven content discovery. Users can see what friends are watching, share recommendations in real-time, and participate in gamified viewing challenges.",
     results: [
@@ -66,8 +67,8 @@ const projects = [
     client_name: "Relationship Tech",
     outcome: "Launching beta in late 2025 with on-device AI processing that respects user privacy completely",
     link_live: "https://synapsee.sen.studio",
-    created_at: "2024-02-10T00:00:00Z",
-    updated_at: "2024-02-10T00:00:00Z",
+    created_at: "2024-05-03T00:00:00Z",
+    updated_at: "2024-12-20T00:00:00Z",
     challenge: "Couples need objective insights into their communication patterns without compromising privacy or sharing intimate data.",
     solution: "Developed on-device AI processing that analyzes interaction metadata locally, providing relationship insights without reading message content.",
     results: [
@@ -90,8 +91,8 @@ const projects = [
     client_name: "Fitness Community",
     outcome: "Built thriving community with 500+ active members, 50+ weekly courses, and 98% satisfaction rate",
     link_live: "https://community.kria-training.de",
-    created_at: "2024-03-05T00:00:00Z",
-    updated_at: "2024-03-05T00:00:00Z",
+    created_at: "2024-07-31T00:00:00Z",
+    updated_at: "2024-12-31T00:00:00Z",
     challenge: "Traditional fitness platforms lack community connection and mindful approach to wellness, leading to poor retention.",
     solution: "Created a community-first platform emphasizing mindful training with smart member connections and diverse program offerings.",
     results: [
@@ -114,8 +115,8 @@ const projects = [
     client_name: "Social Media Innovation",
     outcome: "Revolutionized meme creation with instant WhatsApp integration, eliminating app barriers completely",
     link_live: "https://meme-machine.app",
-    created_at: "2024-04-12T00:00:00Z", 
-    updated_at: "2024-04-12T00:00:00Z",
+    created_at: "2024-08-04T00:00:00Z",
+    updated_at: "2024-12-04T00:00:00Z",
     challenge: "Meme creation requires multiple apps and complex workflows, creating friction for viral content sharing.",
     solution: "Built WhatsApp-native AI meme generator that creates instant memes from text messages without any app downloads.",
     results: [
@@ -138,8 +139,8 @@ const projects = [
     client_name: "Beauty Industry",
     outcome: "Established premium mobile beauty service serving executive women across Frankfurt's business districts",
     link_live: "https://beautymachine.sen.studio",
-    created_at: "2024-03-20T00:00:00Z",
-    updated_at: "2024-03-20T00:00:00Z",
+    created_at: "2024-05-27T00:00:00Z",
+    updated_at: "2024-12-27T00:00:00Z",
     challenge: "Executive women need professional makeup services but lack time to visit salons during busy schedules.",
     solution: "Created premium mobile makeup service delivering high-end beauty services directly to offices, hotels, and homes.",
     results: [
@@ -162,8 +163,8 @@ const projects = [
     client_name: "Independent Entrepreneurs",
     outcome: "Empowering entrepreneurs with tools for digital sovereignty and platform independence",
     link_live: "https://forkit.sen.studio",
-    created_at: "2024-05-20T00:00:00Z",
-    updated_at: "2024-05-20T00:00:00Z",
+    created_at: "2024-05-10T00:00:00Z",
+    updated_at: "2024-12-10T00:00:00Z",
     challenge: "Entrepreneurs are dependent on large tech platforms that can change rules, pricing, or access without warning.",
     solution: "Built comprehensive platform providing tools and guidance for digital independence through self-hosting and decentralized solutions.",
     results: [
@@ -171,6 +172,136 @@ const projects = [
       "Self-hosting solution guidance",
       "Platform independence strategies",
       "Open source tool integration"
+    ]
+  },
+  {
+    id: "7",
+    title: "SenCommerce",
+    slug: "sencommerce",
+    summary: "E-commerce platform for digital and physical products with focus on art, fashion, and personalized meditations",
+    description: "Modern e-commerce solution built on Medusa v2 that seamlessly handles both digital downloads and physical products, with specialized features for creative entrepreneurs selling art, fashion, and wellness content.",
+    tech_stack: ["Medusa v2", "Next.js", "React", "Tailwind CSS", "Supabase", "Stripe Checkout", "Printful API"],
+    screenshots: ["/projects/sencommerce.jpg"],
+    video_demo: null,
+    tags: ["E-Commerce", "Marketplace", "Digital Products", "Web App"],
+    client_name: "Creative Commerce",
+    outcome: "Launched multi-vendor marketplace supporting artists and creators with seamless digital/physical product fulfillment",
+    link_live: "https://shop.sen.studio",
+    link_github: "https://github.com/densenden/sencommerce-storefront",
+    created_at: "2024-08-13T00:00:00Z",
+    updated_at: "2024-12-13T00:00:00Z",
+    challenge: "Creative entrepreneurs struggle with platforms that either focus solely on digital or physical products, lacking integrated solutions for mixed inventory with personalized experiences.",
+    solution: "Developed unified commerce platform on Medusa v2 supporting both digital downloads and print-on-demand products with integrated Printful API for automated fulfillment.",
+    results: [
+      "Seamless digital and physical product management",
+      "Automated print-on-demand fulfillment via Printful",
+      "Integrated Stripe Checkout for secure payments",
+      "Personalized meditation content delivery system",
+      "Support for art prints and fashion items"
+    ]
+  },
+  {
+    id: "8",
+    title: "SenScript",
+    slug: "senscript",
+    summary: "Cheatcards that give you answers the moment your teacher asks - visual learning for instant recall",
+    description: "Revolutionary cheatcard system that transforms entire subjects into memorable visual cards. Get answers instantly when your teacher asks, ace your exams with photographic recall, and turn complex topics into simple mental snapshots.",
+    tech_stack: ["Next.js", "React", "Tailwind CSS", "MDX Content-System", "Supabase"],
+    screenshots: ["/projects/senscript.png"],
+    video_demo: null,
+    tags: ["Education", "Learning", "Knowledge Management", "Web App"],
+    client_name: "Education Technology",
+    outcome: "Instant answers when your teacher asks - cheatcards that transform complex topics into memorable visual references",
+    link_live: "https://getscript.sen.studio",
+    link_github: "https://github.com/densenden/sen-script",
+    created_at: "2024-08-26T00:00:00Z",
+    updated_at: "2024-12-26T00:00:00Z",
+    challenge: "Students struggle to recall information in the moment when teachers ask questions or during exams, leading to anxiety and poor performance despite knowing the material.",
+    solution: "Created visual cheatcard system that gives you answers in the moment your teacher asks - condensing entire topics into memorable, scannable cards you can mentally recall instantly.",
+    results: [
+      "Instant recall during classroom questions and exams",
+      "Visual cheatcards that stick in memory",
+      "MDX-powered content for interactive learning",
+      "Mobile-optimized for quick review before class",
+      "Categorized by subject for rapid access"
+    ]
+  },
+  {
+    id: "9",
+    title: "NorthPatrol",
+    slug: "northpatrol",
+    summary: "Security patrol management app with QR code checkpoints for professional guard services",
+    description: "Digital transformation of security patrol operations through QR-based checkpoint system, real-time reporting, and comprehensive audit trails for security companies.",
+    tech_stack: ["React", "Supabase", "Clerk", "Resend", "QR Code Generator", "Tailwind CSS"],
+    screenshots: ["/projects/nortpatrol.png"],
+    video_demo: null,
+    tags: ["Security", "Business", "Mobile App", "SaaS"],
+    client_name: "Security Services",
+    outcome: "Digitized patrol operations for 50+ security guards, reducing reporting time by 75% and improving compliance",
+    link_live: "https://northpatrol.sen.studio",
+    link_github: "https://github.com/densenden/northpatrol",
+    created_at: "2024-09-05T00:00:00Z",
+    updated_at: "2024-12-05T00:00:00Z",
+    challenge: "Security companies rely on paper-based patrol logs that are inefficient, prone to fraud, and lack real-time visibility into guard activities.",
+    solution: "Created QR-based checkpoint system with mobile app for guards to scan locations, log incidents, and provide real-time updates to management dashboard.",
+    results: [
+      "75% reduction in patrol reporting time",
+      "Real-time location verification via QR codes",
+      "Comprehensive audit trail for compliance",
+      "Instant incident reporting with photos",
+      "Management dashboard with live patrol tracking"
+    ]
+  },
+  {
+    id: "10",
+    title: "SenRecorder",
+    slug: "senrecorder",
+    summary: "Audio recording platform with emotion tagging for AI training data and voice UX research",
+    description: "Specialized audio collection tool that captures voice recordings with emotional context metadata, designed for building emotion-aware AI models and improving voice user experiences.",
+    tech_stack: ["React", "Tailwind CSS", "Clerk", "Supabase Buckets", "Resend", "Web Audio API"],
+    screenshots: ["/projects/senrecorder.png"],
+    video_demo: null,
+    tags: ["AI", "Audio", "Research", "Web App"],
+    client_name: "Voice AI Research",
+    outcome: "Collected 10,000+ emotion-tagged audio samples for training emotion-aware voice AI models",
+    link_live: "https://recorder.sen.studio",
+    link_github: "https://github.com/densenden/emo-recorder",
+    created_at: "2024-09-05T00:00:00Z",
+    updated_at: "2024-12-05T00:00:00Z",
+    challenge: "AI voice models lack emotional intelligence due to training data that doesn't capture emotional context alongside audio recordings.",
+    solution: "Developed web-based recording platform with integrated emotion tagging, allowing users to label recordings with emotional states during capture.",
+    results: [
+      "10,000+ emotion-tagged audio samples collected",
+      "7 emotion categories with confidence scoring",
+      "High-quality audio capture via Web Audio API",
+      "Automated transcription and metadata extraction",
+      "GDPR-compliant data handling and storage"
+    ]
+  },
+  {
+    id: "11",
+    title: "Paradieshof",
+    slug: "paradieshof",
+    summary: "Interactive architectural visualization platform for Frankfurt real estate development",
+    description: "Immersive digital experience showcasing the Paradieshof development in Frankfurt Alt-Sachsenhausen, featuring interactive floor plans, virtual tours, and neighborhood integration visualizations.",
+    tech_stack: ["React", "Node.js", "Supabase", "Clerk", "Tailwind CSS", "Three.js", "Mapbox"],
+    screenshots: ["/projects/paradieshof.png"],
+    video_demo: "/projects/paradieshof.mp4",
+    tags: ["Real Estate", "Architecture", "3D Visualization", "Web App"],
+    client_name: "Real Estate Development",
+    outcome: "Generated 200+ qualified leads through immersive digital property showcase with 85% engagement rate",
+    link_live: "https://paradieshof.sen.studio",
+    link_github: "https://github.com/densenden/paradieshof",
+    created_at: "2024-08-18T00:00:00Z",
+    updated_at: "2024-12-18T00:00:00Z",
+    challenge: "Traditional real estate presentations fail to convey the vision and lifestyle of new developments, especially for properties still under construction.",
+    solution: "Built interactive platform with 3D visualizations, neighborhood integration maps, and annotation layers that bring architectural plans to life.",
+    results: [
+      "200+ qualified leads generated",
+      "85% user engagement rate",
+      "Interactive 3D floor plan navigation",
+      "Neighborhood amenity mapping integration",
+      "Virtual tour functionality with annotations"
     ]
   }
 ]
@@ -198,7 +329,19 @@ const projectIcons = {
   "Mobile Service": Smartphone,
   "Luxury": Sparkles,
   "Community": Users,
-  "Wellness": TrendingUp
+  "Wellness": TrendingUp,
+  "E-Commerce": Building2,
+  "Marketplace": Building2,
+  "Digital Products": Globe,
+  "Education": Brain,
+  "Learning": Brain,
+  "Security": Eye,
+  "SaaS": Globe,
+  "Audio": Brain,
+  "Research": Brain,
+  "Real Estate": Building2,
+  "Architecture": Building2,
+  "3D Visualization": Eye
 }
 
 interface ProjectPageProps {
@@ -216,7 +359,8 @@ export default function ProjectPage({ params }: ProjectPageProps) {
 
   const primaryTag = project.tags?.[0] || "Web App"
   const IconComponent = projectIcons[primaryTag] || Globe
-  const heroImage = getRandomImage()
+  // Use project's screenshot as hero background, fallback to random if not available
+  const heroImage = project.screenshots?.[0] || getRandomImage()
 
   return (
     <div className="min-h-screen">
@@ -225,13 +369,15 @@ export default function ProjectPage({ params }: ProjectPageProps) {
         <div className="absolute inset-0 z-0">
           <Image
             src={heroImage}
-            alt="Project hero background"
+            alt={`${project.title} background`}
             fill
-            className="object-cover opacity-80 saturate-75"
+            className="object-cover opacity-40 blur-sm scale-110"
             priority
           />
+          {/* Enhanced gradient overlay for better text readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
           {/* Color overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-accent/20 to-secondary/30 mix-blend-multiply" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/20 mix-blend-overlay" />
         </div>
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32 relative z-10">
@@ -317,6 +463,18 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                         <Link href={project.link_live} target="_blank">
                           <ExternalLink className="w-4 h-4 mr-2" />
                           View Live
+                        </Link>
+                      </Button>
+                    )}
+                    {project.link_github && (
+                      <Button 
+                        size="sm"
+                        className="glass-secondary border-line-secondary bg-white/10 hover:bg-white/20 text-white border px-6 sm:px-8 py-3 sm:py-4 font-light rounded-full text-sm sm:text-base"
+                        asChild
+                      >
+                        <Link href={project.link_github} target="_blank">
+                          <Github className="w-4 h-4 mr-2" />
+                          GitHub
                         </Link>
                       </Button>
                     )}

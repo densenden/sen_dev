@@ -17,7 +17,8 @@ import {
   Zap,
   Sparkles,
   Building2,
-  CheckCircle
+  CheckCircle,
+  Mic
 } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
@@ -28,6 +29,29 @@ import { getUniqueRandomImages } from "@/lib/images-client"
 
 // Fallback project data for when Supabase is unavailable
 const fallbackProjects = [
+  {
+    id: "11",
+    title: "Paradieshof",
+    slug: "paradieshof",
+    summary: "Interactive architectural visualization platform for Frankfurt real estate development",
+    description: "Immersive digital experience showcasing the Paradieshof development in Frankfurt Alt-Sachsenhausen, featuring interactive floor plans, virtual tours, and neighborhood integration visualizations.",
+    tech_stack: ["React", "Node.js", "Supabase", "Clerk", "Tailwind CSS", "Three.js", "Mapbox"],
+    screenshots: ["/projects/paradieshof.png"],
+    video_demo: "/projects/paradieshof.mp4",
+    tags: ["Real Estate", "Architecture", "3D Visualization", "Web App"],
+    client_name: "Real Estate Development",
+    outcome: "Generated 200+ qualified leads through immersive digital property showcase with 85% engagement rate",
+    link_live: "https://paradieshof.sen.studio",
+    link_github: "https://github.com/densenden/paradieshof",
+    created_at: "2024-08-18T00:00:00Z",
+    updated_at: "2024-12-18T00:00:00Z",
+    icon: Building2,
+    logo: "PH",
+    logoType: "text",
+    headline: "Paradieshof - Frankfurt Real Estate",
+    subline: "Interactive Architecture",
+    features: ["200+ Leads", "3D Tours", "85% Engagement"]
+  },
   {
     id: "1",
     title: "Senflix",
@@ -41,8 +65,8 @@ const fallbackProjects = [
     client_name: "Entertainment Tech", 
     outcome: "Created engaging community-driven content discovery with 21+ user profiles and seamless tvOS integration",
     link_live: "https://flix.sen.studio",
-    created_at: "2024-01-15T00:00:00Z",
-    updated_at: "2024-01-15T00:00:00Z",
+    created_at: "2024-04-15T00:00:00Z",
+    updated_at: "2024-12-15T00:00:00Z",
     icon: Play,
     logo: "/logos/senflix.svg",
     logoType: "svg",
@@ -63,8 +87,8 @@ const fallbackProjects = [
     client_name: "Relationship Tech",
     outcome: "Launching beta in late 2025 with on-device AI processing that respects user privacy completely",
     link_live: "https://synapsee.sen.studio",
-    created_at: "2024-02-10T00:00:00Z",
-    updated_at: "2024-02-10T00:00:00Z",
+    created_at: "2024-05-03T00:00:00Z",
+    updated_at: "2024-12-20T00:00:00Z",
     icon: Brain,
     logo: "/logos/synapsee.svg",
     logoType: "svg",
@@ -85,8 +109,8 @@ const fallbackProjects = [
     client_name: "Fitness Community",
     outcome: "Built thriving community with 500+ active members, 50+ weekly courses, and 98% satisfaction rate",
     link_live: "https://community.kria-training.de",
-    created_at: "2024-03-05T00:00:00Z",
-    updated_at: "2024-03-05T00:00:00Z",
+    created_at: "2024-07-31T00:00:00Z",
+    updated_at: "2024-12-31T00:00:00Z",
     icon: TrendingUp,
     logo: "/logos/KRIA.svg",
     logoType: "svg",
@@ -107,8 +131,8 @@ const fallbackProjects = [
     client_name: "Social Media Innovation",
     outcome: "Revolutionized meme creation with instant WhatsApp integration, eliminating app barriers completely",
     link_live: "https://meme-machine.app",
-    created_at: "2024-04-12T00:00:00Z", 
-    updated_at: "2024-04-12T00:00:00Z",
+    created_at: "2024-08-04T00:00:00Z",
+    updated_at: "2024-12-04T00:00:00Z",
     icon: Brain,
     logo: "/logos/mm_dark.svg",
     logoType: "svg",
@@ -129,8 +153,8 @@ const fallbackProjects = [
     client_name: "Beauty Industry",
     outcome: "Established premium mobile beauty service serving executive women across Frankfurt's business districts",
     link_live: "https://beautymachine.sen.studio",
-    created_at: "2024-03-20T00:00:00Z",
-    updated_at: "2024-03-20T00:00:00Z",
+    created_at: "2024-05-27T00:00:00Z",
+    updated_at: "2024-12-27T00:00:00Z",
     icon: Sparkles,
     logo: "BM",
     logoType: "text",
@@ -151,14 +175,106 @@ const fallbackProjects = [
     client_name: "Independent Entrepreneurs",
     outcome: "Empowering entrepreneurs with tools for digital sovereignty and platform independence",
     link_live: "https://forkit.sen.studio",
-    created_at: "2024-05-20T00:00:00Z",
-    updated_at: "2024-05-20T00:00:00Z",
+    created_at: "2024-05-10T00:00:00Z",
+    updated_at: "2024-12-10T00:00:00Z",
     icon: Globe,
     logo: "/logos/forkit_dark_logo.svg",
     logoType: "svg",
     headline: "Fork:it - Digital Independence",
     subline: "Platform Freedom",
     features: ["Self-Hosted", "Open Source", "Privacy First"]
+  },
+  {
+    id: "7",
+    title: "SenCommerce",
+    slug: "sencommerce",
+    summary: "E-commerce platform for digital and physical products with focus on art, fashion, and personalized meditations",
+    description: "Modern e-commerce solution built on Medusa v2 that seamlessly handles both digital downloads and physical products, with specialized features for creative entrepreneurs selling art, fashion, and wellness content.",
+    tech_stack: ["Medusa v2", "Next.js", "React", "Tailwind CSS", "Supabase", "Stripe Checkout", "Printful API"],
+    screenshots: ["/projects/sencommerce.jpg"],
+    video_demo: null,
+    tags: ["E-Commerce", "Marketplace", "Digital Products", "Web App"],
+    client_name: "Creative Commerce",
+    outcome: "Launched multi-vendor marketplace supporting artists and creators with seamless digital/physical product fulfillment",
+    link_live: "https://shop.sen.studio",
+    link_github: "https://github.com/densenden/sencommerce-storefront",
+    created_at: "2024-08-13T00:00:00Z",
+    updated_at: "2024-12-13T00:00:00Z",
+    icon: Building2,
+    logo: "SC",
+    logoType: "text",
+    headline: "SenCommerce - Creative Marketplace",
+    subline: "Digital & Physical Products",
+    features: ["Medusa v2", "Print-on-Demand", "Multi-vendor"]
+  },
+  {
+    id: "8",
+    title: "SenScript",
+    slug: "senscript",
+    summary: "Cheatcards that give you answers the moment your teacher asks - visual learning for instant recall",
+    description: "Revolutionary cheatcard system that transforms entire subjects into memorable visual cards. Get answers instantly when your teacher asks, ace your exams with photographic recall, and turn complex topics into simple mental snapshots.",
+    tech_stack: ["Next.js", "React", "Tailwind CSS", "MDX Content-System", "Supabase"],
+    screenshots: ["/projects/senscript.png"],
+    video_demo: null,
+    tags: ["Education", "Learning", "Knowledge Management", "Web App"],
+    client_name: "Education Technology",
+    outcome: "Instant answers when your teacher asks - cheatcards that transform complex topics into memorable visual references",
+    link_live: "https://getscript.sen.studio",
+    link_github: "https://github.com/densenden/sen-script",
+    created_at: "2024-08-26T00:00:00Z",
+    updated_at: "2024-12-26T00:00:00Z",
+    icon: Brain,
+    logo: "mic",
+    logoType: "icon",
+    headline: "SenScript - Instant Answers",
+    subline: "Cheatcards That Stick",
+    features: ["Instant Recall", "Visual Cards", "Ace Your Exams"]
+  },
+  {
+    id: "9",
+    title: "NorthPatrol",
+    slug: "northpatrol",
+    summary: "Security patrol management app with QR code checkpoints for professional guard services",
+    description: "Digital transformation of security patrol operations through QR-based checkpoint system, real-time reporting, and comprehensive audit trails for security companies.",
+    tech_stack: ["React", "Supabase", "Clerk", "Resend", "QR Code Generator", "Tailwind CSS"],
+    screenshots: ["/projects/nortpatrol.png"],
+    video_demo: null,
+    tags: ["Security", "Business", "Mobile App", "SaaS"],
+    client_name: "Security Services",
+    outcome: "Digitized patrol operations for 50+ security guards, reducing reporting time by 75% and improving compliance",
+    link_live: "https://northpatrol.sen.studio",
+    link_github: "https://github.com/densenden/northpatrol",
+    created_at: "2024-09-05T00:00:00Z",
+    updated_at: "2024-12-05T00:00:00Z",
+    icon: Eye,
+    logo: "/logos/logo_north.svg",
+    logoType: "svg",
+    headline: "NorthPatrol - Security Management",
+    subline: "QR Checkpoint System",
+    features: ["75% Faster", "50+ Guards", "Live Tracking"]
+  },
+  {
+    id: "10",
+    title: "SenRecorder",
+    slug: "senrecorder",
+    summary: "Audio recording platform with emotion tagging for AI training data and voice UX research",
+    description: "Specialized audio collection tool that captures voice recordings with emotional context metadata, designed for building emotion-aware AI models and improving voice user experiences.",
+    tech_stack: ["React", "Tailwind CSS", "Clerk", "Supabase Buckets", "Resend", "Web Audio API"],
+    screenshots: ["/projects/senrecorder.png"],
+    video_demo: null,
+    tags: ["AI", "Audio", "Research", "Web App"],
+    client_name: "Voice AI Research",
+    outcome: "Collected 10,000+ emotion-tagged audio samples for training emotion-aware voice AI models",
+    link_live: "https://recorder.sen.studio",
+    link_github: "https://github.com/densenden/emo-recorder",
+    created_at: "2024-09-05T00:00:00Z",
+    updated_at: "2024-12-05T00:00:00Z",
+    icon: Brain,
+    logo: "mic",
+    logoType: "icon",
+    headline: "SenRecorder - Voice AI Data",
+    subline: "Emotion-Tagged Audio",
+    features: ["10K+ Samples", "7 Emotions", "GDPR Compliant"]
   }
 ]
 
@@ -174,7 +290,22 @@ const projectIcons = {
   "Knowledge Management": Eye,
   "Collaboration": Users,
   "Beauty": Sparkles,
-  "Business": Building2
+  "Business": Building2,
+  "E-Commerce": Building2,
+  "Marketplace": Building2,
+  "Digital Products": Globe,
+  "Education": Brain,
+  "Learning": Brain,
+  "Security": Eye,
+  "SaaS": Globe,
+  "Audio": Brain,
+  "Research": Brain,
+  "Real Estate": Building2,
+  "Architecture": Building2,
+  "3D Visualization": Eye,
+  "Digital Independence": Globe,
+  "Privacy": Eye,
+  "Self-Hosting": Code
 }
 
 export default function ProjectsPage() {
@@ -353,6 +484,14 @@ export default function ProjectsPage() {
                               className="max-h-8 w-auto filter brightness-0 dark:invert"
                               style={{ maxHeight: '32px' }}
                             />
+                          ) : project.logoType === "icon" ? (
+                            <div className="w-12 h-12 rounded-2xl glass-accent bg-accent/10 border border-accent/20 flex items-center justify-center">
+                              {project.logo === "mic" ? (
+                                <Mic className="w-6 h-6 text-accent" />
+                              ) : (
+                                <span className="text-sm font-medium text-accent">{project.logo}</span>
+                              )}
+                            </div>
                           ) : (
                             <div className="w-12 h-12 rounded-2xl glass-accent bg-accent/10 border border-accent/20 flex items-center justify-center">
                               <span className="text-sm font-medium text-accent">{project.logo}</span>

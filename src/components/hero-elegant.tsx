@@ -9,6 +9,7 @@ import Link from "next/link"
 import { getRandomImage } from "@/lib/images-client"
 import { useState, useEffect } from "react"
 import ThemeToggleHero from "./theme-toggle-hero"
+import { T } from "gt-next"
 
 export default function HeroElegant() {
   const [randomImage, setRandomImage] = useState("/random/hero-1.jpg")
@@ -68,7 +69,7 @@ export default function HeroElegant() {
             >
               <Badge className="glass-accent border-line-accent bg-accent/20 text-accent px-6 py-3 text-xs tracking-wider font-light border">
                 <Eye className="w-3 h-3 mr-2" />
-                Where Vision Meets Velocity
+                <T id="hero-badge">Where Vision Meets Velocity</T>
               </Badge>
             </motion.div>
 
@@ -86,7 +87,7 @@ export default function HeroElegant() {
                   animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{ duration: 1.2, delay: 0.8 }}
                 >
-                  Fast-track
+                  <T id="hero-title-1">Fast-track</T>
                 </motion.span>
                 <motion.span 
                   className="block text-primary"
@@ -105,13 +106,13 @@ export default function HeroElegant() {
                 className="max-w-3xl mx-auto space-y-6"
               >
                 <p className="text-2xl font-light text-white/90 leading-relaxed">
-                  Turn your vision into reality.
+                  <T id="hero-subtitle-1">Turn your vision into reality.</T>
                 </p>
                 <p className="text-xl font-light text-white/80">
-                  <span className="text-accent">Full-package delivery</span> from idea to launch.
+                  <T id="hero-subtitle-2"><span className="text-accent">Full-package delivery</span> from idea to launch.</T>
                 </p>
                 <p className="text-lg font-light text-white/70">
-                  No agencies. No translations. Just pure execution.
+                  <T id="hero-subtitle-3">No agencies. No translations. Just pure execution.</T>
                 </p>
               </motion.div>
             </motion.div>
@@ -126,11 +127,10 @@ export default function HeroElegant() {
               <div className="text-center space-y-8">
                 <div className="space-y-3">
                   <h3 className="text-2xl font-light text-white/90">
-                    Choose Your Experience
+                    <T id="hero-theme-title">Choose Your Experience</T>
                   </h3>
                   <p className="text-lg text-white/70 max-w-2xl mx-auto">
-                    Switch between <span className="text-yellow-400">Light</span>, <span className="text-purple-400">Dark</span>, and <span className="text-orange-400">Code</span> modes. 
-                    Each theme offers a unique perspective on the same powerful content.
+                    <T id="hero-theme-desc">Switch between <span className="text-yellow-400">Light</span>, <span className="text-purple-400">Dark</span>, and <span className="text-orange-400">Code</span> modes. Each theme offers a unique perspective on the same powerful content.</T>
                   </p>
                 </div>
                 
@@ -147,8 +147,7 @@ export default function HeroElegant() {
             className="mb-16 mt-24 max-w-4xl mx-auto"
           >
             <blockquote className="text-2xl md:text-3xl font-light italic text-white/95 leading-relaxed text-center">
-              "Speed beats perfection. Execution trumps planning. 
-              Your MVP doesn't need to be flawless—it needs to be <span className="text-accent font-normal">fast</span>."
+              <T id="hero-quote">"Speed beats perfection. Execution trumps planning. Your MVP doesn't need to be flawless—it needs to be <span className="text-accent font-normal">fast</span>."</T>
             </blockquote>
           </motion.div>
 
@@ -165,7 +164,7 @@ export default function HeroElegant() {
               asChild
             >
               <Link href="/packages">
-                Explore Packages
+                <T id="hero-cta-packages">Explore Packages</T>
                 <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
               </Link>
             </Button>
@@ -176,7 +175,7 @@ export default function HeroElegant() {
               className="glass-primary border-line-primary text-primary hover:bg-primary/5 px-12 py-6 text-lg font-light rounded-full border transition-all duration-300"
               asChild
             >
-              <Link href="/philosophy">View Philosophy</Link>
+              <Link href="/philosophy"><T id="hero-cta-philosophy">View Philosophy</T></Link>
             </Button>
           </motion.div>
 
@@ -189,7 +188,7 @@ export default function HeroElegant() {
           >
             <div className="w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-8" />
             <p className="text-xs uppercase tracking-widest text-muted-foreground font-light">
-              Trusted by Visionaries
+              <T id="hero-social-proof">Trusted by Visionaries</T>
             </p>
             <div className="flex justify-center items-center gap-16 text-sm font-light">
               <span className="text-primary hover:text-accent transition-colors duration-300 cursor-pointer">Synapsee</span>

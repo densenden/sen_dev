@@ -5,14 +5,15 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import Image from "next/image"
+import { T } from "gt-next"
 
 const navItems = [
-  { label: "About", href: "/about" },
-  { label: "Philosophy", href: "/philosophy" },
-  { label: "Services", href: "/services" },
-  { label: "Packages", href: "/packages" },
-  { label: "Projects", href: "/projects" },
-  { label: "Contact", href: "/contact" }
+  { label: "About", href: "/about", labelId: "nav-about" },
+  { label: "Philosophy", href: "/philosophy", labelId: "nav-philosophy" },
+  { label: "Services", href: "/services", labelId: "nav-services" },
+  { label: "Packages", href: "/packages", labelId: "nav-packages" },
+  { label: "Projects", href: "/projects", labelId: "nav-projects" },
+  { label: "Contact", href: "/contact", labelId: "nav-contact" }
 ]
 
 export default function NavigationClean() {
@@ -71,7 +72,12 @@ export default function NavigationClean() {
                   href={item.href}
                   className="relative group font-light text-sm tracking-wide text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white transition-colors duration-300"
                 >
-                  {item.label}
+                  {item.labelId === 'nav-about' && <T id="nav-about">About</T>}
+                  {item.labelId === 'nav-philosophy' && <T id="nav-philosophy">Philosophy</T>}
+                  {item.labelId === 'nav-services' && <T id="nav-services">Services</T>}
+                  {item.labelId === 'nav-packages' && <T id="nav-packages">Packages</T>}
+                  {item.labelId === 'nav-projects' && <T id="nav-projects">Projects</T>}
+                  {item.labelId === 'nav-contact' && <T id="nav-contact">Contact</T>}
                   <motion.div
                     className="absolute -bottom-2 left-0 right-0 h-px bg-gradient-to-r from-primary via-accent to-secondary origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
                     layoutId="underline"
@@ -92,7 +98,7 @@ export default function NavigationClean() {
               className="glass-accent border-line-accent text-accent-foreground hover:bg-accent/20 font-light text-sm px-6 py-2 rounded-full border"
               asChild
             >
-              <Link href="/contact">Start Project</Link>
+              <Link href="/contact"><T id="nav-cta">Start Project</T></Link>
             </Button>
           </motion.div>
 
