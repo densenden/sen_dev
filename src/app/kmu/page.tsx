@@ -40,6 +40,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { getRandomCampaignImage, getShuffledCampaignImages } from "@/lib/campaign-images"
+import { getProjects } from "@/lib/data"
 
 const packages = [
   { 
@@ -129,30 +130,7 @@ const packages = [
   }
 ]
 
-// Project showcase data - random 3 projects from existing
-const showcaseProjects = [
-  {
-    title: "SenCommerce",
-    description: "E-Commerce-Plattform für kreative Unternehmer - von digitalen Downloads bis Print-on-Demand",
-    image: "/projects/sencommerce.jpg",
-    tech: ["Medusa v2", "Next.js", "Stripe", "Printful API"],
-    result: "Nahtlose Verwaltung digitaler & physischer Produkte"
-  },
-  {
-    title: "NorthPatrol", 
-    description: "Digitalisierung der Sicherheitsrundgänge - QR-Code-System reduziert Berichtszeit um 75%",
-    image: "/projects/nortpatrol.png",
-    tech: ["React", "Supabase", "QR-Codes", "Real-time Tracking"],
-    result: "50+ Sicherheitskräfte, 75% weniger Berichtszeit"
-  },
-  {
-    title: "Paradieshof",
-    description: "Interaktive Immobilienpräsentation mit 3D-Visualisierungen für Frankfurt-Projekt",
-    image: "/projects/paradieshof.png", 
-    tech: ["React", "Three.js", "Mapbox", "3D-Visualisierung"],
-    result: "200+ qualifizierte Leads, 85% Engagement-Rate"
-  }
-]
+// Project showcase data loaded from database
 
 const projectIcons = {
   "E-Commerce": Building2,
@@ -178,12 +156,65 @@ export default function KMULandingPage() {
   const [heroImage, setHeroImage] = useState<string>("")
   const [ctaImage, setCtaImage] = useState<string>("")
   const [expandedExamples, setExpandedExamples] = useState<{[key: string]: boolean}>({})
+  const [showcaseProjects, setShowcaseProjects] = useState([
+    {
+      title: "SenCommerce",
+      description: "E-Commerce-Plattform für kreative Unternehmer - von digitalen Downloads bis Print-on-Demand",
+      image: "/projects/sencommerce.jpg",
+      tech: ["Medusa v2", "Next.js", "Stripe", "Printful API"],
+      result: "Nahtlose Verwaltung digitaler & physischer Produkte"
+    },
+    {
+      title: "NorthPatrol", 
+      description: "Digitalisierung der Sicherheitsrundgänge - QR-Code-System reduziert Berichtszeit um 75%",
+      image: "/projects/nortpatrol.png",
+      tech: ["React", "Supabase", "QR-Codes", "Real-time Tracking"],
+      result: "50+ Sicherheitskräfte, 75% weniger Berichtszeit"
+    },
+    {
+      title: "Paradieshof",
+      description: "Interaktive Immobilienpräsentation mit 3D-Visualisierungen für Frankfurt-Projekt",
+      image: "/projects/paradieshof.png", 
+      tech: ["React", "Three.js", "Mapbox", "3D-Visualisierung"],
+      result: "200+ qualifizierte Leads, 85% Engagement-Rate"
+    }
+  ])
 
   // Set images on component mount
   useEffect(() => {
     const images = getShuffledCampaignImages()
     setHeroImage(images[0])
     setCtaImage(images[1])
+  }, [])
+
+  // Load showcase projects from database
+  useEffect(() => {
+    async function loadShowcaseProjects() {
+      try {
+        const dbProjects = await getProjects()
+        if (dbProjects && dbProjects.length > 0) {
+          // Convert database projects to KMU format
+          const kmuProjects = dbProjects
+            .filter(project => project.screenshots && project.screenshots.length > 0)
+            .slice(0, 3)
+            .map(project => ({
+              title: project.title,
+              description: project.summary,
+              image: project.screenshots[0],
+              tech: project.tech_stack.slice(0, 4), // First 4 technologies
+              result: project.outcome
+            }))
+          
+          if (kmuProjects.length >= 3) {
+            setShowcaseProjects(kmuProjects)
+          }
+        }
+      } catch (error) {
+        console.error('Error loading showcase projects:', error)
+      }
+    }
+    
+    loadShowcaseProjects()
   }, [])
 
   const toggleExamples = (packageValue: string) => {

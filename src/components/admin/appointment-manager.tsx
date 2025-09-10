@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
-import { Calendar, momentLocalizer, View } from 'react-big-calendar'
+import { Calendar, dateFnsLocalizer, View } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay } from 'date-fns'
 import { enUS } from 'date-fns/locale'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,7 +22,7 @@ const locales = {
   'en-US': enUS,
 }
 
-const localizer = momentLocalizer({
+const localizer = dateFnsLocalizer({
   format,
   parse,
   startOfWeek: () => startOfWeek(new Date(), { locale: enUS }),
@@ -329,7 +329,7 @@ export default function AppointmentManager() {
                     
                     <div className="space-y-2">
                       <Label className="text-muted-foreground">Status</Label>
-                      <Badge className={`${statusColors[selectedAppointment.status]} text-white`}>
+                      <Badge variant="outline" className={`${statusColors[selectedAppointment.status]} text-white border-0`}>
                         {selectedAppointment.status}
                       </Badge>
                     </div>
@@ -364,7 +364,7 @@ export default function AppointmentManager() {
                     
                     <div className="space-y-2">
                       <Label className="text-muted-foreground">Package</Label>
-                      <Badge variant="outline">{selectedAppointment.package_name}</Badge>
+                      <Badge variant="secondary">{selectedAppointment.package_name}</Badge>
                     </div>
                   </div>
                   

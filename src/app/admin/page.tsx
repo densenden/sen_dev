@@ -104,7 +104,7 @@ export default function AdminDashboard() {
                         <p className="font-semibold">Senflix Platform</p>
                         <p className="text-sm text-muted-foreground">Entertainment • 2 days ago</p>
                       </div>
-                      <Badge variant="secondary">Featured</Badge>
+                      <Badge variant="outline">Featured</Badge>
                     </div>
                     
                     <div className="flex items-center space-x-4">

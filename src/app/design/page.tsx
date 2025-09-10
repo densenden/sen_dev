@@ -38,6 +38,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { getShuffledCampaignImages } from "@/lib/campaign-images"
+import { useProjects } from "@/hooks/use-data"
 
 // Design-fokussierte Pakete basierend auf KMU PRD
 const packages = [
@@ -111,30 +112,7 @@ const packages = [
   }
 ]
 
-// Erfolgreiche Design-Projekte
-const showcaseProjects = [
-  {
-    title: "Pepe Design System",
-    description: "Komplettes Design System & Implementation für skalierbare Entwicklung",
-    image: "/projects/pepe.webp",
-    tech: ["Design System", "React Components", "Storybook"],
-    result: "60% schnellere Development, einheitliche Brand-Konsistenz"
-  },
-  {
-    title: "Bavaria Finance",
-    description: "Conversion-Optimierung für Finanzdienstleister - Trust & Lead Generation",
-    image: "/projects/bavaria.webp",
-    tech: ["Conversion Optimierung", "Trust Building", "Lead Generation"],
-    result: "340% mehr Leads, verbessertes Kundenvertrauen"
-  },
-  {
-    title: "Kria Training", 
-    description: "Fitness-Community Platform - modernes Design System für 500+ aktive Nutzer",
-    image: "/projects/kria.png",
-    tech: ["Design System", "Component Library", "Mobile-First"],
-    result: "98% Zufriedenheit, 65% längere Verweildauer"
-  }
-]
+// Projects will be loaded from database
 
 // FAQ für Design-Services - Erweitert und aufklappbar
 const designFAQs = [
@@ -173,6 +151,7 @@ const designFAQs = [
 ]
 
 export default function DesignLandingPage() {
+  const { projects, loading: projectsLoading } = useProjects()
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -189,6 +168,18 @@ export default function DesignLandingPage() {
   const [ctaImage, setCtaImage] = useState<string>("")
   const [expandedExamples, setExpandedExamples] = useState<{[key: string]: boolean}>({})
   const [expandedFAQ, setExpandedFAQ] = useState<{[key: number]: boolean}>({0: true}) // Erste FAQ standardmäßig offen
+
+  // Get showcase projects from database (first 3 with images)
+  const showcaseProjects = projects
+    .filter(project => project.screenshots && project.screenshots.length > 0)
+    .slice(0, 3)
+    .map(project => ({
+      title: project.title,
+      description: project.summary,
+      image: project.screenshots[0],
+      tech: project.tech_stack.slice(0, 3),
+      result: project.outcome
+    }))
 
   useEffect(() => {
     const images = getShuffledCampaignImages()
@@ -596,7 +587,23 @@ export default function DesignLandingPage() {
             </motion.div>
 
             <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
-              {showcaseProjects.map((project, index) => (
+              {projectsLoading ? (
+                // Loading skeleton
+                [...Array(3)].map((_, index) => (
+                  <div key={index} className="white-tile rounded-2xl sm:rounded-3xl overflow-hidden animate-pulse">
+                    <div className="aspect-video bg-muted"></div>
+                    <div className="p-6 sm:p-8 space-y-4">
+                      <div className="h-6 bg-muted rounded"></div>
+                      <div className="h-4 bg-muted rounded w-3/4"></div>
+                      <div className="flex gap-2">
+                        <div className="h-6 bg-muted rounded w-16"></div>
+                        <div className="h-6 bg-muted rounded w-16"></div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                showcaseProjects.map((project, index) => (
                 <motion.div
                   key={project.title}
                   initial={{ opacity: 0, y: 30 }}
@@ -646,7 +653,8 @@ export default function DesignLandingPage() {
                     </div>
                   </div>
                 </motion.div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -735,7 +743,7 @@ export default function DesignLandingPage() {
                     </div>
                   </div>
                   <div className="w-20 h-20 rounded-full glass-secondary flex items-center justify-center flex-shrink-0">
-                    <span className="text-2xl font-light text-primary">{item.step}</span>
+                    <span className="text-2xl font-light text-primary-readable">{item.step}</span>
                   </div>
                 </motion.div>
               ))}

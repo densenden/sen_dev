@@ -354,7 +354,7 @@ const projectIcons = {
 }
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState(fallbackProjects)
+  const [projects, setProjects] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -362,10 +362,55 @@ export default function ProjectsPage() {
       try {
         const data = await getProjects()
         if (data && data.length > 0) {
-          setProjects(data)
+          // Map database projects to display format
+          const displayProjects = data.map((dbProject: any) => {
+            // Smart icon selection based on tags and content
+            let icon = Brain
+            if (dbProject.tags?.includes('AI')) icon = Brain
+            else if (dbProject.tags?.includes('Mobile')) icon = Smartphone
+            else if (dbProject.tags?.includes('E-commerce')) icon = Building2
+            else if (dbProject.tags?.includes('Real Estate')) icon = Building2
+            else if (dbProject.tags?.includes('Web3') || dbProject.tags?.includes('Crypto')) icon = TrendingUp
+            else if (dbProject.tags?.includes('Streaming')) icon = Play
+            else if (dbProject.slug?.includes('beauty') || dbProject.slug?.includes('meme')) icon = Sparkles
+            else icon = Globe
+
+            return {
+              id: dbProject.id,
+              title: dbProject.title,
+              slug: dbProject.slug,
+              summary: dbProject.summary,
+              description: dbProject.description,
+              tech_stack: dbProject.tech_stack || [],
+              screenshots: dbProject.screenshots || [],
+              video_demo: dbProject.video_demo,
+              tags: dbProject.tags || [],
+              client_name: dbProject.client_name,
+              outcome: dbProject.outcome,
+              link_live: dbProject.link_live,
+              link_github: dbProject.github_url || null,
+              created_at: dbProject.created_at,
+              updated_at: dbProject.updated_at,
+              // Smart fallbacks for display
+              icon: icon,
+              logo: dbProject.title.substring(0, 2).toUpperCase(),
+              logoType: "text",
+              headline: `${dbProject.title} - ${dbProject.tags?.[0] || 'Platform'}`,
+              subline: dbProject.summary,
+              features: dbProject.outcome ? [dbProject.outcome] : ['Advanced Features', 'Modern Design', 'Production Ready']
+            }
+          })
+          
+          setProjects(displayProjects)
+          console.log('Loaded projects from database:', displayProjects.length)
+        } else {
+          console.log('No database projects found, using fallback data')
+          setProjects(fallbackProjects)
         }
       } catch (error) {
-        // Using fallback project data
+        console.error('Error loading projects:', error)
+        console.log('Using fallback project data')
+        setProjects(fallbackProjects)
       } finally {
         setLoading(false)
       }

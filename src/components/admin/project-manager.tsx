@@ -152,10 +152,23 @@ export default function ProjectManager() {
     e.preventDefault()
     
     const projectData: ProjectInsert = {
-      ...form,
-      screenshots: uploadedImages,
+      title: form.title,
+      slug: form.slug,
+      summary: form.summary,
+      description: form.description,
       tech_stack: form.tech_stack,
-      tags: form.tags
+      tags: form.tags,
+      client_name: form.client_name,
+      outcome: form.outcome,
+      link_live: form.link_live,
+      screenshots: uploadedImages
+      // TODO: Add these fields after running add-display-fields.sql migration:
+      // github_url: form.github_url,
+      // category: form.category,
+      // development_time_weeks: form.development_time_weeks,
+      // is_featured: form.is_featured,
+      // logo: form.logo,
+      // logo_type: form.logo_type
     }
 
     try {
@@ -194,10 +207,10 @@ export default function ProjectManager() {
       client_name: project.client_name,
       outcome: project.outcome,
       link_live: project.link_live || '',
-      github_url: project.github_url || '',
-      category: project.category || '',
-      development_time_weeks: project.development_time_weeks || 6,
-      is_featured: project.is_featured
+      github_url: '', // Not in current schema
+      category: '', // Not in current schema
+      development_time_weeks: 6, // Not in current schema
+      is_featured: false // Not in current schema
     })
     setUploadedImages(project.screenshots)
     setIsEditOpen(true)
@@ -222,7 +235,7 @@ export default function ProjectManager() {
               Create Project
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto fixed top-[5%] left-1/2 transform -translate-x-1/2">
             <DialogHeader>
               <DialogTitle>Create New Project</DialogTitle>
               <DialogDescription>
@@ -409,7 +422,7 @@ export default function ProjectManager() {
               <div className="space-y-4">
                 <div className="flex flex-wrap gap-1">
                   {project.tags.map((tag, idx) => (
-                    <Badge key={idx} variant="secondary" className="text-xs">
+                    <Badge key={idx} variant="outline" className="text-xs">
                       {tag}
                     </Badge>
                   ))}
@@ -428,13 +441,9 @@ export default function ProjectManager() {
                       </a>
                     </Button>
                   )}
-                  {project.github_url && (
-                    <Button size="sm" variant="outline" asChild>
-                      <a href={project.github_url} target="_blank" rel="noopener noreferrer">
-                        <Github className="w-4 h-4" />
-                      </a>
-                    </Button>
-                  )}
+                  <Button size="sm" variant="outline" disabled>
+                    <Github className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -442,14 +451,157 @@ export default function ProjectManager() {
         ))}
       </div>
 
-      {/* Edit Dialog - Similar structure to create dialog */}
+      {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto fixed top-[5%] left-1/2 transform -translate-x-1/2">
           <DialogHeader>
             <DialogTitle>Edit Project</DialogTitle>
             <DialogDescription>Update project information</DialogDescription>
           </DialogHeader>
-          {/* Same form as create, but with update logic */}
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-github-url">GitHub URL</Label>
+                <Input
+                  id="edit-github-url"
+                  placeholder="https://github.com/user/repo"
+                  value={form.github_url}
+                  onChange={(e) => setForm(prev => ({ ...prev, github_url: e.target.value }))}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="edit-live-url">Live URL</Label>
+                <Input
+                  id="edit-live-url"
+                  placeholder="https://example.com"
+                  value={form.link_live}
+                  onChange={(e) => setForm(prev => ({ ...prev, link_live: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  variant="outline"
+                >
+                  {isUploading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Upload className="w-4 h-4 mr-2" />
+                  )}
+                  Upload Images
+                </Button>
+                
+                <Button
+                  type="button"
+                  onClick={handleGenerateContent}
+                  disabled={isGenerating || (!form.github_url && !form.link_live)}
+                  variant="secondary"
+                >
+                  {isGenerating ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Wand2 className="w-4 h-4 mr-2" />
+                  )}
+                  Generate Content
+                </Button>
+              </div>
+
+              {uploadedImages.length > 0 && (
+                <div className="grid grid-cols-4 gap-4">
+                  {uploadedImages.map((url, index) => (
+                    <div key={index} className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+                      <img src={url} alt={`Upload ${index + 1}`} className="object-cover w-full h-full" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-title">Title</Label>
+                <Input
+                  id="edit-title"
+                  value={form.title}
+                  onChange={(e) => setForm(prev => ({ 
+                    ...prev, 
+                    title: e.target.value,
+                    slug: generateSlug(e.target.value)
+                  }))}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="edit-slug">Slug</Label>
+                <Input
+                  id="edit-slug"
+                  value={form.slug}
+                  onChange={(e) => setForm(prev => ({ ...prev, slug: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-summary">Summary</Label>
+              <Input
+                id="edit-summary"
+                value={form.summary}
+                onChange={(e) => setForm(prev => ({ ...prev, summary: e.target.value }))}
+                placeholder="One-line description"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Description</Label>
+              <Textarea
+                id="edit-description"
+                value={form.description}
+                onChange={(e) => setForm(prev => ({ ...prev, description: e.target.value }))}
+                rows={4}
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-client">Client Name</Label>
+                <Input
+                  id="edit-client"
+                  value={form.client_name}
+                  onChange={(e) => setForm(prev => ({ ...prev, client_name: e.target.value }))}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="edit-outcome">Outcome</Label>
+                <Input
+                  id="edit-outcome"
+                  value={form.outcome}
+                  onChange={(e) => setForm(prev => ({ ...prev, outcome: e.target.value }))}
+                  placeholder="e.g. 1000+ users, 50% faster"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-4">
+              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">Update Project</Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

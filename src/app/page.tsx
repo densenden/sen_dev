@@ -25,6 +25,7 @@ import Image from "next/image"
 import HeroElegant from "@/components/hero-elegant"
 import SectionBackground from "@/components/section-background"
 import { getUniqueRandomImages } from "@/lib/images-client"
+import { getProjects } from "@/lib/data"
 import { useState, useEffect } from "react"
 
 // All available projects with actual images
@@ -158,11 +159,46 @@ const coreValues = [
 ]
 
 export default function Home() {
-  // Random project selection with hydration-safe approach
+  // Featured projects from database
   const [featuredProjects, setFeaturedProjects] = useState(allProjects.slice(0, 3))
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setFeaturedProjects(getRandomProjects(allProjects, 3))
+    async function loadFeaturedProjects() {
+      try {
+        const dbProjects = await getProjects()
+        if (dbProjects && dbProjects.length > 0) {
+          // Convert database projects to homepage format
+          const homepageProjects = dbProjects
+            .filter(project => project.screenshots && project.screenshots.length > 0) // Only projects with images
+            .slice(0, 3) // Take first 3
+            .map(project => ({
+              id: project.slug,
+              title: project.title,
+              category: `${project.title} - ${project.tags?.[0] || 'Platform'}`,
+              description: project.summary,
+              tags: project.tags || [],
+              outcome: project.outcome,
+              image: project.screenshots?.[0] || '/projects/default.jpg',
+              logo: project.title.substring(0, 2).toUpperCase(),
+              logoType: "text"
+            }))
+          
+          setFeaturedProjects(homepageProjects)
+          console.log('Loaded featured projects from database:', homepageProjects.length)
+        } else {
+          // Fallback to hardcoded projects
+          setFeaturedProjects(getRandomProjects(allProjects, 3))
+        }
+      } catch (error) {
+        console.error('Error loading featured projects:', error)
+        setFeaturedProjects(getRandomProjects(allProjects, 3))
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    loadFeaturedProjects()
   }, [])
 
   return (

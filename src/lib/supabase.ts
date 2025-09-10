@@ -133,6 +133,18 @@ export interface Database {
           development_time_weeks: number | null
           is_featured: boolean
           category: string | null
+          challenge: string | null
+          solution: string | null
+          process: string | null
+          key_features: string[] | null
+          results_metrics: Record<string, any> | null
+          lessons_learned: string | null
+          headline: string | null
+          subline: string | null
+          logo: string | null
+          logo_type: string | null
+          icon_name: string | null
+          features: string[] | null
           created_at: string
           updated_at: string
         }
@@ -154,6 +166,18 @@ export interface Database {
           development_time_weeks?: number | null
           is_featured?: boolean
           category?: string | null
+          challenge?: string | null
+          solution?: string | null
+          process?: string | null
+          key_features?: string[] | null
+          results_metrics?: Record<string, any> | null
+          lessons_learned?: string | null
+          headline?: string | null
+          subline?: string | null
+          logo?: string | null
+          logo_type?: string | null
+          icon_name?: string | null
+          features?: string[] | null
           created_at?: string
           updated_at?: string
         }
@@ -175,6 +199,18 @@ export interface Database {
           development_time_weeks?: number | null
           is_featured?: boolean
           category?: string | null
+          challenge?: string | null
+          solution?: string | null
+          process?: string | null
+          key_features?: string[] | null
+          results_metrics?: Record<string, any> | null
+          lessons_learned?: string | null
+          headline?: string | null
+          subline?: string | null
+          logo?: string | null
+          logo_type?: string | null
+          icon_name?: string | null
+          features?: string[] | null
           created_at?: string
           updated_at?: string
         }

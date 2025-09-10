@@ -191,7 +191,7 @@ export default function ProjectShowcaseDynamic() {
                     
                     <div className="space-y-2">
                       <h3 className="text-4xl font-black">{project.title}</h3>
-                      <p className="text-xl text-primary font-semibold">{project.summary}</p>
+                      <p className="text-xl text-primary-readable font-semibold">{project.summary}</p>
                     </div>
                     
                     <p className="text-lg text-muted-foreground leading-relaxed">
@@ -202,19 +202,19 @@ export default function ProjectShowcaseDynamic() {
                   {/* Metrics */}
                   <div className="grid grid-cols-3 gap-6">
                     <div className="text-center">
-                      <div className="text-2xl font-black text-primary">{metrics.value || project.outcome.split(' ')[0]}</div>
+                      <div className="text-2xl font-black text-primary-readable">{metrics.value || project.outcome.split(' ')[0]}</div>
                       <div className="text-xs uppercase tracking-wider text-muted-foreground">
                         {metrics.label}
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-black text-primary">{project.tech_stack.length}</div>
+                      <div className="text-2xl font-black text-primary-readable">{project.tech_stack.length}</div>
                       <div className="text-xs uppercase tracking-wider text-muted-foreground">
                         technologies
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-black text-primary">
+                      <div className="text-2xl font-black text-primary-readable">
                         {Math.floor(Math.random() * 12) + 4}w
                       </div>
                       <div className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -288,7 +288,7 @@ export default function ProjectShowcaseDynamic() {
                       viewport={{ once: true }}
                       className="absolute -right-6 top-6 glass rounded-xl p-4 text-center animate-float"
                     >
-                      <div className="text-lg font-black text-primary">
+                      <div className="text-lg font-black text-primary-readable">
                         {project.outcome.split(' ')[0]}
                       </div>
                       <div className="text-xs text-muted-foreground">

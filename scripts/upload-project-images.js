@@ -17,148 +17,157 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   }
 })
 
-// Sample project images data
-const projectImages = [
-  {
-    fileName: 'senflix-1.jpg',
-    projectSlug: 'senflix',
-    description: 'Senflix homepage'
-  },
-  {
-    fileName: 'senflix-2.jpg', 
-    projectSlug: 'senflix',
-    description: 'Senflix dashboard'
-  },
-  {
-    fileName: 'synapsee-1.jpg',
-    projectSlug: 'synapsee', 
-    description: 'Synapsee interface'
-  },
-  {
-    fileName: 'synapsee-2.jpg',
-    projectSlug: 'synapsee',
-    description: 'Synapsee search'
-  },
-  {
-    fileName: 'meme-machine-1.jpg',
-    projectSlug: 'meme-machine',
-    description: 'Meme Machine generator'
-  },
-  {
-    fileName: 'meme-machine-2.jpg',
-    projectSlug: 'meme-machine', 
-    description: 'Meme Machine gallery'
-  },
-  {
-    fileName: 'fork-it-1.jpg',
-    projectSlug: 'fork-it',
-    description: 'Fork:it code review'
-  },
-  {
-    fileName: 'fork-it-2.jpg',
-    projectSlug: 'fork-it',
-    description: 'Fork:it dashboard'
-  },
-  {
-    fileName: 'kria-1.jpg',
-    projectSlug: 'kria-training',
-    description: 'Kria training interface'
-  },
-  {
-    fileName: 'kria-2.jpg',
-    projectSlug: 'kria-training',
-    description: 'Kria progress tracking'
-  }
-]
+// Project slug to filename mapping based on what we found in public/projects
+const projectImages = {
+  'synapsee': 'synapsee.jpg',
+  'bavaria': 'bavaria.webp', 
+  'kria-training': 'kria.png',
+  'senrecorder': 'senrecorder.png',
+  'forkit': 'forkit.jpg',
+  'beauty-machine': 'mememachine.png',
+  'pepe': 'pepe.webp',
+  'sencommerce': 'sencommerce.jpg',
+  'beautymachine': 'beautymachine.jpeg',
+  'senflix': 'senflix.jpg',
+  'senscript': 'senscript.png',
+  'paradieshof': 'paradieshof.png',
+  'nortpatrol': 'nortpatrol.png'
+}
 
-async function uploadPlaceholderImages() {
-  console.log('Creating placeholder images for projects...')
+async function uploadProjectImages() {
+  console.log('🚀 Starting project image upload to Supabase...')
   
-  // Create a simple SVG placeholder
-  const createPlaceholderSVG = (projectName, width = 800, height = 600) => {
-    return `
-      <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100%" height="100%" fill="#f3f4f6"/>
-        <rect x="50" y="50" width="${width-100}" height="${height-100}" fill="#e5e7eb" stroke="#d1d5db" stroke-width="2"/>
-        <text x="50%" y="45%" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="#6b7280">
-          ${projectName}
-        </text>
-        <text x="50%" y="55%" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#9ca3af">
-          Project Screenshot
-        </text>
-        <text x="50%" y="65%" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#d1d5db">
-          ${width} × ${height}
-        </text>
-      </svg>
-    `
-  }
-
+  const projectsDir = path.join(__dirname, '../public/projects')
   const uploadResults = []
-
-  for (const imageData of projectImages) {
-    try {
-      // Create SVG content
-      const svgContent = createPlaceholderSVG(
-        imageData.projectSlug.replace('-', ' ').toUpperCase(),
-        800,
-        600
-      )
+  const uploadedImages = {}
+  
+  try {
+    // First, get all projects from database
+    const { data: projects, error: fetchError } = await supabase
+      .from('projects')
+      .select('slug, title, screenshots')
       
-      // Convert SVG to buffer (simulating an image file)
-      const buffer = Buffer.from(svgContent, 'utf8')
-      
-      // Upload to Supabase storage
-      const { data, error } = await supabase.storage
-        .from('project-images')  
-        .upload(imageData.fileName, buffer, {
-          contentType: 'image/svg+xml',
-          upsert: true // Replace if exists
-        })
-
-      if (error) {
-        console.error(`Failed to upload ${imageData.fileName}:`, error.message)
-        uploadResults.push({ file: imageData.fileName, status: 'failed', error: error.message })
-      } else {
-        console.log(`✅ Uploaded: ${imageData.fileName}`)
-        uploadResults.push({ file: imageData.fileName, status: 'success', path: data.path })
-      }
-
-    } catch (err) {
-      console.error(`Error processing ${imageData.fileName}:`, err)
-      uploadResults.push({ file: imageData.fileName, status: 'error', error: err.message })
+    if (fetchError) {
+      console.error('❌ Error fetching projects:', fetchError)
+      return
     }
+    
+    console.log(`📊 Found ${projects.length} projects in database`)
+    
+    // Upload each project image
+    for (const [slug, filename] of Object.entries(projectImages)) {
+      const imagePath = path.join(projectsDir, filename)
+      
+      if (!fs.existsSync(imagePath)) {
+        console.log(`⚠️  Image not found: ${imagePath}`)
+        uploadResults.push({ file: filename, status: 'not_found', slug: slug })
+        continue
+      }
+      
+      try {
+        console.log(`📤 Uploading ${filename} for project ${slug}...`)
+        
+        // Read the file
+        const fileBuffer = fs.readFileSync(imagePath)
+        const fileExt = path.extname(filename).toLowerCase()
+        const fileName = `${slug}-main${fileExt}`
+        
+        // Determine content type
+        let contentType = 'image/jpeg'
+        if (fileExt === '.png') contentType = 'image/png'
+        else if (fileExt === '.webp') contentType = 'image/webp'
+        else if (fileExt === '.gif') contentType = 'image/gif'
+        
+        // Upload to Supabase storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('project-images')
+          .upload(fileName, fileBuffer, {
+            contentType,
+            upsert: true
+          })
+          
+        if (uploadError) {
+          console.error(`❌ Upload failed for ${filename}:`, uploadError)
+          uploadResults.push({ file: filename, status: 'failed', error: uploadError.message, slug })
+          continue
+        }
+        
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from('project-images')
+          .getPublicUrl(fileName)
+          
+        const publicUrl = urlData.publicUrl
+        uploadedImages[slug] = publicUrl
+        uploadResults.push({ file: filename, status: 'success', url: publicUrl, slug })
+        
+        console.log(`✅ Uploaded: ${publicUrl}`)
+        
+      } catch (error) {
+        console.error(`❌ Error processing ${filename}:`, error)
+        uploadResults.push({ file: filename, status: 'error', error: error.message, slug })
+      }
+    }
+    
+    // Update database with new URLs
+    console.log('\n📝 Updating database with new image URLs...')
+    
+    for (const [slug, imageUrl] of Object.entries(uploadedImages)) {
+      try {
+        const { error: updateError } = await supabase
+          .from('projects')
+          .update({ 
+            screenshots: [imageUrl] 
+          })
+          .eq('slug', slug)
+          
+        if (updateError) {
+          console.error(`❌ Database update failed for ${slug}:`, updateError)
+        } else {
+          console.log(`✅ Updated ${slug} with image URL`)
+        }
+      } catch (error) {
+        console.error(`❌ Error updating ${slug}:`, error)
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ Upload script failed:', error)
+    return
   }
 
   // Summary
   const successful = uploadResults.filter(r => r.status === 'success').length
-  const failed = uploadResults.filter(r => r.status !== 'success').length
+  const failed = uploadResults.filter(r => r.status === 'failed' || r.status === 'error').length
+  const notFound = uploadResults.filter(r => r.status === 'not_found').length
   
   console.log(`\n📊 Upload Summary:`)
   console.log(`✅ Successful: ${successful}`)
   console.log(`❌ Failed: ${failed}`)
+  console.log(`⚠️  Not Found: ${notFound}`)
   
   if (failed > 0) {
     console.log('\n❌ Failed uploads:')
-    uploadResults.filter(r => r.status !== 'success').forEach(r => {
-      console.log(`  - ${r.file}: ${r.error}`)
+    uploadResults.filter(r => r.status === 'failed' || r.status === 'error').forEach(r => {
+      console.log(`  - ${r.file} (${r.slug}): ${r.error}`)
+    })
+  }
+  
+  if (notFound > 0) {
+    console.log('\n⚠️  Images not found:')
+    uploadResults.filter(r => r.status === 'not_found').forEach(r => {
+      console.log(`  - ${r.file} for project ${r.slug}`)
     })
   }
 
-  // Test public access
-  if (successful > 0) {
-    const firstSuccessful = uploadResults.find(r => r.status === 'success')
-    const publicUrl = supabase.storage
-      .from('project-images')
-      .getPublicUrl(firstSuccessful.file)
-
-    console.log(`\n🔗 Sample public URL: ${publicUrl.data.publicUrl}`)
-  }
-
+  console.log('\n🎉 Image upload completed!')
+  console.log(`📊 Successfully uploaded ${successful} images and updated database`)
+  
   return uploadResults
 }
 
 // Run the upload
-uploadPlaceholderImages()
+uploadProjectImages()
   .then(results => {
     console.log('\n🎉 Image upload process completed!')
     process.exit(0)
