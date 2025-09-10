@@ -17,6 +17,53 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      contact_submissions: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          mobile: string | null
+          company: string | null
+          package_name: string | null
+          message: string
+          preferred_contact: string
+          source_page: string
+          status: 'new' | 'contacted' | 'qualified' | 'converted' | 'archived'
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          mobile?: string | null
+          company?: string | null
+          package_name?: string | null
+          message: string
+          preferred_contact?: string
+          source_page: string
+          status?: 'new' | 'contacted' | 'qualified' | 'converted' | 'archived'
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          mobile?: string | null
+          company?: string | null
+          package_name?: string | null
+          message?: string
+          preferred_contact?: string
+          source_page?: string
+          status?: 'new' | 'contacted' | 'qualified' | 'converted' | 'archived'
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
       appointments: {
         Row: {
           id: string
@@ -81,6 +128,11 @@ export interface Database {
           client_name: string
           outcome: string
           link_live: string | null
+          github_url: string | null
+          github_readme: string | null
+          development_time_weeks: number | null
+          is_featured: boolean
+          category: string | null
           created_at: string
           updated_at: string
         }
@@ -97,6 +149,11 @@ export interface Database {
           client_name: string
           outcome: string
           link_live?: string | null
+          github_url?: string | null
+          github_readme?: string | null
+          development_time_weeks?: number | null
+          is_featured?: boolean
+          category?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -113,6 +170,11 @@ export interface Database {
           client_name?: string
           outcome?: string
           link_live?: string | null
+          github_url?: string | null
+          github_readme?: string | null
+          development_time_weeks?: number | null
+          is_featured?: boolean
+          category?: string | null
           created_at?: string
           updated_at?: string
         }

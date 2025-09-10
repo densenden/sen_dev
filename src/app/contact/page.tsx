@@ -181,7 +181,24 @@ export default function ContactPage() {
     setIsSubmitting(true)
     
     try {
-      const response = await fetch('/api/send-contact-email', {
+      // Store in database first
+      const dbResponse = await fetch('/api/contact-submissions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          source_page: 'contact'
+        }),
+      })
+
+      if (!dbResponse.ok) {
+        console.error('Failed to store in database')
+      }
+
+      // Send email
+      const emailResponse = await fetch('/api/send-contact-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -189,13 +206,13 @@ export default function ContactPage() {
         body: JSON.stringify(formData),
       })
 
-      if (!response.ok) {
+      if (!emailResponse.ok) {
         throw new Error('Failed to send email')
       }
 
       setIsSubmitted(true)
     } catch (error) {
-      console.error('Error sending email:', error)
+      console.error('Error processing submission:', error)
       // You might want to show an error message to the user here
     } finally {
       setIsSubmitting(false)

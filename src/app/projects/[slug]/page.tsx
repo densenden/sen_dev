@@ -29,6 +29,59 @@ import { getRandomImage } from "@/lib/images-client"
 // Project data (should match the projects page data)
 const projects = [
   {
+    id: "12",
+    title: "Pepe Design System",
+    slug: "pepe-design-system",
+    summary: "Comprehensive design system and component library implementation",
+    description: "Complete design system development from concept to implementation, featuring cohesive component library, design tokens, and development guidelines for scalable digital products.",
+    tech_stack: ["React", "TypeScript", "Storybook", "Design Tokens", "CSS-in-JS", "Component Library"],
+    screenshots: ["/projects/pepe.webp"],
+    video_demo: null,
+    tags: ["Design System", "Components", "UI/UX", "Development"],
+    client_name: "Design Innovation",
+    outcome: "Streamlined development workflow with consistent UI components, reducing development time by 60% and ensuring brand consistency across all touchpoints",
+    link_live: "https://pepe.sen.studio",
+    link_github: "https://github.com/densenden/pepe-design-system",
+    created_at: "2024-09-10T00:00:00Z",
+    updated_at: "2024-12-20T00:00:00Z",
+    challenge: "Multiple development teams were creating inconsistent UI components, leading to brand fragmentation, slow development cycles, and maintenance overhead across different product touchpoints.",
+    solution: "Designed and implemented a comprehensive design system with reusable React components, standardized design tokens, extensive Storybook documentation, and clear implementation guidelines for scalable development.",
+    results: [
+      "60% reduction in development time for new features",
+      "Consistent brand experience across all digital touchpoints",
+      "Comprehensive component library with 50+ reusable components",
+      "Storybook documentation with interactive examples",
+      "Design token system ensuring visual consistency",
+      "Developer adoption rate of 95% across teams"
+    ]
+  },
+  {
+    id: "13",
+    title: "Bavaria Finance",
+    slug: "bavaria-finance",
+    summary: "Financial services website with conversion optimization focus",
+    description: "Professional financial services website with advanced conversion optimization, lead generation forms, and trust-building elements designed to convert visitors into qualified prospects.",
+    tech_stack: ["Next.js", "TypeScript", "Tailwind CSS", "Analytics", "Lead Generation", "SEO Optimization"],
+    screenshots: ["/projects/bavaria.webp"],
+    video_demo: null,
+    tags: ["Finance", "Conversion", "Lead Gen", "Business"],
+    client_name: "Financial Services",
+    outcome: "Achieved 340% increase in lead conversion through strategic UX improvements and trust-building design elements",
+    link_live: "https://bavaria-finance.de",
+    created_at: "2024-10-05T00:00:00Z",
+    updated_at: "2024-12-25T00:00:00Z",
+    challenge: "Existing financial services website had low conversion rates, poor user trust indicators, and complicated lead generation process that discouraged potential clients from engaging.",
+    solution: "Redesigned the website with psychological trust-building elements, streamlined lead generation flows, professional financial service aesthetics, and data-driven conversion optimization techniques.",
+    results: [
+      "340% increase in qualified lead conversion",
+      "Improved user trust with professional design language",
+      "Streamlined contact forms reducing abandonment by 65%",
+      "Enhanced SEO performance with 180% increase in organic traffic",
+      "Mobile-optimized experience with 95% mobile usability score",
+      "Integrated analytics for continuous conversion optimization"
+    ]
+  },
+  {
     id: "1",
     title: "Senflix",
     slug: "senflix",

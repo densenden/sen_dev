@@ -246,6 +246,19 @@
   .code img {
     filter: grayscale(50%);
   }
+  
+  /* Text primary with white background for better visibility in light mode */
+  .text-primary-readable {
+    @apply text-primary bg-white px-3 py-1 rounded-full shadow-sm;
+  }
+  
+  .dark .text-primary-readable {
+    @apply bg-primary/10 shadow-none;
+  }
+  
+  .code .text-primary-readable {
+    @apply bg-secondary border border-border shadow-none rounded-none px-2 py-0;
+  }
 }
 
 @keyframes slide-up {

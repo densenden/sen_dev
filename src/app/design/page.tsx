@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { 
-  Zap, 
+  Palette, 
   Clock,
   CheckCircle,
   ArrowDown,
@@ -16,158 +16,168 @@ import {
   Phone,
   Mail,
   Target,
-  Rocket,
   Sparkles,
-  Code,
-  Palette,
-  Bot,
+  Eye,
+  Zap,
   Users,
   Building2,
-  Globe,
-  Smartphone,
   Brain,
   TrendingUp,
-  Eye,
-  Play,
   MessageCircle,
   Calendar,
   Tag,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Star,
+  Shield,
+  Trophy,
+  Rocket
 } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
-import { getRandomCampaignImage, getShuffledCampaignImages } from "@/lib/campaign-images"
+import { getShuffledCampaignImages } from "@/lib/campaign-images"
 
+// Design-fokussierte Pakete basierend auf KMU PRD
 const packages = [
   { 
-    value: "mvp-sprint", 
-    title: "MVP Sprint",
-    price: "ab 2.450 €", 
-    duration: "10 Tage",
-    image: "/campaign/mvp.jpg",
-    description: "Ihre eigene App in 10 Tagen – mit allem was dazu gehört",
-    tagline: "\"Wow, so günstig für meine eigene App!\"",
+    value: "design-review", 
+    title: "Design-Review",
+    price: "KOSTENLOS (statt < 490 €)", 
+    duration: "48 Stunden",
+    image: "/campaign/review.jpg",
+    description: "Audit mit Quick Wins",
+    tagline: "\"Endlich verstehe ich, warum meine Seite nicht konvertiert!\"",
     features: [
-      "Vollständige App mit Login & Dashboard", 
-      "KI-Integration für smarte Funktionen", 
-      "Nutzerverwaltung & Berechtigungen",
-      "Datensammlung & Analytics",
-      "Business Logic nach Ihren Regeln",
-      "Mobile-optimiert für alle Geräte"
+      "Audit mit Quick Wins", 
+      "Farb- & Typo-Analyse", 
+      "Feedback zur UX",
+      "Optional kleines CSS-Touch-Up",
+      "Klarer Aktionsplan",
+      "Unverbindlich & kostenlos"
     ],
     examples: [
-      "🏢 Mitarbeiter-App: Login, Schulungen buchen, Fortschritte tracken",
-      "🛒 Kunden-Portal: Bestellungen verwalten, Support-Chat mit KI",  
-      "📊 Datensammler: Umfragen, Feedback, automatische Auswertung",
-      "🤖 KI-Assistent: Ihr persönlicher Chatbot für Kunden"
+      "🔍 Landing Page Analyse: Warum bounced 70% der Besucher?",
+      "📊 E-Commerce Review: Warum brechen Kunden den Kauf ab?",  
+      "🎯 SaaS Dashboard: Wo verlieren wir User im Onboarding?",
+      "💡 Corporate Website: Wie wirken wir professioneller?"
     ]
   },
   { 
-    value: "corporate-website", 
-    title: "Corporate Website + AI",
-    price: "ab 1.625 €", 
-    duration: "2-4 Wochen",
-    image: "/campaign/corporate_website.jpg",
-    description: "Professionelle Website, die für Sie arbeitet",
-    tagline: "\"Endlich eine Website mit KI-Power!\"",
+    value: "designsystem-presentation", 
+    title: "Designsystem & Präsentation",
+    price: "ab 890 €", 
+    duration: "1–2 Tage",
+    image: "/campaign/design-prozess.jpg",
+    description: "Erstellung von Styleguide, Farbwelt, Typografie, Komponenten",
+    tagline: "\"Wow, endlich ein einheitliches Design!\"",
     features: [
-      "KI-gestützter Content & Blog-Generator", 
-      "Automatische Übersetzungen", 
-      "Lead-Generierung mit smarten Formularen",
-      "SEO-Optimierung durch KI",
-      "Chat-Bot für Kundenservice",
-      "Analytics & Conversion-Tracking"
+      "Erstellung von Styleguide", 
+      "Farbwelt & Typografie", 
+      "Komponenten-Bibliothek",
+      "Präsentation inkl. Empfehlungen",
+      "1–2 Tage Bearbeitungszeit",
+      "Implementierung auf Branch: ab 1 Woche, Zusatzkosten je nach Umfang"
     ],
     examples: [
-      "🏭 Produktions-Firma: Automatischer Blog über Branchennews",
-      "⚖️ Anwaltskanzlei: KI-Chat für erste Rechtsberatung",
-      "🏥 Arztpraxis: Terminbuchung & Symptom-Checker",
-      "🏪 Einzelhandel: Produktberatung durch KI-Assistent"
+      "🎨 Startup Rebranding: Von DIY zu professionell in 5 Tagen",
+      "🛍️ E-Commerce Redesign: +287% Conversion durch neues Design",
+      "📱 App Design System: Konsistente UX über alle Screens",
+      "🏢 Corporate Identity: Modernes Design das Vertrauen schafft"
     ]
   },
   { 
-    value: "agentur-partner", 
-    title: "Agentur-Partner Retainer",
-    price: "ab 875 €/Monat", 
-    duration: "Fortlaufend",
-    image: "/campaign/retainer.jpg",
-    description: "Ihr technischer Partner für Kundenprojects",
-    tagline: "\"Endlich ein Entwickler, der versteht!\"",
+    value: "touchup-fullservice", 
+    title: "Touch-Up / Full Service Frontend",
+    price: "ab 2.100 €", 
+    duration: "1-2 Wochen",
+    image: "/campaign/designsystem.jpg",
+    description: "Neues UI-Konzept, Umsetzung mit bestehender Logik",
+    tagline: "\"Du machst, dass es läuft → Wir machen, dass es wirkt!\"",
     features: [
-      "White-Label Development", 
-      "Kreativkonzepte in Code umsetzen", 
-      "API-Integrationen & Datenanbindung",
-      "KI-Features für Wow-Effekte",
-      "Kampagnen-Websites mit Tracking",
-      "24h Support für Ihre Kunden"
+      "Neues UI-Konzept", 
+      "Umsetzung mit bestehender Logik", 
+      "Komplettes Frontend-Refactoring",
+      "Fertige Übergabe inkl. Dokumentation",
+      "Integration mit bestehenden Systemen"
     ],
     examples: [
-      "🎨 Kreativ-Agentur: Interaktive Kampagnen-Websites",
-      "📢 Marketing-Agentur: Landing Pages mit KI-Personalisierung", 
-      "💼 Beratung: Kundenportale mit Datenauswertung",
-      "🎯 Performance-Marketing: A/B-Tests mit KI-Optimierung"
+      "🚀 SaaS Platform: Design + React Frontend komplett",
+      "🏪 Online Shop: Custom E-Commerce Lösung",
+      "📊 Dashboard: Design zu funktionierender Web-App",
+      "🎯 Corporate Website: High-Converting Business Site"
     ]
-  },
-  { 
-    value: "beratung", 
-    label: "Kostenlose Beratung", 
-    duration: "30 Min Gespräch",
-    description: "Unverbindliches Erstgespräch",
-    features: ["Projekt-Analyse", "Lösungsansätze", "Kosteneinschätzung", "Roadmap"],
-    example: "Persönliche Beratung für Ihr Digitalprojekt"
-  },
-  { 
-    value: "individuell", 
-    label: "Individuelles Projekt", 
-    duration: "Nach Absprache",
-    description: "Maßgeschneiderte Lösung",
-    features: ["Vollständige Analyse", "Custom Development", "Persönliche Betreuung", "Langzeit-Support"],
-    example: "Ihre spezifischen Anforderungen im Fokus"
   }
 ]
 
-// Project showcase data - random 3 projects from existing
+// Erfolgreiche Design-Projekte
 const showcaseProjects = [
   {
-    title: "SenCommerce",
-    description: "E-Commerce-Plattform für kreative Unternehmer - von digitalen Downloads bis Print-on-Demand",
-    image: "/projects/sencommerce.jpg",
-    tech: ["Medusa v2", "Next.js", "Stripe", "Printful API"],
-    result: "Nahtlose Verwaltung digitaler & physischer Produkte"
+    title: "Pepe Design System",
+    description: "Komplettes Design System & Implementation für skalierbare Entwicklung",
+    image: "/projects/pepe.webp",
+    tech: ["Design System", "React Components", "Storybook"],
+    result: "60% schnellere Development, einheitliche Brand-Konsistenz"
   },
   {
-    title: "NorthPatrol", 
-    description: "Digitalisierung der Sicherheitsrundgänge - QR-Code-System reduziert Berichtszeit um 75%",
-    image: "/projects/nortpatrol.png",
-    tech: ["React", "Supabase", "QR-Codes", "Real-time Tracking"],
-    result: "50+ Sicherheitskräfte, 75% weniger Berichtszeit"
+    title: "Bavaria Finance",
+    description: "Conversion-Optimierung für Finanzdienstleister - Trust & Lead Generation",
+    image: "/projects/bavaria.webp",
+    tech: ["Conversion Optimierung", "Trust Building", "Lead Generation"],
+    result: "340% mehr Leads, verbessertes Kundenvertrauen"
   },
   {
-    title: "Paradieshof",
-    description: "Interaktive Immobilienpräsentation mit 3D-Visualisierungen für Frankfurt-Projekt",
-    image: "/projects/paradieshof.png", 
-    tech: ["React", "Three.js", "Mapbox", "3D-Visualisierung"],
-    result: "200+ qualifizierte Leads, 85% Engagement-Rate"
+    title: "Kria Training", 
+    description: "Fitness-Community Platform - modernes Design System für 500+ aktive Nutzer",
+    image: "/projects/kria.png",
+    tech: ["Design System", "Component Library", "Mobile-First"],
+    result: "98% Zufriedenheit, 65% längere Verweildauer"
   }
 ]
 
-const projectIcons = {
-  "E-Commerce": Building2,
-  "Security": Eye,
-  "Real Estate": Building2,
-  "AI": Brain,
-  "Web App": Globe,
-  "Mobile App": Smartphone
-}
+// FAQ für Design-Services - Erweitert und aufklappbar
+const designFAQs = [
+  { 
+    q: "Warum ist gutes Design so wichtig?", 
+    a: "Design ist der erste Eindruck. Studien zeigen: Nutzer entscheiden in 0.05 Sekunden, ob sie einer Website vertrauen. Schlechtes Design kostet Sie täglich Kunden und verschwendet Marketing-Budget. Gutes Design zahlt sich durch höhere Conversions, längere Verweildauer und bessere User Experience direkt aus." 
+  },
+  { 
+    q: "Was ist der Unterschied zwischen UI und UX?", 
+    a: "UI (User Interface) ist das visuelle Design - Farben, Schriften, Buttons, Layout. UX (User Experience) ist die Nutzerführung - wie intuitiv, schnell und angenehm die Bedienung ist. Beide müssen perfekt zusammenarbeiten. Wir optimieren sowohl das Aussehen als auch die Benutzerfreundlichkeit für maximale Conversion." 
+  },
+  { 
+    q: "Arbeiten Sie mit bestehenden Designs?", 
+    a: "Ja! Wir können Ihr bestehendes Design analysieren und optimieren (Design Touch-up) oder komplett neu gestalten. Das kostenlose Design Review zeigt Ihnen genau, welche Probleme Ihr aktuelles Design hat und welcher Weg für Sie optimal und kosteneffizient ist." 
+  },
+  { 
+    q: "Wie messen Sie Design-Erfolg?", 
+    a: "Durch klare, messbare KPIs: Conversion Rate, Verweildauer, Bounce Rate, User Engagement, Click-Through-Rate. Wir setzen vor dem Redesign Tracking auf und messen den Erfolg nach Go-Live. Unsere Designs steigern diese Metriken durchschnittlich um 287%. Design ist messbar erfolgreich oder es ist schlecht." 
+  },
+  { 
+    q: "Wie lange dauert ein Design-Projekt?", 
+    a: "Das hängt vom Umfang ab: Design Review (15 Min), Design System Sprint (5-7 Tage), Design + Development Full (2-3 Wochen). Wir arbeiten agil mit täglichen Updates und kurzen Feedback-Zyklen. Kein monatelanges Warten - Sie sehen täglich Fortschritte." 
+  },
+  { 
+    q: "Was kostet professionelles Design?", 
+    a: "Unsere Pakete starten ab 890 € für Designsysteme. Das Design Review ist aktuell kostenlos (normal < 490 €). Die Investition amortisiert sich schnell: Bei +287% höherer Conversion zahlt sich gutes Design meist schon im ersten Monat aus." 
+  },
+  { 
+    q: "Bekommen wir die Design-Dateien?", 
+    a: "Selbstverständlich! Sie erhalten alle Design-Dateien, Design-Guidelines, Assets, Fonts und bei Development-Projekten den kompletten Source Code. Alles gehört Ihnen - ohne Vendor-Lock-in oder versteckte Abhängigkeiten." 
+  },
+  { 
+    q: "Arbeiten Sie auch international?", 
+    a: "Ja! Wir arbeiten remote mit Kunden in ganz Europa und haben bereits Projekte in US, UK, Schweiz und Niederlande umgesetzt. Alle Kommunikation auf Deutsch oder Englisch, je nach Präferenz. Timezone sind kein Problem." 
+  }
+]
 
-export default function KMULandingPage() {
+export default function DesignLandingPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
+    website: "",
     message: "",
     package: "",
     company: ""
@@ -178,12 +188,12 @@ export default function KMULandingPage() {
   const [heroImage, setHeroImage] = useState<string>("")
   const [ctaImage, setCtaImage] = useState<string>("")
   const [expandedExamples, setExpandedExamples] = useState<{[key: string]: boolean}>({})
+  const [expandedFAQ, setExpandedFAQ] = useState<{[key: number]: boolean}>({0: true}) // Erste FAQ standardmäßig offen
 
-  // Set images on component mount
   useEffect(() => {
     const images = getShuffledCampaignImages()
-    setHeroImage(images[0])
-    setCtaImage(images[1])
+    setHeroImage("/campaign/design-hero.jpg")
+    setCtaImage("/campaign/touchup.jpg")
   }, [])
 
   const toggleExamples = (packageValue: string) => {
@@ -206,7 +216,7 @@ export default function KMULandingPage() {
         },
         body: JSON.stringify({
           ...formData,
-          source_page: 'kmu'
+          source_page: 'design'
         }),
       })
 
@@ -214,13 +224,16 @@ export default function KMULandingPage() {
         console.error('Failed to store in database')
       }
 
-      // Send email
-      const emailResponse = await fetch('/api/send-kmu-email', {
+      // Use design-specific email endpoint
+      const emailResponse = await fetch('/api/send-design-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          package: packages.find(p => p.value === formData.package)?.title || "Design Anfrage"
+        }),
       })
 
       if (!emailResponse.ok) {
@@ -230,7 +243,6 @@ export default function KMULandingPage() {
       setIsSubmitted(true)
     } catch (error) {
       console.error('Error processing submission:', error)
-      // You might want to show an error message to the user here
     } finally {
       setIsSubmitting(false)
     }
@@ -258,10 +270,10 @@ export default function KMULandingPage() {
             <CheckCircle className="w-10 h-10 text-accent" />
           </div>
           <h1 className="text-4xl font-light mb-6 text-white">
-            Nachricht gesendet!
+            Design-Review angefordert!
           </h1>
           <p className="text-lg font-light text-white/80 mb-8">
-            Vielen Dank für Ihre Anfrage. Wir melden uns innerhalb von 24 Stunden bei Ihnen zurück.
+            Wir analysieren Ihr Design und melden uns innerhalb von 48 Stunden mit Ihrem kostenlosen Review.
           </p>
           <Button 
             className="glass-accent border-line-accent bg-accent/20 text-accent hover:bg-accent/30 font-light rounded-full px-8 border"
@@ -276,21 +288,19 @@ export default function KMULandingPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
+      {/* Hero Section wie KMU */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           {heroImage && (
             <Image
               src={heroImage}
-              alt="KMU Landing hero background"
+              alt="Design Landing hero"
               fill
               className="object-cover opacity-40 blur-sm scale-110"
               priority
             />
           )}
-          {/* Enhanced gradient overlay for better text readability */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
-          {/* Color overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/20 mix-blend-overlay" />
         </div>
 
@@ -310,8 +320,8 @@ export default function KMULandingPage() {
                 className="mb-8 sm:mb-12"
               >
                 <Badge className="glass-accent border-line-accent bg-accent/20 text-accent px-6 py-3 text-xs tracking-wider font-light border mb-8">
-                  <Zap className="w-3 h-3 mr-2" />
-                  Design + Code + AI
+                  <Palette className="w-3 h-3 mr-2" />
+                  Premium Design Services
                 </Badge>
                 
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light leading-tight tracking-wide mb-6 sm:mb-8 text-white">
@@ -321,7 +331,7 @@ export default function KMULandingPage() {
                     animate={{ opacity: 1, filter: "blur(0px)" }}
                     transition={{ duration: 1.2, delay: 0.6 }}
                   >
-                    Ihr Projekt in
+                    Design, das
                   </motion.span>
                   <motion.span 
                     className="block text-primary"
@@ -329,7 +339,7 @@ export default function KMULandingPage() {
                     animate={{ opacity: 1, filter: "blur(0px)" }}
                     transition={{ duration: 1.2, delay: 0.8 }}
                   >
-                    10 Tagen live
+                    konvertiert
                   </motion.span>
                 </h1>
                 
@@ -339,24 +349,29 @@ export default function KMULandingPage() {
                   transition={{ duration: 0.8, delay: 1 }}
                   className="text-lg sm:text-xl lg:text-2xl font-light text-white/90 leading-relaxed max-w-4xl mx-auto mb-8 sm:mb-12"
                 >
-                  Wir bringen Ihre Idee in Rekordzeit von der Skizze zum digitalen Produkt. 
-                  Für Mittelstand, Startups und Agenturen.
+                  Verwandeln Sie Besucher in Kunden. Mit strategischem Design, 
+                  das nicht nur gut aussieht, sondern messbar mehr Umsatz bringt.
                 </motion.p>
                 
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 1.2 }}
+                  className="flex flex-col sm:flex-row gap-4 justify-center"
                 >
                   <Button 
                     size="lg"
                     className="glass-accent border-line-accent bg-accent/10 hover:bg-accent/20 text-accent border px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg font-light rounded-full"
                     onClick={() => document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' })}
                   >
-                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
-                    Kostenlosen Termin buchen
+                    <Star className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
+                    Kostenloses Design-Review
                     <ArrowDown className="w-4 h-4 sm:w-5 sm:h-5 ml-2 sm:ml-3 animate-bounce" />
                   </Button>
+                  <div className="flex items-center justify-center gap-2 text-sm text-white/70">
+                    <Clock className="w-4 h-4" />
+                    <span>Normalpreis: 490 € • Jetzt kostenlos</span>
+                  </div>
                 </motion.div>
               </motion.div>
             </motion.div>
@@ -364,7 +379,7 @@ export default function KMULandingPage() {
         </div>
       </section>
 
-      {/* Trust Building Section */}
+      {/* Trust Building / Problem Section */}
       <section className="py-16 sm:py-24 lg:py-32">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
@@ -376,19 +391,21 @@ export default function KMULandingPage() {
               transition={{ duration: 0.8 }}
               className="text-center mb-12 sm:mb-16 lg:mb-20"
             >
-              <p className="text-base sm:text-lg lg:text-xl font-light text-muted-foreground leading-relaxed max-w-4xl mx-auto mb-12 sm:mb-16">
-                Mit sen.dev verbinden wir kreative Konzeptentwicklung mit moderner Software-Entwicklung. 
-                Wir arbeiten mit React, Next.js, Tailwind, Node.js, Supabase, OpenAI-APIs und entwickeln 
-                digitale Produkte, die funktionieren – schnell, elegant und skalierbar.
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light mb-6">
+                95% aller Websites <span className="text-primary">verschwenden Potenzial</span>
+              </h2>
+              <p className="text-base sm:text-lg lg:text-xl font-light text-muted-foreground leading-relaxed max-w-4xl mx-auto">
+                Schlechtes Design kostet Sie täglich Kunden. Wir verwandeln Ihre Website 
+                in eine Conversion-Maschine – mit Design, das auf Psychologie und Daten basiert.
               </p>
             </motion.div>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
               {[
-                { icon: Target, title: "Klarer Fahrplan", desc: "Fixe Paketpreise & transparente Kommunikation" },
-                { icon: Palette, title: "Design trifft Code", desc: "Ästhetik und saubere Programmierung vereint" },
-                { icon: Bot, title: "KI-Integration", desc: "Workflow-Automatisierung mit modernen AI-APIs" },
-                { icon: Users, title: "Agile Methoden", desc: "Transparente Zusammenarbeit & schnelle Iterationen" }
+                { icon: Eye, title: "Erster Eindruck", desc: "0.05 Sekunden entscheiden über Vertrauen" },
+                { icon: Brain, title: "Psychologie", desc: "Farben & Formen die unterbewusst wirken" },
+                { icon: Zap, title: "Performance", desc: "Schnelle Ladezeiten = höhere Conversions" },
+                { icon: TrendingUp, title: "ROI-Fokus", desc: "Durchschnittlich +287% mehr Conversions" }
               ].map((item, index) => (
                 <motion.div
                   key={item.title}
@@ -405,9 +422,6 @@ export default function KMULandingPage() {
                   <p className="text-sm sm:text-base font-light text-muted-foreground leading-relaxed">
                     {item.desc}
                   </p>
-                  <div className="flex justify-center mt-4">
-                    <CheckCircle className="w-5 h-5 text-accent" />
-                  </div>
                 </motion.div>
               ))}
             </div>
@@ -415,7 +429,7 @@ export default function KMULandingPage() {
         </div>
       </section>
 
-      {/* Packages Section */}
+      {/* Design Packages Section */}
       <section className="py-16 sm:py-24 lg:py-32 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
@@ -428,25 +442,34 @@ export default function KMULandingPage() {
               className="text-center mb-12 sm:mb-16 lg:mb-20"
             >
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light mb-4 sm:mb-6">
-                Unsere <span className="text-primary">Pakete</span>
+                Unsere <span className="text-primary">Design-Pakete</span>
               </h2>
               <p className="text-base sm:text-lg font-light text-muted-foreground max-w-3xl mx-auto">
-                Transparente Preise, klare Leistungen. Wählen Sie das Paket, das zu Ihrem Projekt passt.
+                Von kostenlosem Review bis zur kompletten Marken-Transformation. 
+                Wählen Sie das Paket, das zu Ihren Zielen passt.
               </p>
             </motion.div>
 
             <div className="grid lg:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16">
-              {packages.slice(0, 3).map((pkg, index) => (
+              {packages.map((pkg, index) => (
                 <motion.div
                   key={pkg.value}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="white-tile rounded-2xl sm:rounded-3xl relative overflow-hidden"
+                  className={`white-tile rounded-2xl sm:rounded-3xl relative overflow-hidden ${
+                    pkg.value === 'design-review' ? 'ring-2 ring-accent' : ''
+                  }`}
                 >
                   {/* Package Image Header */}
                   <div className="aspect-video relative overflow-hidden">
+                    {/* Special Badge for Free Review - bottom overlay */}
+                    {pkg.value === 'design-review' && (
+                      <div className="absolute bottom-2 left-2 right-2 bg-gradient-to-r from-green-500 to-accent text-white text-center py-2 px-3 text-xs font-medium rounded-xl shadow-lg z-10">
+                        LAUNCH SPECIAL - KOSTENLOS
+                      </div>
+                    )}
                     <Image
                       src={pkg.image}
                       alt={`${pkg.title} visualization`}
@@ -455,7 +478,11 @@ export default function KMULandingPage() {
                     />
                     {/* Price Tag Overlay */}
                     <div className="absolute top-4 right-4">
-                      <div className="glass-accent bg-accent/90 text-white px-3 py-2 rounded-full flex items-center gap-2 shadow-lg">
+                      <div className={`${
+                        pkg.value === 'design-review' 
+                          ? 'bg-green-500/90 animate-pulse' 
+                          : 'glass-accent bg-accent/90'
+                      } text-white px-3 py-2 rounded-full flex items-center gap-2 shadow-lg`}>
                         <Tag className="w-4 h-4" />
                         <span className="text-sm font-medium">{pkg.price}</span>
                       </div>
@@ -490,7 +517,7 @@ export default function KMULandingPage() {
                     </div>
                     
                     {/* Collapsible Examples */}
-                    <div className="glass-secondary rounded-2xl p-4 sm:p-6">
+                    <div className="glass-secondary rounded-2xl p-4 sm:p-6 mb-6">
                       <button
                         onClick={() => toggleExamples(pkg.value)}
                         className="w-full flex items-center justify-between text-left hover:opacity-80 transition-opacity"
@@ -521,10 +548,25 @@ export default function KMULandingPage() {
                       
                       {!expandedExamples[pkg.value] && (
                         <p className="text-xs text-muted-foreground/60 mt-2">
-                          Klicken Sie hier, um {pkg.examples.length} Beispiele zu sehen
+                          Klicken für {pkg.examples.length} Beispiele
                         </p>
                       )}
                     </div>
+
+                    {/* CTA Button */}
+                    <Button
+                      className={`w-full ${
+                        pkg.value === 'design-review'
+                          ? 'bg-gradient-to-r from-green-500 to-accent hover:from-green-600 hover:to-accent/90 text-white'
+                          : 'glass-primary border-line hover:bg-primary/20 text-primary'
+                      } font-light rounded-full`}
+                      onClick={() => {
+                        setFormData({...formData, package: pkg.value})
+                        document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' })
+                      }}
+                    >
+                      {pkg.value === 'design-review' ? 'Jetzt kostenlos sichern' : 'Paket anfragen'}
+                    </Button>
                   </div>
                 </motion.div>
               ))}
@@ -533,7 +575,7 @@ export default function KMULandingPage() {
         </div>
       </section>
 
-      {/* Showcase Examples */}
+      {/* Showcase Projects */}
       <section className="py-16 sm:py-24 lg:py-32">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
@@ -546,70 +588,157 @@ export default function KMULandingPage() {
               className="text-center mb-12 sm:mb-16 lg:mb-20"
             >
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light mb-4 sm:mb-6">
-                Erfolgs<span className="text-primary">geschichten</span>
+                Design <span className="text-primary">Erfolgsgeschichten</span>
               </h2>
               <p className="text-base sm:text-lg font-light text-muted-foreground max-w-3xl mx-auto">
-                Echte Projekte, echte Ergebnisse. So haben wir anderen Unternehmen geholfen.
+                Echte Projekte, messbare Ergebnisse. So haben unsere Designs Unternehmen transformiert.
               </p>
             </motion.div>
 
             <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
-              {showcaseProjects.map((project, index) => {
-                const primaryTag = project.tech[0]
-                const IconComponent = projectIcons[primaryTag as keyof typeof projectIcons] || Globe
-                
-                return (
-                  <motion.div
-                    key={project.title}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="white-tile rounded-2xl sm:rounded-3xl overflow-hidden"
-                  >
-                    <div className="aspect-video relative overflow-hidden">
-                      <Image
-                        src={project.image}
-                        alt={`${project.title} Projekt`}
-                        fill
-                        className="object-cover hover:scale-105 transition-transform duration-300"
-                      />
+              {showcaseProjects.map((project, index) => (
+                <motion.div
+                  key={project.title}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  className="white-tile rounded-2xl sm:rounded-3xl overflow-hidden"
+                >
+                  <div className="aspect-video relative overflow-hidden">
+                    <Image
+                      src={project.image}
+                      alt={`${project.title} Design`}
+                      fill
+                      className="object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  
+                  <div className="p-6 sm:p-8">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-full glass-primary bg-accent/10 border border-accent/20 flex items-center justify-center">
+                        <Palette className="w-5 h-5 text-accent" />
+                      </div>
+                      <h3 className="text-lg sm:text-xl font-light text-foreground">{project.title}</h3>
                     </div>
                     
-                    <div className="p-6 sm:p-8">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-full glass-primary bg-accent/10 border border-accent/20 flex items-center justify-center">
-                          <IconComponent className="w-5 h-5 text-accent" />
-                        </div>
-                        <h3 className="text-lg sm:text-xl font-light text-foreground">{project.title}</h3>
-                      </div>
-                      
-                      <p className="text-sm sm:text-base font-light text-muted-foreground leading-relaxed mb-4 sm:mb-6">
-                        {project.description}
+                    <p className="text-sm sm:text-base font-light text-muted-foreground leading-relaxed mb-4 sm:mb-6">
+                      {project.description}
+                    </p>
+                    
+                    <div className="flex flex-wrap gap-2 mb-4 sm:mb-6">
+                      {project.tech.map((tech, techIndex) => (
+                        <Badge 
+                          key={techIndex}
+                          variant="outline" 
+                          className="bg-secondary/5 text-secondary border-secondary/20 font-light text-xs"
+                        >
+                          {tech}
+                        </Badge>
+                      ))}
+                    </div>
+                    
+                    <div className="glass-secondary rounded-2xl p-4">
+                      <p className="text-xs sm:text-sm font-light text-muted-foreground">
+                        <TrendingUp className="w-4 h-4 inline mr-2 text-accent" />
+                        <strong className="text-accent">Ergebnis:</strong> {project.result}
                       </p>
-                      
-                      <div className="flex flex-wrap gap-2 mb-4 sm:mb-6">
-                        {project.tech.slice(0, 3).map((tech, techIndex) => (
-                          <Badge 
-                            key={techIndex}
-                            variant="outline" 
-                            className="bg-secondary/5 text-secondary border-secondary/20 font-light text-xs"
-                          >
-                            {tech}
-                          </Badge>
-                        ))}
-                      </div>
-                      
-                      <div className="glass-secondary rounded-2xl p-4">
-                        <p className="text-xs sm:text-sm font-light text-muted-foreground">
-                          <TrendingUp className="w-4 h-4 inline mr-2 text-accent" />
-                          <strong className="text-accent">Ergebnis:</strong> {project.result}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Design Process Section - wie Why SenDev */}
+      <section className="relative py-32 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/campaign/design-prozess.jpg"
+            alt="Design Process Background"
+            fill
+            className="object-cover opacity-10 blur-sm"
+          />
+        </div>
+        
+        <div className="container mx-auto px-8 relative z-10">
+          <div className="max-w-6xl mx-auto">
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="text-center mb-20"
+            >
+              <h2 className="text-4xl md:text-5xl font-light mb-6">
+                Unser <span className="text-primary">Design-Prozess</span>
+              </h2>
+              <p className="text-lg font-light text-muted-foreground max-w-2xl mx-auto">
+                Vier Schritte, die jedes Design-Projekt zum Erfolg führen. Strukturiert, transparent, messbar erfolgreich.
+              </p>
+            </motion.div>
+
+            <div className="space-y-8">
+              {[
+                { 
+                  step: "1", 
+                  title: "Analyse & Verstehen", 
+                  desc: "Wir analysieren Ihre Zielgruppe, Konkurrenz und aktuellen Probleme. Jedes Detail zählt für das perfekte Design.", 
+                  benefit: "Solide Basis für strategisches Design",
+                  icon: Eye 
+                },
+                { 
+                  step: "2", 
+                  title: "Strategie & Konzept", 
+                  desc: "Entwicklung eines datenbasierten Design-Konzepts mit klaren Zielen und messbaren KPIs für maximale Wirkung.", 
+                  benefit: "Design mit klarem ROI und Purpose",
+                  icon: Target 
+                },
+                { 
+                  step: "3", 
+                  title: "Design & Prototyping", 
+                  desc: "Design-Umsetzung mit iterativem Feedback. Vom Wireframe bis zum finalen Design - alles transparent und kollaborativ.", 
+                  benefit: "Pixel-perfect Designs die begeistern",
+                  icon: Palette 
+                },
+                { 
+                  step: "4", 
+                  title: "Testing & Optimierung", 
+                  desc: "A/B-Tests, User-Feedback und kontinuierliche Optimierung für maximale Performance und Conversion-Rate.", 
+                  benefit: "Messbar bessere Conversion-Raten",
+                  icon: Rocket 
+                }
+              ].map((item, index) => (
+                <motion.div
+                  key={item.step}
+                  initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: index * 0.1 }}
+                  className={`flex items-center gap-12 ${index % 2 === 1 ? 'flex-row-reverse' : ''}`}
+                >
+                  <div className="flex-1">
+                    <div className="glass-primary rounded-3xl p-8">
+                      <h3 className="text-2xl font-light mb-4 text-foreground">{item.title}</h3>
+                      <p className="text-sm font-light text-muted-foreground mb-6 leading-relaxed">
+                        {item.desc}
+                      </p>
+                      <div className="glass-accent rounded-2xl p-4">
+                        <p className="text-xs font-light text-accent-foreground/90">
+                          <Target className="w-3 h-3 inline mr-2" />
+                          {item.benefit}
                         </p>
                       </div>
                     </div>
-                  </motion.div>
-                )
-              })}
+                  </div>
+                  <div className="w-20 h-20 rounded-full glass-secondary flex items-center justify-center flex-shrink-0">
+                    <span className="text-2xl font-light text-primary">{item.step}</span>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
         </div>
@@ -619,14 +748,12 @@ export default function KMULandingPage() {
       <section id="contact-form" className="relative py-16 sm:py-24 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
-            src="/campaign/campaign3.jpg"
+            src="/campaign/touchup.jpg"
             alt="Contact form background"
             fill
             className="object-cover opacity-40 blur-sm scale-110"
           />
-          {/* Enhanced gradient overlay for better text readability */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
-          {/* Color overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/20 mix-blend-overlay" />
         </div>
 
@@ -642,13 +769,14 @@ export default function KMULandingPage() {
             >
               <Badge className="glass-accent border-line-accent bg-accent/20 text-accent px-6 py-3 text-xs tracking-wider font-light border mb-8">
                 <MessageCircle className="w-3 h-3 mr-2" />
-                Kontakt aufnehmen
+                Design-Analyse anfordern
               </Badge>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light mb-4 sm:mb-6 text-white">
-                <span className="text-primary">Kostenlosen</span> Termin buchen
+                Ihr <span className="text-primary">kostenloses</span> Design-Review
               </h2>
               <p className="text-base sm:text-lg font-light text-white/80 max-w-2xl mx-auto">
-                Lassen Sie uns über Ihr Projekt sprechen. Unverbindlich und kostenlos.
+                Was Sie erwarten können: Professionelle Design-Analyse Ihrer aktuellen Lösung mit konkreten Verbesserungsvorschlägen und Optimierungspotenzial. 
+                Echter Mehrwert im Wert von 490 € – komplett kostenlos. Bearbeitung erfolgt unter Vorbehalt verfügbarer Kapazitäten.
               </p>
             </motion.div>
 
@@ -661,8 +789,8 @@ export default function KMULandingPage() {
               <Card className="glass-primary border-0 rounded-2xl sm:rounded-3xl">
                 <CardHeader className="pb-6 sm:pb-8">
                   <CardTitle className="text-xl sm:text-2xl font-light text-white flex items-center gap-3 justify-center">
-                    <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                    Projektanfrage
+                    <Star className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                    Design-Review Anfrage
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -715,33 +843,45 @@ export default function KMULandingPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="company" className="text-sm font-light text-white/70">
-                          Unternehmen
+                        <Label htmlFor="website" className="text-sm font-light text-white/70">
+                          Website/App/GitHub URL *
                         </Label>
                         <Input
-                          id="company"
-                          value={formData.company}
-                          onChange={(e) => setFormData({...formData, company: e.target.value})}
+                          id="website"
+                          required
+                          value={formData.website}
+                          onChange={(e) => setFormData({...formData, website: e.target.value})}
                           className="glass-secondary border-line-secondary bg-secondary/10 font-light text-white placeholder:text-white/50"
-                          placeholder="Ihr Unternehmen"
+                          placeholder="www.ihre-website.de, github.com/user/repo oder App Store Link"
                         />
                       </div>
                     </div>
 
+                    <div className="space-y-2">
+                      <Label htmlFor="company" className="text-sm font-light text-white/70">
+                        Unternehmen
+                      </Label>
+                      <Input
+                        id="company"
+                        value={formData.company}
+                        onChange={(e) => setFormData({...formData, company: e.target.value})}
+                        className="glass-secondary border-line-secondary bg-secondary/10 font-light text-white placeholder:text-white/50"
+                        placeholder="Ihr Unternehmen (optional)"
+                      />
+                    </div>
 
                     {/* Message */}
                     <div className="space-y-2">
                       <Label htmlFor="message" className="text-sm font-light text-white/70">
-                        Projektbeschreibung *
+                        Was ist Ihre größte Design-Herausforderung?
                       </Label>
                       <Textarea
                         id="message"
-                        required
                         rows={6}
                         value={formData.message}
                         onChange={(e) => setFormData({...formData, message: e.target.value})}
                         className="glass-secondary border-line-secondary bg-secondary/10 font-light resize-none text-white placeholder:text-white/50"
-                        placeholder="Erzählen Sie uns von Ihrem Projekt, Ihren Zielen und spezifischen Anforderungen..."
+                        placeholder="Beschreiben Sie Ihre aktuellen Design-Probleme und Ziele..."
                       />
                     </div>
 
@@ -760,13 +900,25 @@ export default function KMULandingPage() {
                       ) : (
                         <>
                           <Send className="w-4 h-4 mr-3" />
-                          Kostenlosen Termin buchen
+                          Kostenloses Design-Review anfordern
                         </>
                       )}
                     </Button>
+
+                    <p className="text-xs text-center text-white/60">
+                      Normalpreis: 490 € • Launch-Special: Kostenlos
+                    </p>
                   </form>
                 </CardContent>
               </Card>
+              
+              {/* Disclaimer */}
+              <div className="text-center mt-6">
+                <p className="text-xs text-white/50 max-w-md mx-auto leading-relaxed">
+                  * Buchung verpflichtet nicht zur Bearbeitung. Review erfolgt unter Vorbehalt verfügbarer Kapazitäten. 
+                  Unverbindlich und kostenlos.
+                </p>
+              </div>
             </motion.div>
 
             {/* Contact Info */}
@@ -792,7 +944,7 @@ export default function KMULandingPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-light text-white/80">24h Antwortzeit</span>
+                  <span className="text-sm font-light text-white/80">48h Antwortzeit</span>
                 </div>
               </div>
             </motion.div>
@@ -800,7 +952,7 @@ export default function KMULandingPage() {
         </div>
       </section>
 
-      {/* FAQ Section */}
+      {/* FAQ Section - Aufklappbar, ohne Hintergrundbild */}
       <section className="py-16 sm:py-24 lg:py-32">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
@@ -813,39 +965,54 @@ export default function KMULandingPage() {
               className="text-center mb-12 sm:mb-16"
             >
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light mb-4 sm:mb-6">
-                Häufige <span className="text-primary">Fragen</span>
+                Häufige <span className="text-primary">Design-Fragen</span>
               </h2>
+              <p className="text-lg font-light text-muted-foreground">
+                Alles was Sie über unsere Design-Services wissen müssen
+              </p>
             </motion.div>
 
-            <div className="space-y-6 sm:space-y-8">
-              {[
-                { 
-                  q: "Wie schnell sind Sie?", 
-                  a: "MVP innerhalb von 10 Tagen, Corporate Websites meist in 2–4 Wochen. Dank unserer agilen Arbeitsweise und klaren Prozesse können wir auch bei komplexen Projekten schnelle Ergebnisse liefern." 
-                },
-                { 
-                  q: "Arbeiten Sie auch mit bestehenden Agenturen?", 
-                  a: "Ja, wir sind Ihr White-Label-Partner für sauberes Development. Viele Agenturen nutzen unsere technische Expertise, um Kreativkonzepte und Pitch-Ideen professionell umzusetzen." 
-                },
-                { 
-                  q: "Welche Technologien nutzen Sie?", 
-                  a: "Wir setzen auf bewährte, moderne Technologien: React, Next.js, Tailwind CSS, Node.js, Supabase, Prisma, OpenAI-APIs und viele weitere. Unsere Tech-Stack-Entscheidungen treffen wir projektspezifisch für maximale Performance und Zukunftssicherheit." 
-                },
-                { 
-                  q: "Wie läuft die Zusammenarbeit ab?", 
-                  a: "Erstgespräch → Detailliertes Angebot → Agiler Sprint → Livegang. Wir arbeiten transparent mit regelmäßigen Updates, nutzen moderne Kollaborations-Tools und halten Sie stets über den Projektfortschritt informiert." 
-                }
-              ].map((faq, index) => (
+            <div className="space-y-4">
+              {designFAQs.map((faq, index) => (
                 <motion.div
-                  key={faq.q}
+                  key={index}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="white-tile rounded-2xl sm:rounded-3xl p-6 sm:p-8"
+                  transition={{ duration: 0.6, delay: index * 0.05 }}
+                  className="white-tile rounded-2xl sm:rounded-3xl border border-border/50 overflow-hidden"
                 >
-                  <h3 className="text-lg sm:text-xl font-light text-foreground mb-3 sm:mb-4">{faq.q}</h3>
-                  <p className="text-sm sm:text-base font-light text-muted-foreground leading-relaxed">{faq.a}</p>
+                  <button
+                    onClick={() => setExpandedFAQ(prev => ({...prev, [index]: !prev[index]}))}
+                    className="w-full flex items-center justify-between p-6 sm:p-8 text-left hover:bg-secondary/5 transition-colors"
+                  >
+                    <h3 className="text-lg sm:text-xl font-light text-foreground pr-4">
+                      {faq.q}
+                    </h3>
+                    <div className="flex-shrink-0">
+                      {expandedFAQ[index] ? (
+                        <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                      )}
+                    </div>
+                  </button>
+                  
+                  {expandedFAQ[index] && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="px-6 sm:px-8 pb-6 sm:pb-8"
+                    >
+                      <div className="pt-4 border-t border-border/20">
+                        <p className="text-sm sm:text-base font-light text-muted-foreground leading-relaxed">
+                          {faq.a}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
                 </motion.div>
               ))}
             </div>
@@ -864,9 +1031,7 @@ export default function KMULandingPage() {
               className="object-cover opacity-40 blur-sm scale-110"
             />
           )}
-          {/* Enhanced gradient overlay for better text readability */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
-          {/* Color overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/20 mix-blend-overlay" />
         </div>
 
@@ -879,35 +1044,41 @@ export default function KMULandingPage() {
             className="glass-primary rounded-2xl sm:rounded-3xl p-8 sm:p-12 lg:p-16 max-w-4xl mx-auto text-center"
           >
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full glass-primary bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-6 sm:mb-8">
-              <Rocket className="w-8 h-8 sm:w-10 sm:h-10 text-accent" />
+              <Palette className="w-8 h-8 sm:w-10 sm:h-10 text-accent" />
             </div>
             
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-light mb-4 sm:mb-6 text-white">
-              Bereit, Ihr Projekt zu starten?
+              Bereit für Design, das <span className="text-primary">konvertiert</span>?
             </h2>
             <p className="text-base sm:text-lg font-light text-white/80 mb-8 sm:mb-12 max-w-2xl mx-auto">
-              Buchen Sie jetzt ein unverbindliches Erstgespräch – wir bringen Ihr Projekt auf die Straße.
+              Sichern Sie sich jetzt Ihr kostenloses Design-Review und erfahren Sie, 
+              wie viel Potenzial in Ihrer Website steckt.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center">
+            
+            <div className="flex flex-col items-center gap-4">
               <Button 
                 size="lg" 
                 className="glass-accent border-line-accent bg-accent/20 hover:bg-accent/30 text-accent border px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg font-light rounded-full"
                 onClick={() => document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
-                Termin buchen
+                <Star className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
+                Kostenloses Review sichern
               </Button>
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="glass-secondary border-line-secondary text-white hover:bg-white/10 border px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg font-light rounded-full"
-                asChild
-              >
-                <Link href="/projects">
-                  <Eye className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
-                  Projekte ansehen
-                </Link>
-              </Button>
+              
+              <div className="flex items-center gap-6 text-sm text-white/60">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  100% kostenlos
+                </div>
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4" />
+                  Unverbindlich
+                </div>
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-4 h-4" />
+                  490 € Wert
+                </div>
+              </div>
             </div>
           </motion.div>
         </div>
