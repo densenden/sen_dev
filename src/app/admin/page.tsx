@@ -9,11 +9,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Upload, Plus, Edit2, Trash2, ExternalLink, Github, Users, FolderOpen, BarChart3, Settings } from "lucide-react"
+import { Upload, Plus, Edit2, Trash2, ExternalLink, Github, Users, FolderOpen, BarChart3, Settings, Calendar } from "lucide-react"
 import AdminNav from '@/components/admin-nav'
 import AdminFooter from '@/components/admin-footer'
 import ProjectManager from '@/components/admin/project-manager'
 import UserManager from '@/components/admin/user-manager'
+import AppointmentManager from '@/components/admin/appointment-manager'
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview")
@@ -29,7 +30,7 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               Overview
@@ -37,6 +38,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="projects" className="flex items-center gap-2">
               <FolderOpen className="w-4 h-4" />
               Projects
+            </TabsTrigger>
+            <TabsTrigger value="appointments" className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Appointments
             </TabsTrigger>
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
@@ -144,6 +149,10 @@ export default function AdminDashboard() {
 
           <TabsContent value="projects">
             <ProjectManager />
+          </TabsContent>
+
+          <TabsContent value="appointments">
+            <AppointmentManager />
           </TabsContent>
 
           <TabsContent value="users">
