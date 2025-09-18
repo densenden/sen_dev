@@ -121,18 +121,20 @@ const experienceData = [
 ]
 
 const skillsData = {
-  "Frontend Development": ["React", "Next.js", "TypeScript", "Tailwind CSS", "Framer Motion", "GSAP"],
-  "Backend Development": ["Node.js", "Python", "Flask", "FastAPI", "PostgreSQL", "Supabase"],
-  "AI & Integration": ["OpenAI API", "Whisper", "Vision API", "LangChain", "Vector Databases"],
-  "Infrastructure": ["Vercel", "Railway", "Docker", "GitHub Actions", "Netlify", "Firebase"],
-  "Design & UX": ["Figma", "Adobe Creative Suite", "Design Systems", "User Research", "Prototyping"],
-  "Business": ["Startup Strategy", "MVP Development", "Growth Marketing", "Investor Relations"]
+  "Frontend Development": ["React", "Next.js", "Vue.js", "TypeScript", "JavaScript", "HTML5", "CSS3", "Sass/SCSS", "Tailwind CSS", "Bootstrap", "Material-UI", "Chakra UI", "Ant Design"],
+  "Animation & Interaction": ["Framer Motion", "GSAP", "Lottie", "Three.js", "React Spring", "CSS Animations", "SVG Animations", "WebGL", "Canvas API"],
+  "Design Tools & Systems": ["Figma", "Adobe XD", "Sketch", "Adobe Creative Suite", "Photoshop", "Illustrator", "After Effects", "InVision", "Principle", "Design Systems", "Storybook"],
+  "UX/UI & Research": ["User Research", "Prototyping", "Wireframing", "User Testing", "A/B Testing", "Accessibility (WCAG)", "Responsive Design", "Mobile-First Design", "Design Thinking"],
+  "Backend Development": ["Node.js", "Python", "Flask", "FastAPI", "Express.js", "PostgreSQL", "MongoDB", "Supabase", "Firebase", "GraphQL", "REST APIs"],
+  "AI & Integration": ["OpenAI API", "Whisper", "Vision API", "LangChain", "Vector Databases", "Machine Learning", "TensorFlow", "Hugging Face"],
+  "Infrastructure & DevOps": ["Vercel", "Railway", "Docker", "GitHub Actions", "Netlify", "Firebase", "AWS", "CI/CD", "Linux", "Nginx"],
+  "Business & Strategy": ["Startup Strategy", "MVP Development", "Growth Marketing", "Investor Relations", "Product Management", "Agile/Scrum"]
 }
 
 
 export default function CVPage() {
-  const heroImage = "/cv-header.png"
-  const sectionImage = getRandomImage()
+  const heroImage = "/cv/cv-header.png"
+  const [sectionImage, setSectionImage] = useState("/random/hero-1.jpg")
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -148,6 +150,8 @@ export default function CVPage() {
       }
     }
 
+    // Set random image on client side to avoid hydration mismatch
+    setSectionImage(getRandomImage())
     fetchProjects()
   }, [])
   
@@ -162,6 +166,11 @@ export default function CVPage() {
             fill
             className="object-cover opacity-70"
             priority
+            onError={(e) => {
+              console.log('CV header image failed to load, using fallback');
+              const target = e.target as HTMLImageElement;
+              target.src = "/random/hero-1.jpg";
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/20 mix-blend-multiply" />
         </div>
@@ -176,14 +185,15 @@ export default function CVPage() {
               className="glass-primary rounded-3xl p-12"
             >
               {/* Header with photo */}
-              <div className="flex flex-col lg:flex-row gap-12 items-start lg:items-center mb-8">
-                <div className="relative">
-                  <div className="w-32 h-40 rounded-3xl overflow-hidden glass-primary border border-white/20">
+              <div className="grid lg:grid-cols-[320px_1fr] gap-12 mb-8">
+                {/* Left: Photo */}
+                <div className="relative mx-auto lg:mx-0">
+                  <div className="w-80 h-96 rounded-3xl overflow-hidden glass-primary border border-white/20">
                     <Image
                       src="/denis.png"
                       alt="Denis Kreuzer"
-                      width={128}
-                      height={160}
+                      width={320}
+                      height={384}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -192,7 +202,7 @@ export default function CVPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 1.2 }}
-                    className="absolute -top-3 -left-3 text-xs font-light text-white/60 bg-white/10 backdrop-blur-md rounded-full px-3 py-2"
+                    className="absolute -top-4 -left-4 text-xs font-light text-white/60 bg-white/10 backdrop-blur-md rounded-full px-3 py-2"
                   >
                     Available
                   </motion.div>
@@ -200,88 +210,67 @@ export default function CVPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 1.4 }}
-                    className="absolute -bottom-3 -right-3 text-xs font-light text-white/60 bg-white/10 backdrop-blur-md rounded-full px-3 py-2"
+                    className="absolute -bottom-4 -right-4 text-xs font-light text-white/60 bg-white/10 backdrop-blur-md rounded-full px-3 py-2"
                   >
                     Remote & On-site
                   </motion.div>
                 </div>
                 
-                <div className="flex-1">
-                  <h1 className="text-4xl md:text-5xl font-light text-white mb-2">
-                    {personalInfo.name}
-                  </h1>
-                  <p className="text-xl font-light text-white/90 mb-4">
-                    {personalInfo.title}
-                  </p>
-                  <p className="text-base font-light text-white/80 mb-6">
-                    {personalInfo.focus}
-                  </p>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm font-light text-white/70">
-                    <span className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      {personalInfo.location}
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <Mail className="w-4 h-4" />
-                      {personalInfo.email}
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <Phone className="w-4 h-4" />
-                      {personalInfo.phone}
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      {personalInfo.experience}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <Button 
-                    size="lg" 
-                    className="glass-accent border-line-accent bg-accent/10 hover:bg-accent/20 text-accent border px-6 py-3 text-sm font-light rounded-full"
-                    asChild
-                  >
-                    <Link href="/contact">
-                      <Mail className="mr-2 w-4 h-4" />
-                      Contact
-                    </Link>
-                  </Button>
-                  
-                  {/* Documents section with illustration */}
-                  <div className="relative">
-                    <div className="absolute -top-2 -right-2 w-16 h-12 opacity-20">
-                      <Image
-                        src="/cv/documents.png"
-                        alt="Documents"
-                        width={64}
-                        height={48}
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
+                {/* Right: Full width text content */}
+                <div className="space-y-6">
+                  <div>
+                    <h1 className="text-4xl md:text-5xl font-light text-white mb-2">
+                      {personalInfo.name}
+                    </h1>
+                    <p className="text-xl font-light text-white/90 mb-4">
+                      {personalInfo.title}
+                    </p>
+                    <p className="text-base font-light text-white/80 mb-6">
+                      {personalInfo.focus}
+                    </p>
                     
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm font-light text-white/70 mb-8">
+                      <span className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4" />
+                        {personalInfo.location}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        {personalInfo.email}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <Phone className="w-4 h-4" />
+                        {personalInfo.phone}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        {personalInfo.experience}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Action buttons below text */}
+                  <div className="flex flex-wrap gap-4">
                     <Button 
-                      variant="outline" 
                       size="lg" 
-                      className="glass-primary border-line-primary text-white hover:bg-primary/5 px-6 py-3 text-sm font-light rounded-full border mb-3 w-full"
+                      className="glass-accent border-line-accent bg-accent/10 hover:bg-accent/20 text-accent border px-8 py-3 text-sm font-light rounded-full"
                       asChild
                     >
-                      <a href="/denis-kreuzer-cv.pdf" download>
-                        <Download className="mr-2 w-4 h-4" />
-                        Download PDF
-                      </a>
+                      <Link href="/contact">
+                        <Mail className="mr-2 w-4 h-4" />
+                        Contact Me
+                      </Link>
                     </Button>
                     
                     <Button 
                       variant="outline" 
                       size="lg" 
-                      className="glass-primary border-line-primary text-white hover:bg-primary/5 px-6 py-3 text-sm font-light rounded-full border w-full"
+                      className="glass-primary border-line-primary text-white hover:bg-primary/5 px-8 py-3 text-sm font-light rounded-full border relative"
                       asChild
                     >
-                      <a href="/denis-kreuzer-portfolio.pdf" download>
-                        <FileText className="mr-2 w-4 h-4" />
-                        Portfolio
+                      <a href="/denis-kreuzer-cv.pdf" download>
+                        <Download className="mr-2 w-4 h-4" />
+                        Download CV
                       </a>
                     </Button>
                   </div>
@@ -293,7 +282,7 @@ export default function CVPage() {
       </section>
 
       {/* Professional Summary */}
-      <section className="py-16">
+      <section className="py-16 relative overflow-visible">
         <div className="container mx-auto px-8">
           <div className="max-w-4xl mx-auto">
             <motion.div
@@ -301,7 +290,7 @@ export default function CVPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
-              className="white-tile rounded-3xl p-8"
+              className="white-tile rounded-3xl p-8 relative overflow-hidden"
             >
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 rounded-full glass-primary border border-primary/20 flex items-center justify-center">
@@ -330,7 +319,7 @@ export default function CVPage() {
       </section>
 
       {/* Professional Experience */}
-      <section className="py-16">
+      <section className="py-16 relative overflow-visible">
         <div className="container mx-auto px-8">
           <div className="max-w-4xl mx-auto">
             <motion.div
@@ -385,8 +374,19 @@ export default function CVPage() {
       </section>
 
       {/* Education */}
-      <section className="py-16">
-        <div className="container mx-auto px-8">
+      <section className="py-16 relative overflow-hidden">
+        {/* Documents background for Education */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/cv/documents.png"
+            alt="Education Documents Background"
+            fill
+            className="object-cover opacity-20"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 via-background/80 to-background/90" />
+        </div>
+        
+        <div className="container mx-auto px-8 relative z-10">
           <div className="max-w-4xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -500,75 +500,20 @@ export default function CVPage() {
         </div>
       </section>
 
-      {/* Skills */}
-      <section className="py-16">
-        <div className="container mx-auto px-8">
-          <div className="max-w-4xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="mb-12"
-            >
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 rounded-full glass-primary border border-primary/20 flex items-center justify-center">
-                  <Code className="w-6 h-6 text-primary" />
-                </div>
-                <h2 className="text-3xl font-light text-foreground">Technical Skills</h2>
-              </div>
-              
-              {/* Skills Illustration */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 1, delay: 0.2 }}
-                className="flex justify-center mb-8"
-              >
-                <div className="relative max-w-md mx-auto">
-                  <Image
-                    src="/cv/skills.png"
-                    alt="Technical Skills Illustration"
-                    width={400}
-                    height={300}
-                    className="rounded-2xl"
-                  />
-                </div>
-              </motion.div>
-            </motion.div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {Object.entries(skillsData).map(([category, skills], index) => (
-                <motion.div
-                  key={category}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="white-tile rounded-3xl p-6"
-                >
-                  <h3 className="text-lg font-medium text-foreground mb-4">{category}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {skills.map((skill, skillIndex) => (
-                      <span 
-                        key={skillIndex}
-                        className="px-3 py-1 bg-primary/5 text-primary rounded-full text-xs font-light border border-primary/10"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
+      {/* Featured Projects */}
+      <section className="py-16 relative overflow-hidden">
+        {/* Swim background for Projects */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/cv/swim.png"
+            alt="Activity Background"
+            fill
+            className="object-cover opacity-15"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-background/85 to-background/95" />
         </div>
-      </section>
-
-      {/* Key Projects */}
-      <section className="py-16">
-        <div className="container mx-auto px-8">
+        
+        <div className="container mx-auto px-8 relative z-10">
           <div className="max-w-4xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -598,6 +543,7 @@ export default function CVPage() {
               transition={{ duration: 0.8 }}
               className="white-tile rounded-3xl p-8"
             >
+              
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
@@ -605,20 +551,19 @@ export default function CVPage() {
                       <th className="text-left py-4 px-2 font-light text-sm text-foreground">Project</th>
                       <th className="text-left py-4 px-2 font-light text-sm text-foreground">Description</th>
                       <th className="text-left py-4 px-2 font-light text-sm text-foreground">Tech Stack</th>
-                      <th className="text-left py-4 px-2 font-light text-sm text-foreground">Impact</th>
                       <th className="text-left py-4 px-2 font-light text-sm text-foreground">Link</th>
                     </tr>
                   </thead>
                   <tbody>
                     {loading ? (
                       <tr>
-                        <td colSpan={5} className="py-8 text-center">
+                        <td colSpan={4} className="py-8 text-center">
                           <div className="text-sm font-light text-muted-foreground">Loading projects...</div>
                         </td>
                       </tr>
                     ) : projects.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="py-8 text-center">
+                        <td colSpan={4} className="py-8 text-center">
                           <div className="text-sm font-light text-muted-foreground">No projects found.</div>
                         </td>
                       </tr>
@@ -673,9 +618,6 @@ export default function CVPage() {
                             <td className="py-4 px-2 text-xs font-light text-muted-foreground max-w-xs">
                               {techStack}
                             </td>
-                            <td className="py-4 px-2 text-xs font-light text-accent">
-                              {project.outcome || 'Successful delivery'}
-                            </td>
                             <td className="py-4 px-2">
                               {project.link_live ? (
                                 <a 
@@ -699,6 +641,64 @@ export default function CVPage() {
                 </table>
               </div>
             </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Technical Skills - with background image */}
+      <section className="py-16 relative overflow-hidden">
+        {/* Skills background image */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/cv/skills.png"
+            alt="Technical Skills Background"
+            fill
+            className="object-cover opacity-25"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background/80 to-background/90" />
+        </div>
+        
+        <div className="container mx-auto px-8 relative z-10">
+          <div className="max-w-4xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="mb-12"
+            >
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 rounded-full glass-primary border border-primary/20 flex items-center justify-center">
+                  <Code className="w-6 h-6 text-primary" />
+                </div>
+                <h2 className="text-3xl font-light text-foreground">Technical Skills</h2>
+              </div>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {Object.entries(skillsData).map(([category, skills], index) => (
+                <motion.div
+                  key={category}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  className="white-tile rounded-3xl p-6 backdrop-blur-sm"
+                >
+                  <h3 className="text-lg font-medium text-foreground mb-4">{category}</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {skills.map((skill, skillIndex) => (
+                      <span 
+                        key={skillIndex}
+                        className="px-3 py-1 bg-primary/5 text-primary rounded-full text-xs font-light border border-primary/10"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -765,6 +765,7 @@ export default function CVPage() {
                 </div>
                 
                 <div className="space-y-4">
+                  
                   <h3 className="text-xl font-light text-foreground mb-4">Quick Links</h3>
                   
                   <div className="space-y-3">
@@ -819,18 +820,8 @@ export default function CVPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
-              className="white-tile rounded-3xl p-12 text-center relative overflow-hidden"
+              className="white-tile rounded-3xl p-12 text-center"
             >
-              {/* Personal activity image */}
-              <div className="absolute top-4 right-4 w-24 h-24 opacity-10">
-                <Image
-                  src="/cv/swim.png"
-                  alt="Personal Activity"
-                  width={96}
-                  height={96}
-                  className="w-full h-full object-contain rounded-xl"
-                />
-              </div>
               
               <h2 className="text-3xl font-light text-foreground mb-6">
                 Looking for a <span className="text-accent">Senior Technical Leader</span>?

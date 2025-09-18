@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { Inter, Fira_Code } from "next/font/google";
 import StructuredData from "@/components/structured-data";
-import NavigationClean from "@/components/navigation-clean";
-import Footer from "@/components/footer";
 import { ThemeProvider } from "@/components/theme-provider";
 import GTProviderWrapper from "@/components/gt-provider-wrapper";
 import { GoogleTagManager, GoogleTagManagerNoscript } from "@/components/GoogleTagManager";
+import ConditionalLayout from "@/components/conditional-layout";
 import "./globals.css";
 
 const inter = Inter({
@@ -79,9 +78,9 @@ export default function RootLayout({
             disableTransitionOnChange
             themes={['light', 'dark', 'code']}
           >
-            <NavigationClean />
-            {children}
-            <Footer />
+            <ConditionalLayout>
+              {children}
+            </ConditionalLayout>
           </ThemeProvider>
         </GTProviderWrapper>
       </body>
