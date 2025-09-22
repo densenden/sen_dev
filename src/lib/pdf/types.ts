@@ -27,6 +27,7 @@ export interface CVProjectEntry {
   techStack: string[]
   year?: string
   caseStudyUrl?: string
+  thumbnail?: string
 }
 
 export interface CVData {
@@ -45,6 +46,8 @@ export interface CVData {
     phone: string
     location: string
     website?: string
+    linktree?: string
+    socials?: Array<{ label: string; url: string }>
   }
 }
 
@@ -63,6 +66,8 @@ export interface CoverLetterData {
     city: string
     phone: string
     email: string
+    linktree?: string
+    socials?: Array<{ label: string; url: string }>
   }
   recipient: CoverLetterRecipient
   jobUrl?: string

@@ -1,36 +1,49 @@
 "use client"
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Upload, Plus, Edit2, Trash2, ExternalLink, Github, Users, FolderOpen, BarChart3, Settings, Calendar } from "lucide-react"
+import { Users, FolderOpen, BarChart3, Settings, Calendar, Briefcase } from "lucide-react"
 import AdminNav from '@/components/admin-nav'
 import AdminFooter from '@/components/admin-footer'
 import ProjectManager from '@/components/admin/project-manager'
 import UserManager from '@/components/admin/user-manager'
 import AppointmentManager from '@/components/admin/appointment-manager'
+import JobManager from '@/components/admin/job-manager'
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState("overview")
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const defaultTab = useMemo(() => searchParams.get('tab') ?? 'overview', [searchParams])
+  const [activeTab, setActiveTab] = useState(defaultTab)
+
+  useEffect(() => {
+    setActiveTab(defaultTab)
+  }, [defaultTab])
 
   return (
     <div className="min-h-screen bg-background">
       <AdminNav />
       
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-black mb-2">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage your projects, users, and content</p>
-        </div>
+      <main className="container mx-auto px-4 py-4">
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => {
+            setActiveTab(value)
+            const params = new URLSearchParams(Array.from(searchParams.entries()))
+            params.set('tab', value)
+            router.replace(`?${params.toString()}`, { scroll: false })
+          }}
+          className="w-full"
+        >
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               Overview
@@ -38,6 +51,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="projects" className="flex items-center gap-2">
               <FolderOpen className="w-4 h-4" />
               Projects
+            </TabsTrigger>
+            <TabsTrigger value="job" className="flex items-center gap-2">
+              <Briefcase className="w-4 h-4" />
+              Job
             </TabsTrigger>
             <TabsTrigger value="appointments" className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
@@ -55,7 +72,7 @@ export default function AdminDashboard() {
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
+          <Card className="bg-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
                   <FolderOpen className="h-4 w-4 text-muted-foreground" />
@@ -149,6 +166,10 @@ export default function AdminDashboard() {
 
           <TabsContent value="projects">
             <ProjectManager />
+          </TabsContent>
+
+          <TabsContent value="job">
+            <JobManager />
           </TabsContent>
 
           <TabsContent value="appointments">
