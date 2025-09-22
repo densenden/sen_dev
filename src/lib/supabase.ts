@@ -114,6 +114,85 @@ export interface Database {
           updated_at?: string
         }
       }
+      job_applications: {
+        Row: {
+          id: string
+          role: string
+          company: string
+          job_url: string | null
+          status: 'pending' | 'in_progress' | 'sent' | 'denied'
+          applied_at: string | null
+          contact_name: string | null
+          contact_email: string | null
+          location: string | null
+          notes: string | null
+          job_description: string | null
+          cv_path: string | null
+          cover_letter_path: string | null
+          zip_path: string | null
+          scraped_at: string | null
+          gpt_model: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          role: string
+          company: string
+          job_url?: string | null
+          status?: 'pending' | 'in_progress' | 'sent' | 'denied'
+          applied_at?: string | null
+          contact_name?: string | null
+          contact_email?: string | null
+          location?: string | null
+          notes?: string | null
+          job_description?: string | null
+          cv_path?: string | null
+          cover_letter_path?: string | null
+          zip_path?: string | null
+          scraped_at?: string | null
+          gpt_model?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          role?: string
+          company?: string
+          job_url?: string | null
+          status?: 'pending' | 'in_progress' | 'sent' | 'denied'
+          applied_at?: string | null
+          contact_name?: string | null
+          contact_email?: string | null
+          location?: string | null
+          notes?: string | null
+          job_description?: string | null
+          cv_path?: string | null
+          cover_letter_path?: string | null
+          zip_path?: string | null
+          scraped_at?: string | null
+          gpt_model?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      job_application_projects: {
+        Row: {
+          job_application_id: string
+          project_id: string
+          created_at: string
+        }
+        Insert: {
+          job_application_id: string
+          project_id: string
+          created_at?: string
+        }
+        Update: {
+          job_application_id?: string
+          project_id?: string
+          created_at?: string
+        }
+      }
       projects: {
         Row: {
           id: string
