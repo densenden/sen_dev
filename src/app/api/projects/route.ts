@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(data)
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch projects' }, { status: 500 })
   }
 }
@@ -52,35 +52,55 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const baseInsert = {
+      title: body.title,
+      slug: body.slug,
+      summary: body.summary,
+      description: body.description,
+      tech_stack: body.tech_stack || [],
+      screenshots: body.screenshots || [],
+      tags: body.tags || [],
+      client_name: body.client_name,
+      outcome: body.outcome,
+      link_live: body.link_live ?? null
+    }
+
+    const extendedInsert = {
+      ...baseInsert,
+      video_demo: body.video_demo ?? null,
+      github_url: body.github_url ?? null,
+      github_readme: body.github_readme ?? null,
+      development_time_weeks: body.development_time_weeks ?? null,
+      is_featured: body.is_featured ?? false,
+      category: body.category ?? null
+    }
+
     const { data, error } = await supabase
       .from('projects')
-      .insert([{
-        title: body.title,
-        slug: body.slug,
-        summary: body.summary,
-        description: body.description,
-        tech_stack: body.tech_stack || [],
-        screenshots: body.screenshots || [],
-        video_demo: body.video_demo,
-        tags: body.tags || [],
-        client_name: body.client_name,
-        outcome: body.outcome,
-        link_live: body.link_live,
-        github_url: body.github_url,
-        github_readme: body.github_readme,
-        development_time_weeks: body.development_time_weeks,
-        is_featured: body.is_featured || false,
-        category: body.category
-      }])
+      .insert([extendedInsert])
       .select()
       .single()
 
-    if (error) {
+    if (!error) {
+      return NextResponse.json(data, { status: 201 })
+    }
+
+    if (!isMissingColumnError(error)) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    return NextResponse.json(data, { status: 201 })
-  } catch (error) {
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from('projects')
+      .insert([baseInsert])
+      .select()
+      .single()
+
+    if (fallbackError) {
+      return NextResponse.json({ error: fallbackError.message }, { status: 400 })
+    }
+
+    return NextResponse.json({ ...fallbackData, __warning: 'optional_fields_skipped' }, { status: 201 })
+  } catch {
     return NextResponse.json({ error: 'Failed to create project' }, { status: 500 })
   }
 }
@@ -97,37 +117,64 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Project ID required' }, { status: 400 })
     }
 
+    const baseUpdate = {
+      title: body.title,
+      slug: body.slug,
+      summary: body.summary,
+      description: body.description,
+      tech_stack: body.tech_stack,
+      screenshots: body.screenshots,
+      tags: body.tags,
+      client_name: body.client_name,
+      outcome: body.outcome,
+      link_live: body.link_live ?? null,
+      updated_at: new Date().toISOString()
+    }
+
+    const extendedUpdate = {
+      ...baseUpdate,
+      video_demo: body.video_demo ?? null,
+      github_url: body.github_url ?? null,
+      github_readme: body.github_readme ?? null,
+      development_time_weeks: body.development_time_weeks ?? null,
+      is_featured: body.is_featured ?? false,
+      category: body.category ?? null
+    }
+
     const { data, error } = await supabase
       .from('projects')
-      .update({
-        title: body.title,
-        slug: body.slug,
-        summary: body.summary,
-        description: body.description,
-        tech_stack: body.tech_stack,
-        screenshots: body.screenshots,
-        video_demo: body.video_demo,
-        tags: body.tags,
-        client_name: body.client_name,
-        outcome: body.outcome,
-        link_live: body.link_live,
-        github_url: body.github_url,
-        github_readme: body.github_readme,
-        development_time_weeks: body.development_time_weeks,
-        is_featured: body.is_featured,
-        category: body.category,
-        updated_at: new Date().toISOString()
-      })
+      .update(extendedUpdate)
       .eq('id', body.id)
       .select()
       .single()
 
-    if (error) {
+    if (!error) {
+      return NextResponse.json(data)
+    }
+
+    if (!isMissingColumnError(error)) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    return NextResponse.json(data)
-  } catch (error) {
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from('projects')
+      .update(baseUpdate)
+      .eq('id', body.id)
+      .select()
+      .single()
+
+    if (fallbackError) {
+      return NextResponse.json({ error: fallbackError.message }, { status: 400 })
+    }
+
+    return NextResponse.json({ ...fallbackData, __warning: 'optional_fields_skipped' })
+  } catch {
     return NextResponse.json({ error: 'Failed to update project' }, { status: 500 })
   }
+}
+
+function isMissingColumnError(error: { message: string }) {
+  if (!error?.message) return false
+  const msg = error.message.toLowerCase()
+  return msg.includes('schema cache') && msg.includes('column')
 }
