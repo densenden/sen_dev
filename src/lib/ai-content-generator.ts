@@ -1,23 +1,18 @@
 import { ContentGenerationError, type GeneratedContent, type ProjectInput } from '@/lib/project-content'
 
 export async function generateProjectContent(input: ProjectInput): Promise<GeneratedContent> {
-  if (typeof window !== 'undefined') {
-    const response = await fetch('/api/generate-project-content', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input)
-    })
+  const response = await fetch('/api/generate-project-content', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input)
+  })
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null)
-      throw new ContentGenerationError(errorData?.error || 'Failed to generate project content')
-    }
-
-    return response.json()
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null)
+    throw new ContentGenerationError(errorData?.error || 'Failed to generate project content')
   }
 
-  const { generateProjectContentServer } = await import('@/lib/server/ai-content-generator')
-  return generateProjectContentServer(input)
+  return response.json()
 }
 
 export function createFallbackContent(input: ProjectInput): GeneratedContent {
