@@ -14,17 +14,6 @@ FOR INSERT WITH CHECK (bucket_id = 'project-images' AND auth.role() = 'authentic
 CREATE POLICY "Allow delete for authenticated users" ON storage.objects 
 FOR DELETE USING (bucket_id = 'project-images' AND auth.role() = 'authenticated');
 
--- Update projects table to better support multiple images and GitHub integration
-ALTER TABLE projects ADD COLUMN IF NOT EXISTS github_url TEXT;
-ALTER TABLE projects ADD COLUMN IF NOT EXISTS github_readme TEXT;
-ALTER TABLE projects ADD COLUMN IF NOT EXISTS development_time_weeks INTEGER;
-ALTER TABLE projects ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT false;
-ALTER TABLE projects ADD COLUMN IF NOT EXISTS category TEXT;
-
--- Create index on featured projects
-CREATE INDEX IF NOT EXISTS idx_projects_featured ON projects(is_featured);
-CREATE INDEX IF NOT EXISTS idx_projects_category ON projects(category);
-
 -- Create contact submissions table
 CREATE TABLE IF NOT EXISTS contact_submissions (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -55,9 +44,36 @@ CREATE TRIGGER update_contact_submissions_updated_at
     BEFORE UPDATE ON contact_submissions 
     FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 
-CREATE TRIGGER update_projects_updated_at 
-    BEFORE UPDATE ON projects 
-    FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+-- Update projects table to better support multiple images and GitHub integration
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.tables
+    WHERE table_schema = 'public'
+      AND table_name = 'projects'
+  ) THEN
+    ALTER TABLE projects ADD COLUMN IF NOT EXISTS github_url TEXT;
+    ALTER TABLE projects ADD COLUMN IF NOT EXISTS github_readme TEXT;
+    ALTER TABLE projects ADD COLUMN IF NOT EXISTS development_time_weeks INTEGER;
+    ALTER TABLE projects ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT false;
+    ALTER TABLE projects ADD COLUMN IF NOT EXISTS category TEXT;
+
+    -- Create index on featured projects
+    CREATE INDEX IF NOT EXISTS idx_projects_featured ON projects(is_featured);
+    CREATE INDEX IF NOT EXISTS idx_projects_category ON projects(category);
+
+    -- Ensure projects trigger only created if table exists
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_trigger WHERE tgname = 'update_projects_updated_at'
+    ) THEN
+      CREATE TRIGGER update_projects_updated_at
+        BEFORE UPDATE ON projects
+        FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+    END IF;
+  END IF;
+END;
+$$;
 
 -- Create indexes for contact submissions
 CREATE INDEX IF NOT EXISTS idx_contact_submissions_status ON contact_submissions(status);

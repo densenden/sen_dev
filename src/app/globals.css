@@ -53,9 +53,9 @@
   --popover: rgba(255, 255, 255, 0.95);
   --popover-foreground: #000000;
   --primary: #6B3E52;
-  --primary-foreground: #000000;
+  --primary-foreground: #FFFFFF;
   --secondary: #0F0520;
-  --secondary-foreground: #000000;
+  --secondary-foreground: #FFFFFF;
   --muted: rgba(107, 62, 82, 0.1);
   --muted-foreground: rgba(0, 0, 0, 0.7);
   --accent: #F97316;

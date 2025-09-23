@@ -14,8 +14,8 @@ export const sampleCoverLetterData: CoverLetterData = {
     fullName: 'Denis Leif Kreuzer',
     street: 'Paradiesgasse 53',
     city: '60594 Frankfurt am Main',
-    phone: '+49 173 1234567',
-    email: 'hello@sen.dev',
+    phone: '+49 176 2095 7038',
+    email: 'denis@kreuzer.dk',
     linktree: 'https://sen.studio',
     socials: [
       { label: 'LinkedIn', url: 'https://www.linkedin.com/in/denisleifkreuzer/' },

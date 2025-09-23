@@ -282,7 +282,7 @@ export default function ContactPage() {
           </h1>
           <p className="text-lg font-light text-white/80 mb-8">
             {selectedSlot 
-              ? <T id="contact-success-appointment-desc" variables={{date: formatDate(timeSlots.find(s => s.id === selectedSlot)?.date || ''), time: timeSlots.find(s => s.id === selectedSlot)?.time || ''}}>Your consultation is scheduled for {"{date}"} at {"{time}"}. We will send you a calendar invite shortly.</T>
+              ? <T id="contact-success-appointment-desc" variables={{date: formatDate(timeSlots.find(s => s.id === selectedSlot)?.date || ''), time: timeSlots.find(s => s.id === selectedSlot)?.time || ''}}>Your consultation is scheduled for {{date}} at {{time}}. We will send you a calendar invite shortly.</T>
               : <T id="contact-success-message-desc">Thank you for reaching out. We will review your project details and get back to you within 24 hours.</T>
             }
           </p>

@@ -16,7 +16,8 @@ export default function GTProviderWrapper({ children }: { children: ReactNode })
 
   return (
     <GTClientProvider 
-      projectId="prj_x83xbh3yb5zv4vi5m4niclku" 
+      projectId={process.env.NEXT_PUBLIC_GT_PROJECT_ID || "prj_x83xbh3yb5zv4vi5m4niclku"}
+      developmentApiKey={process.env.NEXT_PUBLIC_GT_API_KEY}
       defaultLocale="en"
       locales={['en', 'de']}
       locale={currentLocale}

@@ -39,7 +39,6 @@ export async function POST(request: NextRequest) {
       .replace(/<[^>]*>/g, ' ')
       .replace(/\s+/g, ' ')
       .trim()
-      .slice(0, 2000) // Limit content length
 
     const content = {
       title: titleMatch?.[1] || '',

@@ -52,6 +52,12 @@ const styles = StyleSheet.create({
     height: 10,
     marginTop: -4
   },
+  inlineIcon: {
+    width: 9,
+    height: 9,
+    marginLeft: 2,
+    marginTop: -3
+  },
   headerDate: {
     fontSize: 9,
     color: '#94a3b8'
@@ -201,7 +207,7 @@ function ExternalLinkIcon({ href }: { href: string }) {
   const icon = getContactIconData('external')
   return (
     <Link src={href} style={styles.contactLink}>
-      <Svg viewBox={icon.viewBox} style={styles.contactIcon}>
+      <Svg viewBox={icon.viewBox} style={styles.inlineIcon}>
         <Path d={icon.path} fill={ICON_COLOR} />
       </Svg>
     </Link>

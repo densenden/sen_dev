@@ -1,8 +1,10 @@
 "use client"
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+
+import { CheckCircle2, Download, Loader2, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react'
 
 import AdminFooter from '@/components/admin-footer'
 import AdminNav from '@/components/admin-nav'
@@ -12,8 +14,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useProjects } from '@/hooks/use-data'
 import { sampleCoverLetterData } from '@/lib/pdf/sample-data'
+import { cn } from '@/lib/utils'
+import type { Database } from '@/lib/supabase'
 
 const STATUS_OPTIONS = [
   { value: 'pending', label: 'Pending' },
@@ -23,6 +29,110 @@ const STATUS_OPTIONS = [
 ] as const
 
 type StatusValue = (typeof STATUS_OPTIONS)[number]['value']
+
+const MAX_PROJECT_SELECTION = 4
+
+type ProjectRow = Database['public']['Tables']['projects']['Row']
+
+const KEYWORD_REGEX = /[a-z0-9+#]+/gi
+
+type PreviewType = 'cv' | 'cover-letter'
+
+function extractKeywords(input?: string | null): string[] {
+  if (!input) return []
+
+  const matches = input.match(KEYWORD_REGEX)
+  if (!matches) return []
+
+  return Array.from(new Set(matches.map((token) => token.toLowerCase()).filter((token) => token.length > 1)))
+}
+
+function countKeywordMatches(values: Array<string | null | undefined>, jobKeywords: Set<string>): number {
+  let matches = 0
+
+  for (const value of values) {
+    if (!value) continue
+    for (const token of extractKeywords(value)) {
+      if (jobKeywords.has(token)) {
+        matches += 1
+      }
+    }
+  }
+
+  return matches
+}
+
+function suggestProjectIds(
+  projects: ProjectRow[],
+  details: { role?: string; company?: string; description?: string }
+): string[] {
+  const jobKeywords = new Set<string>()
+  for (const keyword of extractKeywords(details.role)) jobKeywords.add(keyword)
+  for (const keyword of extractKeywords(details.company)) jobKeywords.add(keyword)
+  for (const keyword of extractKeywords(details.description)) jobKeywords.add(keyword)
+
+  const scored = projects.map((project) => {
+    const tags = Array.isArray(project.tags) ? project.tags : []
+    const techStack = Array.isArray(project.tech_stack) ? project.tech_stack : []
+
+    const tagMatches = countKeywordMatches(tags, jobKeywords)
+    const techMatches = countKeywordMatches(techStack, jobKeywords)
+    const titleMatches = countKeywordMatches([project.title], jobKeywords)
+    const summaryMatches = countKeywordMatches([project.summary], jobKeywords)
+    const categoryMatches = countKeywordMatches([project.category ?? null], jobKeywords)
+
+    const score = tagMatches * 3 + techMatches * 2 + titleMatches * 2 + Math.min(summaryMatches, 3) + categoryMatches
+
+    return {
+      id: project.id,
+      score,
+      isFeatured: project.is_featured,
+      createdAt: project.created_at,
+      title: project.title
+    }
+  })
+
+  scored.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score
+    if (a.isFeatured !== b.isFeatured) {
+      return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0)
+    }
+    if (a.createdAt && b.createdAt) {
+      return b.createdAt.localeCompare(a.createdAt)
+    }
+    return a.title.localeCompare(b.title)
+  })
+
+  const selected: string[] = []
+
+  for (const entry of scored) {
+    if (selected.includes(entry.id)) continue
+    if (selected.length < MAX_PROJECT_SELECTION) {
+      if (entry.score > 0 || jobKeywords.size === 0) {
+        selected.push(entry.id)
+      }
+    }
+  }
+
+  if (selected.length < MAX_PROJECT_SELECTION) {
+    const fallback = projects
+      .filter((project) => !selected.includes(project.id))
+      .sort((a, b) => {
+        if (a.is_featured !== b.is_featured) {
+          return (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0)
+        }
+        return a.title.localeCompare(b.title)
+      })
+      .map((project) => project.id)
+
+    for (const id of fallback) {
+      if (selected.length >= MAX_PROJECT_SELECTION) break
+      selected.push(id)
+    }
+  }
+
+  return selected.slice(0, MAX_PROJECT_SELECTION)
+}
 
 type JobFormState = {
   role: string
@@ -63,6 +173,38 @@ export default function NewJobApplicationPage() {
   const [drafting, setDrafting] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectionError, setSelectionError] = useState<string | null>(null)
+  const [pdfPreviews, setPdfPreviews] = useState<Record<PreviewType, string | undefined>>({
+    cv: undefined,
+    'cover-letter': undefined
+  })
+  const [previewScale, setPreviewScale] = useState<Record<PreviewType, number>>({
+    cv: 1,
+    'cover-letter': 1
+  })
+  const [activePreviewTab, setActivePreviewTab] = useState<PreviewType>('cover-letter')
+  const [previewLoading, setPreviewLoading] = useState<Record<PreviewType, boolean>>({
+    cv: false,
+    'cover-letter': false
+  })
+  const previewUrlsRef = useRef<Record<PreviewType, string | undefined>>({
+    cv: undefined,
+    'cover-letter': undefined
+  })
+
+  useEffect(() => {
+    previewUrlsRef.current = pdfPreviews
+  }, [pdfPreviews])
+
+  useEffect(() => {
+    return () => {
+      Object.values(previewUrlsRef.current).forEach((url) => {
+        if (url) {
+          URL.revokeObjectURL(url)
+        }
+      })
+    }
+  }, [])
 
   const handleScrape = async () => {
     if (!form.jobUrl) {
@@ -86,9 +228,13 @@ export default function NewJobApplicationPage() {
 
       const payload = await response.json()
       let combined = ''
+      let scrapedTitle = ''
+      let scrapedDescription = ''
       if (payload?.content) {
         try {
           const parsed = JSON.parse(payload.content)
+          scrapedTitle = (parsed.h1 || parsed.title || '').toString().trim()
+          scrapedDescription = (parsed.description || '').toString().trim()
           combined = [parsed.title, parsed.description, parsed.h1, parsed.content]
             .filter(Boolean)
             .join('\n\n')
@@ -97,8 +243,24 @@ export default function NewJobApplicationPage() {
         }
       }
 
+      const inferCompanyFromUrl = () => {
+        try {
+          const host = new URL(form.jobUrl).hostname
+          const parts = host.replace(/^www\./, '').split('.')
+          const base = parts[parts.length - 2] || parts[0]
+          return base ? base.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : ''
+        } catch {
+          return ''
+        }
+      }
+
+      const inferredRole = scrapedTitle || combined.split('\n')[0]?.trim() || ''
+      const inferredCompany = inferCompanyFromUrl()
+
       setForm((prev) => ({
         ...prev,
+        role: prev.role || inferredRole,
+        company: prev.company || inferredCompany,
         jobDescription: combined || prev.jobDescription
       }))
     } catch (err) {
@@ -133,15 +295,45 @@ export default function NewJobApplicationPage() {
 
       const payload = await response.json()
       const data = payload.data ?? {}
+      const today = new Date().toISOString().slice(0, 10)
+
+      const suggestedProjectIds =
+        projects.length > 0
+          ? suggestProjectIds(projects, {
+              role: data.role || form.role,
+              company: data.company || form.company,
+              description: data.jobDescription || form.jobDescription
+            })
+          : []
+
+      if (suggestedProjectIds.length > 0) {
+        setSelectionError(null)
+      }
+
+      const fallback = {
+        contactName: 'Hiring Manager',
+        contactEmail: 'name@example.com',
+        location: 'Remote / Frankfurt',
+        notes: 'Next follow-up, warm intro, tone preferences...'
+      }
 
       setForm((prev) => ({
         ...prev,
         role: data.role || prev.role,
         company: data.company || prev.company,
-        contactName: data.contactName || prev.contactName,
+        jobUrl: data.jobUrl || prev.jobUrl,
+        contactName: data.contactName || prev.contactName || fallback.contactName,
+        contactEmail: data.contactEmail || prev.contactEmail || fallback.contactEmail,
+        location: data.location || prev.location || fallback.location,
         jobDescription: data.jobDescription || prev.jobDescription,
         coverLetter: data.coverLetter || prev.coverLetter,
-        notes: data.notes || prev.notes
+        notes: prev.notes || fallback.notes,
+        status: prev.status || data.status || 'pending',
+        appliedDate: prev.appliedDate || data.appliedDate || today,
+        projectIds:
+          suggestedProjectIds.length > 0
+            ? suggestedProjectIds
+            : prev.projectIds.slice(0, MAX_PROJECT_SELECTION)
       }))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to generate AI draft')
@@ -150,34 +342,62 @@ export default function NewJobApplicationPage() {
     }
   }
 
-  const handlePreviewPdf = async (type: 'cv' | 'cover-letter') => {
+  const handleToggleProject = (projectId: string) => {
+    setSelectionError(null)
+
+    setForm((prev) => {
+      const isSelected = prev.projectIds.includes(projectId)
+
+      if (isSelected) {
+        return {
+          ...prev,
+          projectIds: prev.projectIds.filter((id) => id !== projectId)
+        }
+      }
+
+      if (prev.projectIds.length >= MAX_PROJECT_SELECTION) {
+        setSelectionError(`Select up to ${MAX_PROJECT_SELECTION} projects.`)
+        return prev
+      }
+
+      return {
+        ...prev,
+        projectIds: [...prev.projectIds, projectId]
+      }
+    })
+  }
+
+  const fetchPdf = async (type: PreviewType, { focusTab = true }: { focusTab?: boolean } = {}) => {
     const endpoint = type === 'cv' ? '/api/pdf/cv' : '/api/pdf/cover-letter'
 
-    try {
-      const payload =
-        type === 'cv'
-          ? {
-              project_ids: form.projectIds
+    const payload =
+      type === 'cv'
+        ? {
+            project_ids: form.projectIds
+          }
+        : {
+            data: {
+              applicant: sampleCoverLetterData.applicant,
+              recipient: {
+                company: form.company || 'Unternehmen',
+                contactPerson: form.contactName || undefined,
+                role: form.role || 'Position'
+              },
+              jobUrl: form.jobUrl || undefined,
+              subject: `Bewerbung als ${form.role || 'Position'}`,
+              body: form.coverLetter || sampleCoverLetterData.body,
+              date: new Intl.DateTimeFormat('de-DE', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+              }).format(new Date())
             }
-          : {
-              data: {
-                applicant: sampleCoverLetterData.applicant,
-                recipient: {
-                  company: form.company || 'Unternehmen',
-                  contactPerson: form.contactName || undefined,
-                  role: form.role || 'Position'
-                },
-                jobUrl: form.jobUrl || undefined,
-                subject: `Bewerbung als ${form.role || 'Position'}`,
-                body: form.coverLetter || sampleCoverLetterData.body,
-                date: new Intl.DateTimeFormat('de-DE', {
-                  day: '2-digit',
-                  month: 'long',
-                  year: 'numeric'
-                }).format(new Date())
-              }
-            }
+          }
 
+    setPreviewLoading((prev) => ({ ...prev, [type]: true }))
+    setError(null)
+
+    try {
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -185,16 +405,148 @@ export default function NewJobApplicationPage() {
       })
 
       if (!response.ok) {
-        throw new Error('PDF generation failed')
+        const errorPayload = await response.json().catch(() => null)
+        const message = errorPayload?.error ?? 'PDF generation failed'
+        throw new Error(message)
       }
 
       const blob = await response.blob()
       const url = URL.createObjectURL(blob)
-      window.open(url, '_blank', 'noopener,noreferrer')
-      setTimeout(() => URL.revokeObjectURL(url), 60_000)
+
+      setPdfPreviews((prev) => {
+        if (prev[type]) {
+          URL.revokeObjectURL(prev[type] as string)
+        }
+        const next = { ...prev, [type]: url }
+        previewUrlsRef.current = next
+        return next
+      })
+      setPreviewScale((prev) => ({ ...prev, [type]: 1 }))
+      if (focusTab) {
+        setActivePreviewTab(type)
+      }
+      return url
     } catch (err) {
+      console.error('Unable to generate preview PDF:', err)
       setError(err instanceof Error ? err.message : 'Unable to generate preview PDF')
+      return undefined
+    } finally {
+      setPreviewLoading((prev) => ({ ...prev, [type]: false }))
     }
+  }
+
+  const handlePreviewPdf = async (type: PreviewType) => {
+    await fetchPdf(type, { focusTab: true })
+  }
+
+  const handleDownloadPdf = async (type: PreviewType) => {
+    const existingUrl = pdfPreviews[type]
+    const url = existingUrl || (await fetchPdf(type, { focusTab: false }))
+
+    if (!url) return
+
+    const link = document.createElement('a')
+    link.href = url
+    link.download = type === 'cv' ? 'cv-preview.pdf' : 'cover-letter-preview.pdf'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const adjustPreviewScale = (type: PreviewType, delta: number) => {
+    setPreviewScale((prev) => {
+      const current = prev[type]
+      const next = Math.min(2, Math.max(0.5, parseFloat((current + delta).toFixed(2))))
+      return { ...prev, [type]: next }
+    })
+  }
+
+  const resetPreviewScale = (type: PreviewType) => {
+    setPreviewScale((prev) => ({ ...prev, [type]: 1 }))
+  }
+
+  const renderPreviewPanel = (type: PreviewType) => {
+    const isLoading = previewLoading[type]
+    const url = pdfPreviews[type]
+    const hasPdf = Boolean(url)
+    const scale = previewScale[type]
+    const canZoomOut = scale > 0.55
+    const canZoomIn = scale < 1.95
+
+    return (
+      <div className="mt-4 space-y-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-muted-foreground">
+            {hasPdf
+              ? 'Use the zoom controls or download the PDF below.'
+              : 'Generate a preview to display the PDF right here.'}
+          </p>
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => adjustPreviewScale(type, -0.15)}
+              disabled={!hasPdf || isLoading || !canZoomOut}
+              aria-label="Zoom out"
+            >
+              <ZoomOut className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => resetPreviewScale(type)}
+              disabled={!hasPdf || isLoading || scale === 1}
+              aria-label="Reset zoom"
+            >
+              <RotateCcw className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => adjustPreviewScale(type, 0.15)}
+              disabled={!hasPdf || isLoading || !canZoomIn}
+              aria-label="Zoom in"
+            >
+              <ZoomIn className="h-4 w-4" />
+            </Button>
+            <span className="ml-2 text-xs font-medium text-muted-foreground">{Math.round(scale * 100)}%</span>
+          </div>
+        </div>
+        <div className="relative h-[460px] overflow-hidden rounded-lg border bg-background">
+          {isLoading ? (
+            <div className="flex h-full items-center justify-center text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin" />
+            </div>
+          ) : hasPdf ? (
+            <div className="flex h-full w-full items-start justify-center overflow-auto bg-muted/10 p-4">
+              <div
+                className="min-w-[600px]"
+                style={{
+                  transform: `scale(${scale})`,
+                  transformOrigin: 'top center',
+                  width: `${(1 / scale) * 100}%`
+                }}
+              >
+                <iframe
+                  src={url}
+                  title={type === 'cv' ? 'CV preview' : 'Cover letter preview'}
+                  className="h-[820px] w-full border-0"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="flex h-full items-center justify-center px-6 text-center text-sm text-muted-foreground">
+              {type === 'cv'
+                ? 'Generate the CV preview to display it here.'
+                : 'Generate the cover-letter preview to display it here.'}
+            </div>
+          )}
+        </div>
+      </div>
+    )
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -295,17 +647,37 @@ export default function NewJobApplicationPage() {
             </CardContent>
           </Card>
 
+          <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/10 p-6 text-center">
+            <Button type="button" onClick={handleGenerateDraft} disabled={drafting}>
+              {drafting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating…
+                </>
+              ) : (
+                'Generate AI Draft'
+              )}
+            </Button>
+            {drafting ? (
+              <div className="w-48">
+                <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
+                  <div className="h-full w-full animate-pulse bg-primary" />
+                </div>
+              </div>
+            ) : null}
+            <p className="text-xs text-muted-foreground">
+              {drafting ? 'Generating cover letter draft…' : 'Generate an AI draft once the job description looks good.'}
+            </p>
+          </div>
+
           <Card>
-            <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <CardHeader>
               <div>
                 <CardTitle>2. AI Draft & Details</CardTitle>
                 <CardDescription>
                   Fill in key fields, generate the cover letter draft, then refine as needed.
                 </CardDescription>
               </div>
-              <Button type="button" variant="outline" onClick={handleGenerateDraft} disabled={drafting}>
-                {drafting ? 'Generating…' : 'Generate AI Draft'}
-              </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
@@ -413,51 +785,182 @@ export default function NewJobApplicationPage() {
                   placeholder="Generate and refine the AI draft here."
                 />
                 <div className="flex justify-end">
-                  <Button type="button" variant="outline" onClick={() => handlePreviewPdf('cover-letter')}>
-                    Preview Letter
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handlePreviewPdf('cover-letter')}
+                    disabled={previewLoading['cover-letter']}
+                  >
+                    {previewLoading['cover-letter'] ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating…
+                      </>
+                    ) : (
+                      'Open Preview'
+                    )}
                   </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>3. Projects & Assets</CardTitle>
+        <div className="rounded-lg border border-dashed border-muted-foreground/30 bg-muted/10 p-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <h3 className="text-base font-medium">PDF Preview</h3>
+              <p className="text-xs text-muted-foreground">
+                Preview cover letter and CV in-place—refresh the files with the buttons whenever needed.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handlePreviewPdf('cover-letter')}
+                disabled={previewLoading['cover-letter']}
+              >
+                {previewLoading['cover-letter'] ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating…
+                  </>
+                ) : (
+                  'Preview Letter'
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handlePreviewPdf('cv')}
+                disabled={previewLoading.cv}
+              >
+                {previewLoading.cv ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating…
+                  </>
+                ) : (
+                  'Preview CV'
+                )}
+              </Button>
+            </div>
+          </div>
+
+          <Tabs
+            value={activePreviewTab}
+            onValueChange={(value) => setActivePreviewTab(value as PreviewType)}
+            className="mt-4 w-full"
+          >
+            <TabsList>
+              <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
+              <TabsTrigger value="cv">CV</TabsTrigger>
+            </TabsList>
+            <TabsContent value="cover-letter">{renderPreviewPanel('cover-letter')}</TabsContent>
+            <TabsContent value="cv">{renderPreviewPanel('cv')}</TabsContent>
+          </Tabs>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>3. Projects & Assets</CardTitle>
               <CardDescription>
                 Select matching projects, preview the PDFs, then save the application.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
-                <Label>Matching projects</Label>
-                <div className="rounded-md border">
-                  <div className="divide-y">
-                    {projects.map((project) => (
-                      <label key={project.id} className="flex items-start gap-3 px-4 py-3">
-                        <input
-                          type="checkbox"
-                          className="mt-1"
-                          checked={form.projectIds.includes(project.id)}
-                          onChange={(event) =>
-                            setForm((prev) => ({
-                              ...prev,
-                              projectIds: event.target.checked
-                                ? [...prev.projectIds, project.id]
-                                : prev.projectIds.filter((id) => id !== project.id)
-                            }))
-                          }
-                        />
-                        <span className="text-sm">
-                          <span className="font-medium">{project.title}</span>
-                          <span className="block text-muted-foreground">
-                            {project.tags?.join(' • ') ?? project.summary}
-                          </span>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
+                <div className="flex items-center justify-between gap-2">
+                  <Label>Matching projects</Label>
+                  <span className="text-xs text-muted-foreground">
+                    {form.projectIds.length}/{MAX_PROJECT_SELECTION} selected
+                  </span>
                 </div>
+
+                {projects.length > 0 ? (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {projects.map((project) => {
+                      const isSelected = form.projectIds.includes(project.id)
+                      const reachedLimit = form.projectIds.length >= MAX_PROJECT_SELECTION && !isSelected
+                      const keywords = Array.isArray(project.tags) ? project.tags.slice(0, 4) : []
+                      const techStack = Array.isArray(project.tech_stack)
+                        ? Array.from(new Set(project.tech_stack)).slice(0, 6)
+                        : []
+
+                      return (
+                        <button
+                          key={project.id}
+                          type="button"
+                          onClick={() => handleToggleProject(project.id)}
+                          aria-pressed={isSelected}
+                          aria-disabled={reachedLimit}
+                          className={cn(
+                            'group flex h-full flex-col gap-3 rounded-xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
+                            isSelected
+                              ? 'border-primary bg-primary/5 shadow-sm'
+                              : 'hover:border-primary/40 hover:bg-muted/40',
+                            reachedLimit ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                          )}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium leading-snug text-foreground">
+                                {project.title}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {project.client_name}
+                              </p>
+                            </div>
+                            <CheckCircle2
+                              aria-hidden
+                              className={cn(
+                                'h-5 w-5 shrink-0 text-primary transition-opacity',
+                                isSelected ? 'opacity-100' : 'opacity-0'
+                              )}
+                            />
+                          </div>
+
+                          <p className="text-xs text-muted-foreground">
+                            {project.summary}
+                          </p>
+
+                          {keywords.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {keywords.map((keyword) => (
+                                <Badge
+                                  key={`${project.id}-keyword-${keyword}`}
+                                  variant="secondary"
+                                  className="text-[10px] uppercase tracking-wide"
+                                >
+                                  {keyword}
+                                </Badge>
+                              ))}
+                            </div>
+                          ) : null}
+
+                          {techStack.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {techStack.map((tech) => (
+                                <Badge
+                                  key={`${project.id}-tech-${tech}`}
+                                  variant="outline"
+                                  className="text-[10px]"
+                                >
+                                  {tech}
+                                </Badge>
+                              ))}
+                            </div>
+                          ) : null}
+                        </button>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No projects available yet.</p>
+                )}
+
+                {selectionError ? (
+                  <p className="text-xs text-destructive">{selectionError}</p>
+                ) : null}
               </div>
 
               {error ? (
@@ -468,11 +971,11 @@ export default function NewJobApplicationPage() {
 
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex gap-2">
-                  <Button type="button" variant="outline" onClick={() => handlePreviewPdf('cv')}>
-                    Preview CV
+                  <Button type="button" variant="outline" onClick={() => handleDownloadPdf('cv')}>
+                    <Download className="mr-2 h-4 w-4" /> Download CV
                   </Button>
-                  <Button type="button" variant="outline" onClick={() => handlePreviewPdf('cover-letter')}>
-                    Preview Letter
+                  <Button type="button" variant="outline" onClick={() => handleDownloadPdf('cover-letter')}>
+                    <Download className="mr-2 h-4 w-4" /> Download Letter
                   </Button>
                 </div>
                 <div className="flex gap-2">
@@ -480,7 +983,7 @@ export default function NewJobApplicationPage() {
                     Cancel
                   </Button>
                   <Button type="submit" disabled={submitting}>
-                    {submitting ? 'Creating…' : 'Create Application'}
+                    {submitting ? 'Saving…' : 'Save Application'}
                   </Button>
                 </div>
               </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTheme } from 'next-themes'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -20,12 +21,23 @@ import JobManager from '@/components/admin/job-manager'
 export default function AdminDashboard() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { theme, setTheme } = useTheme()
   const defaultTab = useMemo(() => searchParams.get('tab') ?? 'overview', [searchParams])
   const [activeTab, setActiveTab] = useState(defaultTab)
+  const [selectedTheme, setSelectedTheme] = useState(theme || 'system')
 
   useEffect(() => {
     setActiveTab(defaultTab)
   }, [defaultTab])
+
+  useEffect(() => {
+    setSelectedTheme(theme || 'system')
+  }, [theme])
+
+  const handleSaveSettings = () => {
+    setTheme(selectedTheme)
+    // Add other settings save logic here
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -183,6 +195,28 @@ export default function AdminDashboard() {
           <TabsContent value="settings" className="space-y-6">
             <Card>
               <CardHeader>
+                <CardTitle>Appearance</CardTitle>
+                <CardDescription>Customize the look and feel of the application</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="theme">Theme</Label>
+                  <Select value={selectedTheme} onValueChange={setSelectedTheme}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select theme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="light">Light</SelectItem>
+                      <SelectItem value="dark">Dark</SelectItem>
+                      <SelectItem value="system">System</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
                 <CardTitle>System Settings</CardTitle>
                 <CardDescription>Configure application settings</CardDescription>
               </CardHeader>
@@ -221,7 +255,7 @@ export default function AdminDashboard() {
                   </Select>
                 </div>
                 
-                <Button>Save Settings</Button>
+                <Button onClick={handleSaveSettings}>Save Settings</Button>
               </CardContent>
             </Card>
           </TabsContent>

@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     paddingRight: 24
   },
   name: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 600,
     color: '#0f172a',
     letterSpacing: 0.4
@@ -72,59 +72,47 @@ const styles = StyleSheet.create({
     objectFit: 'cover'
   },
   section: {
-    marginBottom: 18
+    marginBottom: 14
   },
   sectionTitle: {
     fontSize: 9,
     fontWeight: 600,
     color: '#64748b',
-    letterSpacing: 1.2,
+    letterSpacing: 1.1,
     textTransform: 'uppercase'
   },
   sectionBody: {
-    marginTop: 8,
-    gap: 8
+    marginTop: 6,
+    gap: 6
   },
   bodyText: {
     fontSize: 10,
-    color: '#1e293b'
+    color: '#1e293b',
+    lineHeight: 1.4
   },
-  skillGroup: {
-    marginTop: 4
-  },
-  skillInlineContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 8,
-    gap: 14
-  },
-  skillInlineItem: {
+  compactText: {
     fontSize: 9,
     color: '#1e293b',
-    marginRight: 56
-  },
-  skillInlineLabel: {
-    fontWeight: 600,
-    color: '#475569',
-    textTransform: 'uppercase'
+    lineHeight: 1.0
   },
   bulletList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 1,
-    marginTop: 2
+    gap: 0,
+    marginTop: 0
   },
   bulletItem: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    marginBottom: -0.5
   },
   bulletSymbol: {
     width: 10,
-    color: '#94a3b8'
+    color: '#1d4ed8'
   },
   bulletContent: {
     flex: 1,
     color: '#1e293b',
-    lineHeight: 0.5
+    lineHeight: 0.8
   },
   experienceCompany: {
     fontWeight: 600,
@@ -138,13 +126,13 @@ const styles = StyleSheet.create({
   experienceMeta: {
     fontSize: 9,
     color: '#94a3b8',
-    marginTop: 2,
-    marginBottom: 6
+    marginTop: 1,
+    marginBottom: 1
   },
   divider: {
     height: 1,
     backgroundColor: '#e2e8f0',
-    marginVertical: 18
+    marginVertical: 6
   },
   link: {
     color: '#1d4ed8',
@@ -154,33 +142,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    rowGap: 16,
-    columnGap: 16
+    rowGap: 6,
+    columnGap: 6
   },
   projectCard: {
     width: '48%',
-    borderRadius: 10,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    padding: 12,
+    padding: 10,
+    flexDirection: 'column',
+    gap: 6
+  },
+  projectHeader: {
     flexDirection: 'row',
-    gap: 10,
+    justifyContent: 'space-between',
     alignItems: 'flex-start'
   },
-  projectThumb: {
-    width: 58,
-    height: 58,
-    borderRadius: 8,
-    objectFit: 'cover'
+  projectMeta: {
+    fontSize: 9,
+    color: '#94a3b8',
+    marginBottom: 2
   },
-  projectDetails: {
-    flex: 1
+  projectDescription: {
+    color: '#1e293b',
+    lineHeight: 0.5
   },
   externalIcon: {
-    width: 10,
-    height: 10,
-    marginLeft: 4,
-    marginTop: -1
+    width: 9,
+    height: 9,
+    marginLeft: 2,
+    marginTop: -3
   },
   metaRow: {
     flexDirection: 'row',
@@ -188,10 +180,10 @@ const styles = StyleSheet.create({
     gap: 4
   },
   footer: {
-    marginTop: 24,
+    marginTop: 6,
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
-    paddingTop: 12,
+    paddingTop: 6,
     alignItems: 'flex-start'
   },
   statusText: {
@@ -280,7 +272,7 @@ function BulletList({ items }: { items: string[] }) {
 function ExperienceEntry({ entry }: { entry: CVExperienceEntry }) {
   const highlights = entry.highlights.slice(0, 2)
   return (
-    <View style={{ marginBottom: 14 }}>
+    <View style={{ marginBottom: 10 }}>
       <Text style={styles.experienceCompany}>{entry.company}</Text>
       <Text style={styles.experienceRole}>{entry.role}</Text>
       <View style={styles.metaRow}>
@@ -298,19 +290,14 @@ function ExperienceEntry({ entry }: { entry: CVExperienceEntry }) {
 function ProjectEntry({ project }: { project: CVProjectEntry }) {
   return (
     <View style={styles.projectCard}>
-      {project.thumbnail ? (
-        <Image src={project.thumbnail} style={styles.projectThumb} alt={project.title} />
-      ) : null}
-      <View style={styles.projectDetails}>
+      <View style={styles.projectHeader}>
         <Text style={styles.experienceCompany}>{project.title}</Text>
-        <View style={styles.metaRow}>
-          <Text style={styles.experienceMeta}>
-            {project.year ? `${project.year} • ` : ''}{project.techStack.join(', ')}
-          </Text>
-          {project.caseStudyUrl ? <ExternalLinkIcon href={project.caseStudyUrl} /> : null}
-        </View>
-        <Text style={{ color: '#1e293b' }}>{project.summary}</Text>
+        {project.caseStudyUrl ? <ExternalLinkIcon href={project.caseStudyUrl} /> : null}
       </View>
+      <Text style={styles.projectMeta}>
+        {project.year ? `${project.year} • ` : ''}{project.techStack.join(', ')}
+      </Text>
+      <Text style={styles.projectDescription}>{project.summary}</Text>
     </View>
   )
 }
@@ -321,6 +308,14 @@ export function CVDocument({ data, portraitUrl, creationDate }: CVDocumentProps)
     month: 'long',
     year: 'numeric'
   }).format(new Date())
+
+  const summaryParagraph = Array.isArray(data.summaryLines) && data.summaryLines.length > 0
+    ? data.summaryLines.join(' ')
+    : data.summary.replace(/\s+/g, ' ').trim()
+
+  const technicalSkillsParagraph = data.technicalSkills
+    .map((group) => `${group.label}: ${group.items.join(', ')}`)
+    .join(' • ')
 
   return (
     <Document>
@@ -336,8 +331,10 @@ export function CVDocument({ data, portraitUrl, creationDate }: CVDocumentProps)
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Summary</Text>
-          <Text style={[styles.bodyText, { marginTop: 8 }]}>{data.summary}</Text>
+          <Text style={[styles.bodyText, { marginTop: 8 }]}>{summaryParagraph}</Text>
         </View>
+
+        <View style={styles.divider} />
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Experience</Text>
@@ -346,8 +343,7 @@ export function CVDocument({ data, portraitUrl, creationDate }: CVDocumentProps)
           ))}
         </View>
 
-        <View style={styles.divider} />
-        <View break />
+
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Education</Text>
@@ -367,24 +363,27 @@ export function CVDocument({ data, portraitUrl, creationDate }: CVDocumentProps)
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Technical Skills</Text>
-          <View style={styles.skillInlineContainer}>
-            {data.technicalSkills.map((group) => (
-              <Text key={group.label} style={styles.skillInlineItem}>
-                <Text style={styles.skillInlineLabel}>{group.label}:</Text>
-                <Text> {group.items.join(', ')}</Text>
-              </Text>
-            ))}
-          </View>
+          <Text style={[styles.bodyText, { marginTop: 8 }]}>{technicalSkillsParagraph}</Text>
         </View>
 
-        <View style={styles.divider} />
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Soft Skills</Text>
-          <Text style={styles.skillText}>{data.softSkills.join(', ')}</Text>
+          <Text style={[styles.bodyText, { marginTop: 6 }]}>{data.softSkills.join(', ')}</Text>
         </View>
 
-        <View style={styles.divider} />
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Languages</Text>
+          <Text style={styles.bodyText}>{data.languages.join(', ')}</Text>
+        </View>
+
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Interests</Text>
+          <Text style={styles.bodyText}>{data.interests.join(', ')}</Text>
+        </View>
+
 
         <View style={styles.section}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
@@ -398,19 +397,6 @@ export function CVDocument({ data, portraitUrl, creationDate }: CVDocumentProps)
           </View>
         </View>
 
-        <View style={styles.divider} />
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Languages</Text>
-          <Text style={styles.bodyText}>{data.languages.join(', ')}</Text>
-        </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Interests</Text>
-          <Text style={styles.bodyText}>{data.interests.join(', ')}</Text>
-        </View>
 
         <View style={styles.footer}>
           <Text style={styles.statusText}>Status: {generatedDate}</Text>

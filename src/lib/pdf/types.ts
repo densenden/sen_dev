@@ -34,6 +34,7 @@ export interface CVData {
   fullName: string
   title: string
   summary: string
+  summaryLines?: string[]
   technicalSkills: CVTechnicalSkillGroup[]
   softSkills: string[]
   experience: CVExperienceEntry[]

@@ -2,14 +2,24 @@ import { NextResponse } from 'next/server'
 
 import { fetchJobApplications, insertJobApplication } from '@/lib/jobs'
 import { getServiceSupabase } from '@/lib/server/supabase-admin'
+import { loadLocalJobApplications, saveLocalJobApplication } from '@/lib/server/job-local-store'
 
 export async function GET() {
   try {
     const client = getServiceSupabase()
     const applications = await fetchJobApplications(client)
-    return NextResponse.json({ data: applications })
+    if (applications.length > 0) {
+      return NextResponse.json({ data: applications })
+    }
   } catch (error) {
     console.error('Failed to load job applications:', error)
+  }
+
+  try {
+    const localApps = await loadLocalJobApplications()
+    return NextResponse.json({ data: localApps })
+  } catch (error) {
+    console.error('Failed to load local job applications:', error)
     return NextResponse.json({ error: 'Failed to load job applications' }, { status: 500 })
   }
 }
@@ -45,7 +55,15 @@ export async function POST(request: Request) {
     const { data, error, warning, projectIds } = await insertJobApplication(client, payload)
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 })
+      const message = error.message || ''
+      if (message.includes('Could not find the table')) {
+        const localRecord = await saveLocalJobApplication(payload)
+        return NextResponse.json({
+          data: localRecord,
+          warning: 'Supabase table missing. Stored locally.'
+        })
+      }
+      return NextResponse.json({ error: message || 'Failed to create job application' }, { status: 400 })
     }
 
     return NextResponse.json({

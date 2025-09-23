@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 
+import { CheckCircle2 } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -10,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { sampleCoverLetterData, sampleCVData } from '@/lib/pdf/sample-data'
 import { useProjects } from '@/hooks/use-data'
@@ -28,6 +31,8 @@ const STATUS_TONES: Record<(typeof STATUS_ORDER)[number], { dot: string; text: s
   sent: { dot: 'bg-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50' },
   denied: { dot: 'bg-rose-500', text: 'text-rose-700', bg: 'bg-rose-50' }
 }
+
+const MAX_PROJECT_SELECTION = 4
 
 interface JobApplication {
   id: string
@@ -106,6 +111,7 @@ export default function JobManager() {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [selectedJob, setSelectedJob] = useState<JobApplication | null>(null)
   const [form, setForm] = useState<JobFormState>(initialFormState)
+  const [selectionError, setSelectionError] = useState<string | null>(null)
   const { projects } = useProjects()
 
   useEffect(() => {
@@ -143,6 +149,7 @@ export default function JobManager() {
 
   const handleSelectJob = (job: JobApplication) => {
     setSelectedJob(job)
+    const limitedProjects = (job.projectIds ?? []).slice(0, MAX_PROJECT_SELECTION)
     setForm({
       role: job.role,
       company: job.company,
@@ -154,8 +161,9 @@ export default function JobManager() {
       location: job.location ?? '',
       notes: job.notes ?? '',
       jobDescription: job.job_description ?? '',
-      projectIds: job.projectIds
+      projectIds: limitedProjects
     })
+    setSelectionError(null)
     setIsSheetOpen(true)
   }
 
@@ -174,7 +182,7 @@ export default function JobManager() {
         location: form.location || null,
         notes: form.notes || null,
         job_description: form.jobDescription || null,
-        project_ids: form.projectIds
+        project_ids: form.projectIds.slice(0, MAX_PROJECT_SELECTION)
       }
 
       const response = await fetch(`/api/jobs/${selectedJob.id}`, {
@@ -197,6 +205,31 @@ export default function JobManager() {
       console.error(err)
       setError(err instanceof Error ? err.message : 'Failed to update job application')
     }
+  }
+
+  const handleToggleProject = (projectId: string) => {
+    setSelectionError(null)
+
+    setForm((prev) => {
+      const isSelected = prev.projectIds.includes(projectId)
+
+      if (isSelected) {
+        return {
+          ...prev,
+          projectIds: prev.projectIds.filter((id) => id !== projectId)
+        }
+      }
+
+      if (prev.projectIds.length >= MAX_PROJECT_SELECTION) {
+        setSelectionError(`Select up to ${MAX_PROJECT_SELECTION} projects.`)
+        return prev
+      }
+
+      return {
+        ...prev,
+        projectIds: [...prev.projectIds, projectId]
+      }
+    })
   }
 
   const handlePreviewPdf = async (type: 'cv' | 'cover-letter') => {
@@ -433,33 +466,95 @@ export default function JobManager() {
                 />
               </div>
 
-              <div className="grid gap-3">
-                <Label>Highlighted projects</Label>
-                <div className="grid gap-2">
-                  {projects.map((project) => (
-                    <label key={project.id} className="flex items-start gap-2">
-                      <input
-                        type="checkbox"
-                        className="mt-1"
-                        checked={form.projectIds.includes(project.id)}
-                        onChange={(event) =>
-                          setForm((prev) => ({
-                            ...prev,
-                            projectIds: event.target.checked
-                              ? [...prev.projectIds, project.id]
-                              : prev.projectIds.filter((id) => id !== project.id)
-                          }))
-                        }
-                      />
-                      <span className="text-sm">
-                        <span className="font-medium">{project.title}</span>
-                        <span className="block text-muted-foreground">
-                          {project.tags?.join(' • ') ?? project.summary}
-                        </span>
-                      </span>
-                    </label>
-                  ))}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <Label>Highlighted projects</Label>
+                  <span className="text-xs text-muted-foreground">
+                    {form.projectIds.length}/{MAX_PROJECT_SELECTION} selected
+                  </span>
                 </div>
+
+                {projects.length > 0 ? (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {projects.map((project) => {
+                      const isSelected = form.projectIds.includes(project.id)
+                      const reachedLimit = form.projectIds.length >= MAX_PROJECT_SELECTION && !isSelected
+                      const keywords = Array.isArray(project.tags) ? project.tags.slice(0, 4) : []
+                      const techStack = Array.isArray(project.tech_stack)
+                        ? Array.from(new Set(project.tech_stack)).slice(0, 6)
+                        : []
+
+                      return (
+                        <button
+                          key={project.id}
+                          type="button"
+                          onClick={() => handleToggleProject(project.id)}
+                          aria-pressed={isSelected}
+                          aria-disabled={reachedLimit}
+                          className={cn(
+                            'group flex h-full flex-col gap-3 rounded-xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
+                            isSelected
+                              ? 'border-primary bg-primary/5 shadow-sm'
+                              : 'hover:border-primary/40 hover:bg-muted/40',
+                            reachedLimit ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                          )}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium leading-snug text-foreground">
+                                {project.title}
+                              </p>
+                              <p className="text-xs text-muted-foreground">{project.client_name}</p>
+                            </div>
+                            <CheckCircle2
+                              aria-hidden
+                              className={cn(
+                                'h-5 w-5 shrink-0 text-primary transition-opacity',
+                                isSelected ? 'opacity-100' : 'opacity-0'
+                              )}
+                            />
+                          </div>
+
+                          <p className="text-xs text-muted-foreground">{project.summary}</p>
+
+                          {keywords.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {keywords.map((keyword) => (
+                                <Badge
+                                  key={`${project.id}-keyword-${keyword}`}
+                                  variant="secondary"
+                                  className="text-[10px] uppercase tracking-wide"
+                                >
+                                  {keyword}
+                                </Badge>
+                              ))}
+                            </div>
+                          ) : null}
+
+                          {techStack.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {techStack.map((tech) => (
+                                <Badge
+                                  key={`${project.id}-tech-${tech}`}
+                                  variant="outline"
+                                  className="text-[10px]"
+                                >
+                                  {tech}
+                                </Badge>
+                              ))}
+                            </div>
+                          ) : null}
+                        </button>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No projects available yet.</p>
+                )}
+
+                {selectionError ? (
+                  <p className="text-xs text-destructive">{selectionError}</p>
+                ) : null}
               </div>
 
               <div className="flex gap-2 pt-4">

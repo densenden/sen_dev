@@ -33,8 +33,10 @@ export default function AdminNav() {
             <User className="w-4 h-4" />
           </Button>
           
-          <Button variant="ghost" size="sm">
-            <Settings className="w-4 h-4" />
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/admin?tab=settings">
+              <Settings className="w-4 h-4" />
+            </Link>
           </Button>
           
           <div className="h-6 w-px bg-border"></div>

@@ -2,11 +2,17 @@ import type { CVData, CVProjectEntry } from '@/lib/pdf/types'
 
 export type CVProfileBase = Omit<CVData, 'projects'>
 
+const summaryLines = [
+  'Multidisciplinary technologist with 15+ years across design, product, and engineering.',
+  'I ship AI-powered workflows, composable web systems, and expressive visual tooling for Olympic campaigns, fast-moving startups, and venture studios.',
+  'Blending strategy, code, and design to deliver automation, product systems, and collaborative digital experiences.'
+]
+
 export const cvProfileBase: CVProfileBase = {
   fullName: 'Denis Leif Kreuzer',
-  title: 'Full Stack Creative Technologist',
-  summary:
-    'Multidisciplinary full-stack developer with 15+ years across design, product, and engineering. I ship AI-powered workflows, composable web systems, and expressive visual tooling for Olympic campaigns, fast-moving startups, and venture studios.',
+  title: 'Creative Technologist',
+  summary: summaryLines.join('\n'),
+  summaryLines,
   technicalSkills: [
     {
       label: 'AI Systems',
