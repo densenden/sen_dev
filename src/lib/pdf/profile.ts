@@ -144,6 +144,7 @@ export const defaultProjectHighlights: CVProjectEntry[] = [
     techStack: ['Next.js', 'TypeScript', 'Tailwind', 'Twilio API', 'Stripe', 'Claude 3', 'OpenAI Assistants'],
     year: '2025',
     caseStudyUrl: 'https://dev.sen.studio/projects/meme-machine',
+    liveUrl: 'https://meme-machine.sen.studio',
     thumbnail: 'https://dummyimage.com/320x200/eff2f6/1f2937&text=Meme+Machine'
   },
   {
@@ -152,6 +153,7 @@ export const defaultProjectHighlights: CVProjectEntry[] = [
     techStack: ['Python', 'Flask', 'Supabase', 'Tailwind', 'Claude 3', 'OpenAI GPT-4o'],
     year: '2025',
     caseStudyUrl: 'https://dev.sen.studio/projects/senflix',
+    liveUrl: 'https://senflix.sen.studio',
     thumbnail: 'https://dummyimage.com/320x200/ede9fe/1f2937&text=SenFlix'
   },
   {
@@ -160,6 +162,7 @@ export const defaultProjectHighlights: CVProjectEntry[] = [
     techStack: ['Next.js', 'Edge Runtime', 'Supabase', 'Claude 3 Haiku', 'Vercel KV'],
     year: '2025',
     caseStudyUrl: 'https://dev.sen.studio/projects/x-drop',
+    liveUrl: 'https://x-drop.sen.studio',
     thumbnail: 'https://dummyimage.com/320x200/e0f2fe/1f2937&text=x-drop'
   },
   {
@@ -168,6 +171,7 @@ export const defaultProjectHighlights: CVProjectEntry[] = [
     techStack: ['Flask', 'Tailwind', 'Claude 3 Sonnet', 'OpenAI GPT-4o', 'Vercel'],
     year: '2025',
     caseStudyUrl: 'https://dev.sen.studio/projects/slidejson',
+    liveUrl: 'https://slidejson.sen.studio',
     thumbnail: 'https://dummyimage.com/320x200/f1f5f9/1f2937&text=slideJSON'
   }
 ]

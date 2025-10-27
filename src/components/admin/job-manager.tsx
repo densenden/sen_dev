@@ -3,36 +3,30 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 
-import { CheckCircle2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { sampleCoverLetterData, sampleCVData } from '@/lib/pdf/sample-data'
-import { useProjects } from '@/hooks/use-data'
 
-const STATUS_ORDER = ['pending', 'in_progress', 'sent', 'denied'] as const
+const STATUS_ORDER = ['in_progress', 'sent', 'pending', 'denied'] as const
 const STATUS_LABELS: Record<(typeof STATUS_ORDER)[number], string> = {
+  in_progress: 'Documents ready',
+  sent: 'Application sent',
   pending: 'Pending',
-  in_progress: 'In Progress',
-  sent: 'Sent',
   denied: 'Denied'
 }
 
 const STATUS_TONES: Record<(typeof STATUS_ORDER)[number], { dot: string; text: string; bg: string }> = {
-  pending: { dot: 'bg-yellow-400', text: 'text-yellow-700', bg: 'bg-yellow-50' },
   in_progress: { dot: 'bg-sky-500', text: 'text-sky-700', bg: 'bg-sky-50' },
   sent: { dot: 'bg-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50' },
+  pending: { dot: 'bg-amber-400', text: 'text-amber-700', bg: 'bg-amber-50' },
   denied: { dot: 'bg-rose-500', text: 'text-rose-700', bg: 'bg-rose-50' }
 }
 
-const MAX_PROJECT_SELECTION = 4
+const STATUS_OPTIONS = STATUS_ORDER.map((value) => ({ value, label: STATUS_LABELS[value] }))
+
 
 interface JobApplication {
   id: string
@@ -51,34 +45,6 @@ interface JobApplication {
   zip_path: string | null
   projectIds: string[]
   created_at: string
-}
-
-interface JobFormState {
-  role: string
-  company: string
-  jobUrl: string
-  status: (typeof STATUS_ORDER)[number]
-  appliedDate: string
-  contactName: string
-  contactEmail: string
-  location: string
-  notes: string
-  jobDescription: string
-  projectIds: string[]
-}
-
-const initialFormState: JobFormState = {
-  role: '',
-  company: '',
-  jobUrl: '',
-  status: 'pending',
-  appliedDate: '',
-  contactName: '',
-  contactEmail: '',
-  location: '',
-  notes: '',
-  jobDescription: '',
-  projectIds: []
 }
 
 function formatDate(date: string | null) {
@@ -108,11 +74,7 @@ export default function JobManager() {
   const [jobs, setJobs] = useState<JobApplication[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isSheetOpen, setIsSheetOpen] = useState(false)
-  const [selectedJob, setSelectedJob] = useState<JobApplication | null>(null)
-  const [form, setForm] = useState<JobFormState>(initialFormState)
-  const [selectionError, setSelectionError] = useState<string | null>(null)
-  const { projects } = useProjects()
+  const [statusUpdating, setStatusUpdating] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     async function loadJobs() {
@@ -134,6 +96,7 @@ export default function JobManager() {
     loadJobs()
   }, [])
 
+
   const statusCounts = useMemo(() => {
     return jobs.reduce(
       (acc, job) => {
@@ -147,117 +110,40 @@ export default function JobManager() {
     )
   }, [jobs])
 
-  const handleSelectJob = (job: JobApplication) => {
-    setSelectedJob(job)
-    const limitedProjects = (job.projectIds ?? []).slice(0, MAX_PROJECT_SELECTION)
-    setForm({
-      role: job.role,
-      company: job.company,
-      jobUrl: job.job_url ?? '',
-      status: job.status,
-      appliedDate: job.applied_at ? job.applied_at.split('T')[0] : '',
-      contactName: job.contact_name ?? '',
-      contactEmail: job.contact_email ?? '',
-      location: job.location ?? '',
-      notes: job.notes ?? '',
-      jobDescription: job.job_description ?? '',
-      projectIds: limitedProjects
-    })
-    setSelectionError(null)
-    setIsSheetOpen(true)
-  }
 
-  const handleUpdateJob = async () => {
-    if (!selectedJob) return
+
+  const updateJobStatus = async (jobId: string, nextStatus: JobApplication['status']) => {
+    setStatusUpdating((prev) => ({ ...prev, [jobId]: true }))
+    setError(null)
 
     try {
-      const payload = {
-        role: form.role,
-        company: form.company,
-        job_url: form.jobUrl || null,
-        status: form.status,
-        applied_at: form.appliedDate ? new Date(form.appliedDate).toISOString() : null,
-        contact_name: form.contactName || null,
-        contact_email: form.contactEmail || null,
-        location: form.location || null,
-        notes: form.notes || null,
-        job_description: form.jobDescription || null,
-        project_ids: form.projectIds.slice(0, MAX_PROJECT_SELECTION)
-      }
-
-      const response = await fetch(`/api/jobs/${selectedJob.id}`, {
+      const response = await fetch(`/api/jobs/${jobId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ status: nextStatus })
       })
 
       if (!response.ok) {
-        const errorPayload = await response.json().catch(() => null)
-        throw new Error(errorPayload?.error || 'Failed to update job application')
+        const payload = await response.json().catch(() => null)
+        throw new Error(payload?.error || 'Failed to update status')
       }
 
-      const result = await response.json()
-      const updated = result.data as JobApplication
+      const payload = await response.json()
+      const updated = payload.data as JobApplication
 
-      setJobs((prev) => prev.map((job) => (job.id === updated.id ? updated : job)))
-      setSelectedJob(updated)
+      setJobs((prev) => prev.map((job) => (job.id === jobId ? updated : job)))
     } catch (err) {
       console.error(err)
-      setError(err instanceof Error ? err.message : 'Failed to update job application')
-    }
-  }
-
-  const handleToggleProject = (projectId: string) => {
-    setSelectionError(null)
-
-    setForm((prev) => {
-      const isSelected = prev.projectIds.includes(projectId)
-
-      if (isSelected) {
-        return {
-          ...prev,
-          projectIds: prev.projectIds.filter((id) => id !== projectId)
-        }
-      }
-
-      if (prev.projectIds.length >= MAX_PROJECT_SELECTION) {
-        setSelectionError(`Select up to ${MAX_PROJECT_SELECTION} projects.`)
-        return prev
-      }
-
-      return {
-        ...prev,
-        projectIds: [...prev.projectIds, projectId]
-      }
-    })
-  }
-
-  const handlePreviewPdf = async (type: 'cv' | 'cover-letter') => {
-    try {
-      const endpoint = type === 'cv' ? '/api/pdf/cv' : '/api/pdf/cover-letter'
-      const payload = type === 'cv'
-        ? { data: sampleCVData }
-        : { data: sampleCoverLetterData }
-
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+      setError(err instanceof Error ? err.message : 'Failed to update status')
+    } finally {
+      setStatusUpdating((prev) => {
+        const next = { ...prev }
+        delete next[jobId]
+        return next
       })
-
-      if (!response.ok) {
-        throw new Error('PDF generation failed')
-      }
-
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      window.open(url, '_blank', 'noopener,noreferrer')
-      setTimeout(() => URL.revokeObjectURL(url), 60_000)
-    } catch (err) {
-      console.error(err)
-      setError('Unable to generate preview PDF')
     }
   }
+
 
   return (
     <div className="space-y-6">
@@ -315,7 +201,7 @@ export default function JobManager() {
                   key={job.id}
                   className="flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-center md:justify-between"
                 >
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-semibold">{job.role}</span>
                       <span className="text-sm text-muted-foreground">@ {job.company}</span>
@@ -331,16 +217,33 @@ export default function JobManager() {
                       ) : null}
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handlePreviewPdf('cv')}>
-                      Preview CV
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => handlePreviewPdf('cover-letter')}>
-                      Preview Letter
-                    </Button>
-                    <Button size="sm" onClick={() => handleSelectJob(job)}>
-                      Manage
-                    </Button>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={job.status}
+                        onValueChange={(value) => updateJobStatus(job.id, value as JobApplication['status'])}
+                        disabled={Boolean(statusUpdating[job.id])}
+                      >
+                        <SelectTrigger className="h-9 w-full min-w-[180px] sm:w-[200px]" aria-label="Update application status">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {STATUS_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {statusUpdating[job.id] ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      ) : null}
+                    </div>
+                    <Link href={`/admin/jobs/${job.id}/edit`}>
+                      <Button size="sm">
+                        Manage
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               ))}
@@ -349,231 +252,6 @@ export default function JobManager() {
         </CardContent>
       </Card>
 
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="w-full overflow-y-auto md:max-w-xl">
-          <SheetHeader>
-            <SheetTitle>{form.role || selectedJob?.role || 'Job Application'}</SheetTitle>
-            <SheetDescription>
-              Update status, tweak notes, and trigger document generation.
-            </SheetDescription>
-          </SheetHeader>
-
-          {selectedJob ? (
-            <div className="mt-6 space-y-4">
-              <div className="grid gap-2">
-                <Label htmlFor="sheet-role">Role / Position</Label>
-                <Input
-                  id="sheet-role"
-                  value={form.role}
-                  onChange={(event) => setForm((prev) => ({ ...prev, role: event.target.value }))}
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="sheet-company">Company</Label>
-                <Input
-                  id="sheet-company"
-                  value={form.company}
-                  onChange={(event) => setForm((prev) => ({ ...prev, company: event.target.value }))}
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="sheet-status">Status</Label>
-                <Select
-                  value={form.status}
-                  onValueChange={(value: JobFormState['status']) =>
-                    setForm((prev) => ({ ...prev, status: value }))
-                  }
-                >
-                  <SelectTrigger id="sheet-status">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATUS_ORDER.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {STATUS_LABELS[status]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="sheet-applied">Applied on</Label>
-                <Input
-                  id="sheet-applied"
-                  type="date"
-                  value={form.appliedDate}
-                  onChange={(event) => setForm((prev) => ({ ...prev, appliedDate: event.target.value }))}
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="sheet-job-url">Job URL</Label>
-                <Input
-                  id="sheet-job-url"
-                  value={form.jobUrl}
-                  onChange={(event) => setForm((prev) => ({ ...prev, jobUrl: event.target.value }))}
-                />
-              </div>
-
-              <div className="grid gap-2 md:grid-cols-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="sheet-contact">Contact</Label>
-                  <Input
-                    id="sheet-contact"
-                    value={form.contactName}
-                    onChange={(event) => setForm((prev) => ({ ...prev, contactName: event.target.value }))}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="sheet-email">Email</Label>
-                  <Input
-                    id="sheet-email"
-                    value={form.contactEmail}
-                    onChange={(event) => setForm((prev) => ({ ...prev, contactEmail: event.target.value }))}
-                  />
-                </div>
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="sheet-location">Location</Label>
-                <Input
-                  id="sheet-location"
-                  value={form.location}
-                  onChange={(event) => setForm((prev) => ({ ...prev, location: event.target.value }))}
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="sheet-description">Job highlights / scraped summary</Label>
-                <Textarea
-                  id="sheet-description"
-                  rows={4}
-                  value={form.jobDescription}
-                  onChange={(event) => setForm((prev) => ({ ...prev, jobDescription: event.target.value }))}
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="sheet-notes">Notes</Label>
-                <Textarea
-                  id="sheet-notes"
-                  rows={3}
-                  value={form.notes}
-                  onChange={(event) => setForm((prev) => ({ ...prev, notes: event.target.value }))}
-                />
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <Label>Highlighted projects</Label>
-                  <span className="text-xs text-muted-foreground">
-                    {form.projectIds.length}/{MAX_PROJECT_SELECTION} selected
-                  </span>
-                </div>
-
-                {projects.length > 0 ? (
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {projects.map((project) => {
-                      const isSelected = form.projectIds.includes(project.id)
-                      const reachedLimit = form.projectIds.length >= MAX_PROJECT_SELECTION && !isSelected
-                      const keywords = Array.isArray(project.tags) ? project.tags.slice(0, 4) : []
-                      const techStack = Array.isArray(project.tech_stack)
-                        ? Array.from(new Set(project.tech_stack)).slice(0, 6)
-                        : []
-
-                      return (
-                        <button
-                          key={project.id}
-                          type="button"
-                          onClick={() => handleToggleProject(project.id)}
-                          aria-pressed={isSelected}
-                          aria-disabled={reachedLimit}
-                          className={cn(
-                            'group flex h-full flex-col gap-3 rounded-xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
-                            isSelected
-                              ? 'border-primary bg-primary/5 shadow-sm'
-                              : 'hover:border-primary/40 hover:bg-muted/40',
-                            reachedLimit ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
-                          )}
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="space-y-1">
-                              <p className="text-sm font-medium leading-snug text-foreground">
-                                {project.title}
-                              </p>
-                              <p className="text-xs text-muted-foreground">{project.client_name}</p>
-                            </div>
-                            <CheckCircle2
-                              aria-hidden
-                              className={cn(
-                                'h-5 w-5 shrink-0 text-primary transition-opacity',
-                                isSelected ? 'opacity-100' : 'opacity-0'
-                              )}
-                            />
-                          </div>
-
-                          <p className="text-xs text-muted-foreground">{project.summary}</p>
-
-                          {keywords.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
-                              {keywords.map((keyword) => (
-                                <Badge
-                                  key={`${project.id}-keyword-${keyword}`}
-                                  variant="secondary"
-                                  className="text-[10px] uppercase tracking-wide"
-                                >
-                                  {keyword}
-                                </Badge>
-                              ))}
-                            </div>
-                          ) : null}
-
-                          {techStack.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
-                              {techStack.map((tech) => (
-                                <Badge
-                                  key={`${project.id}-tech-${tech}`}
-                                  variant="outline"
-                                  className="text-[10px]"
-                                >
-                                  {tech}
-                                </Badge>
-                              ))}
-                            </div>
-                          ) : null}
-                        </button>
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No projects available yet.</p>
-                )}
-
-                {selectionError ? (
-                  <p className="text-xs text-destructive">{selectionError}</p>
-                ) : null}
-              </div>
-
-              <div className="flex gap-2 pt-4">
-                <Button variant="outline" onClick={() => handlePreviewPdf('cv')}>
-                  Preview CV
-                </Button>
-                <Button variant="outline" onClick={() => handlePreviewPdf('cover-letter')}>
-                  Preview Letter
-                </Button>
-                <Button className="ml-auto" onClick={handleUpdateJob}>
-                  Save changes
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <p className="mt-6 text-sm text-muted-foreground">Select an application to manage details.</p>
-          )}
-        </SheetContent>
-      </Sheet>
     </div>
   )
 }

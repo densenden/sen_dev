@@ -31,11 +31,12 @@ async function fetchJobApplication(client: ReturnType<typeof getServiceSupabase>
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const client = getServiceSupabase()
-    const application = await fetchJobApplication(client, params.id)
+    const application = await fetchJobApplication(client, id)
     return NextResponse.json({ data: application })
   } catch (error) {
     console.error('Failed to load job application:', error)
@@ -45,9 +46,10 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const client = getServiceSupabase()
     const body = await request.json()
 
@@ -70,7 +72,7 @@ export async function PATCH(
       project_ids: Array.isArray(body.project_ids) ? body.project_ids : undefined
     }
 
-    const { data, error, warning, projectIds } = await updateJobApplication(params.id, client, payload)
+    const { data, error, warning, projectIds } = await updateJobApplication(id, client, payload)
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })
@@ -91,14 +93,15 @@ export async function PATCH(
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const client = getServiceSupabase()
     const { error } = await client
       .from('job_applications')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })

@@ -8,15 +8,30 @@ import { sampleCoverLetterData } from '@/lib/pdf/sample-data'
 function inferContactName(description?: string) {
   if (!description) return ''
   const patterns = [
-    /Ansprechpartner(?:in)?:?\s*([A-ZÄÖÜ][^\n,]+)/i,
-    /Kontaktperson:?\s*([A-ZÄÖÜ][^\n,]+)/i,
-    /Contact:?\s*([A-Z][^\n,]+)/i,
-    /Hiring Manager:?\s*([A-Z][^\n,]+)/i
+    // Match "Herr/Frau Firstname Lastname" patterns
+    /(?:Herr|Frau|Mr\.?|Ms\.?|Mrs\.?)\s+([A-ZÄÖÜ][a-zäöüß]+(?:\s+[A-ZÄÖÜ][a-zäöüß]+)*)/i,
+    // Match "Ansprechpartner: Name" but limit to 2-3 words max
+    /Ansprechpartner(?:in)?:?\s*([A-ZÄÖÜ][a-zäöüß]+(?:\s+[A-ZÄÖÜ][a-zäöüß]+){0,2})/i,
+    // Match "Kontaktperson: Name" but limit to 2-3 words max  
+    /Kontaktperson:?\s*([A-ZÄÖÜ][a-zäöüß]+(?:\s+[A-ZÄÖÜ][a-zäöüß]+){0,2})/i,
+    // Match "Contact: Name" but limit to 2-3 words max
+    /Contact:?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/i,
+    // Match "Hiring Manager: Name" but limit to 2-3 words max
+    /Hiring Manager:?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/i
   ]
   for (const pattern of patterns) {
     const match = description.match(pattern)
     if (match?.[1]) {
-      return match[1].trim()
+      let name = match[1].trim()
+      // Remove any parenthetical content like "(Senior HR Manager)"
+      name = name.replace(/\s*\([^)]*\).*$/, '')
+      // Remove any additional text after common separators
+      name = name.replace(/\s*[,;:].*$/, '')
+      // Limit to reasonable name length (max 3 words)
+      const words = name.split(/\s+/)
+      if (words.length <= 3) {
+        return name
+      }
     }
   }
   return ''
@@ -24,10 +39,31 @@ function inferContactName(description?: string) {
 
 function inferLocation(description?: string) {
   if (!description) return ''
-  const match = description.match(/(?:Standort|Location)[:\s]+([^\n]+)/i)
-  if (match?.[1]) {
-    return match[1].replace(/[,;].*$/, '').trim()
+  
+  // Look for location patterns and extract only city names
+  const patterns = [
+    // Match "Standort: City" or "Location: City"
+    /(?:Standort|Location)[:\s]+([A-ZÄÖÜ][a-zäöüß]+(?:\s+[a-zäöüß]+)?)/i,
+    // Match standalone cities at beginning of lines
+    /^([A-ZÄÖÜ][a-zäöüß]+)(?:\s+[A-Z][a-z]+)?\s*(?:Brand:|Time|Type|Contract)/im,
+    // Match cities followed by common job posting keywords
+    /([A-ZÄÖÜ][a-zäöüß]+)\s+(?:Brand|Office|Standort|Location)/i
+  ]
+  
+  for (const pattern of patterns) {
+    const match = description.match(pattern)
+    if (match?.[1]) {
+      let location = match[1].trim()
+      // Remove any trailing punctuation or extra words
+      location = location.replace(/[,;:].*$/, '')
+      // Only return if it looks like a city name (1-2 words max)
+      const words = location.split(/\s+/)
+      if (words.length <= 2 && location.length <= 30) {
+        return location
+      }
+    }
   }
+  
   if (/remote/i.test(description)) {
     return 'Remote'
   }

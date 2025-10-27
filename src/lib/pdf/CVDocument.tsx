@@ -14,6 +14,7 @@ interface CVDocumentProps {
 }
 
 const ICON_COLOR = '#1d4ed8'
+const FULL_CV_URL = 'https://dev.sen.studio/cv'
 
 const styles = StyleSheet.create({
   page: {
@@ -32,6 +33,25 @@ const styles = StyleSheet.create({
   headerInfo: {
     flex: 1,
     paddingRight: 24
+  },
+  headerActions: {
+    alignItems: 'flex-end',
+    flexDirection: 'column'
+  },
+  headerLinkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8
+  },
+  headerIcon: {
+    width: 10,
+    height: 10,
+    marginRight: 4,
+    marginTop: -2
+  },
+  headerLinkText: {
+    fontSize: 8,
+    color: '#1d4ed8'
   },
   name: {
     fontSize: 18,
@@ -159,6 +179,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start'
   },
+  projectLinks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end'
+  },
+  projectIcon: {
+    width: 9,
+    height: 9,
+    marginTop: -2
+  },
+  projectIconSpacing: {
+    marginLeft: 6
+  },
   projectMeta: {
     fontSize: 9,
     color: '#94a3b8',
@@ -233,14 +266,13 @@ function ContactRow({ contact }: { contact: CVData['contact'] }) {
   return <View style={styles.contactRow}>{items}</View>
 }
 
-function ContactIconSvg({ name }: { name: ContactIcon }) {
+function ContactIconSvg({ name, style }: { name: ContactIcon; style?: Record<string, unknown> }) {
   const icon = getContactIconData(name)
   return (
-    <Svg
-      viewBox={icon.viewBox}
-      style={styles.contactIcon}
-    >
-      <Path d={icon.path} fill={ICON_COLOR} />
+    <Svg viewBox={icon.viewBox} style={style ?? styles.contactIcon}>
+      {icon.paths.map((path, index) => (
+        <Path key={`${name}-path-${index}`} d={path} fill={ICON_COLOR} />
+      ))}
     </Svg>
   )
 }
@@ -250,7 +282,23 @@ function ExternalLinkIcon({ href }: { href: string }) {
   return (
     <Link src={href} style={styles.link}>
       <Svg viewBox={icon.viewBox} style={styles.externalIcon}>
-        <Path d={icon.path} fill={ICON_COLOR} />
+        {icon.paths.map((path, index) => (
+          <Path key={`external-path-${index}`} d={path} fill={ICON_COLOR} />
+        ))}
+      </Svg>
+    </Link>
+  )
+}
+
+function ProjectIconLink({ href, icon, style }: { href: string; icon: ContactIcon; style?: Record<string, unknown> }) {
+  const iconData = getContactIconData(icon)
+  const linkStyle = style ? [styles.link, style] : styles.link
+  return (
+    <Link src={href} style={linkStyle}>
+      <Svg viewBox={iconData.viewBox} style={styles.projectIcon}>
+        {iconData.paths.map((path, index) => (
+          <Path key={`${icon}-path-${index}`} d={path} fill={ICON_COLOR} />
+        ))}
       </Svg>
     </Link>
   )
@@ -288,11 +336,23 @@ function ExperienceEntry({ entry }: { entry: CVExperienceEntry }) {
 }
 
 function ProjectEntry({ project }: { project: CVProjectEntry }) {
+  const hasLinks = Boolean(project.caseStudyUrl || project.liveUrl)
   return (
     <View style={styles.projectCard}>
       <View style={styles.projectHeader}>
         <Text style={styles.experienceCompany}>{project.title}</Text>
-        {project.caseStudyUrl ? <ExternalLinkIcon href={project.caseStudyUrl} /> : null}
+        {hasLinks ? (
+          <View style={styles.projectLinks}>
+            {project.caseStudyUrl ? <ProjectIconLink href={project.caseStudyUrl} icon="info" /> : null}
+            {project.liveUrl ? (
+              <ProjectIconLink
+                href={project.liveUrl}
+                icon="globe"
+                style={project.caseStudyUrl ? styles.projectIconSpacing : undefined}
+              />
+            ) : null}
+          </View>
+        ) : null}
       </View>
       <Text style={styles.projectMeta}>
         {project.year ? `${project.year} • ` : ''}{project.techStack.join(', ')}
@@ -326,7 +386,15 @@ export function CVDocument({ data, portraitUrl, creationDate }: CVDocumentProps)
             <Text style={styles.title}>{data.title}</Text>
             <ContactRow contact={data.contact} />
           </View>
-          {portraitUrl ? <Image src={portraitUrl} style={styles.avatar} alt="Portrait" /> : null}
+          <View style={styles.headerActions}>
+            <View style={[styles.headerLinkRow, !portraitUrl && { marginBottom: 0 }]}>
+              <ContactIconSvg name="globe" style={styles.headerIcon} />
+              <Link src={FULL_CV_URL} style={styles.link}>
+                <Text style={styles.headerLinkText}>dev.sen.studio/cv</Text>
+              </Link>
+            </View>
+            {portraitUrl ? <Image src={portraitUrl} style={styles.avatar} alt="Portrait" /> : null}
+          </View>
         </View>
 
         <View style={styles.section}>

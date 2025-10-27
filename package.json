@@ -10,7 +10,8 @@
     "seed:projects": "node scripts/seed-projects.js",
     "migrate:projects": "tsx scripts/migrate-projects.ts",
     "upload:images": "tsx scripts/upload-project-images.ts",
-    "update:projects": "tsx scripts/update-project-content.ts"
+    "update:projects": "tsx scripts/update-project-content.ts",
+    "generate-password-hash": "node scripts/generate-password-hash.js"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
@@ -30,9 +31,12 @@
     "@react-pdf/renderer": "^4.3.0",
     "@sanity/client": "^6.21.3",
     "@sanity/image-url": "^1.0.2",
+    "@simplewebauthn/browser": "^13.2.0",
+    "@simplewebauthn/server": "^13.2.1",
     "@supabase/supabase-js": "^2.53.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cookies-next": "^6.1.0",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "esbuild": "^0.25.10",
@@ -40,6 +44,7 @@
     "gt-next": "^6.3.5",
     "gtx-cli": "^2.1.16",
     "ical-generator": "^9.0.0",
+    "jose": "^6.1.0",
     "lucide-react": "^0.536.0",
     "next": "15.4.5",
     "next-sanity": "^9.7.0",
@@ -51,7 +56,7 @@
     "resend": "^4.8.0",
     "tailwind-merge": "^3.3.1",
     "ts-node": "^10.9.2",
-    "tsx": "^4.20.5",
+    "tsx": "^4.20.6",
     "typeface-inter": "^3.18.1"
   },
   "devDependencies": {

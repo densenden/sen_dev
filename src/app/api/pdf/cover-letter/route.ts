@@ -5,21 +5,27 @@ import { NextResponse } from 'next/server'
 
 import { sampleCoverLetterData } from '@/lib/pdf/sample-data'
 import type { CoverLetterData } from '@/lib/pdf/types'
+import { getServiceSupabase } from '@/lib/server/supabase-admin'
+import { uploadJobDocument } from '@/lib/storage'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 async function renderPdfWithChildProcess(payload: Record<string, unknown>): Promise<Buffer> {
   const scriptPath = path.resolve(process.cwd(), 'scripts/render-pdf.tsx')
-  const tsxExecutable = path.resolve(
-    process.cwd(),
-    'node_modules',
-    '.bin',
-    process.platform === 'win32' ? 'tsx.cmd' : 'tsx'
-  )
+
+  // Try tsx first (local dev), fall back to node (production)
+  const isDev = process.env.NODE_ENV === 'development'
+  const executable = isDev
+    ? path.resolve(process.cwd(), 'node_modules', '.bin', process.platform === 'win32' ? 'tsx.cmd' : 'tsx')
+    : 'node'
+
+  const args = isDev
+    ? [scriptPath, 'cover-letter']
+    : ['--require', 'tsx/cjs', scriptPath, 'cover-letter']
 
   return new Promise((resolveBuffer, reject) => {
-    const child = spawn(tsxExecutable, [scriptPath, 'cover-letter'], {
+    const child = spawn(executable, args, {
       stdio: ['pipe', 'pipe', 'pipe']
     })
 
@@ -57,10 +63,13 @@ async function renderPdfWithChildProcess(payload: Record<string, unknown>): Prom
   })
 }
 
+
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}))
     const incoming = (body?.data as CoverLetterData | undefined) ?? sampleCoverLetterData
+    const jobId = body?.job_id as string | undefined
+    
     const data: CoverLetterData = {
       ...incoming,
       applicant: incoming.applicant ?? sampleCoverLetterData.applicant,
@@ -88,6 +97,38 @@ export async function POST(request: Request) {
       signatureUrl: signaturePath
     })
 
+    // If job_id is provided, store the PDF in the bucket and update the job record
+    if (jobId) {
+      try {
+        const uploadResult = await uploadJobDocument(jobId, 'cover_letter', buffer, 'cover-letter.pdf')
+        
+        if (uploadResult) {
+          // Update the job application record with the new cover letter path
+          const supabase = getServiceSupabase()
+          const { error: updateError } = await supabase
+            .from('job_applications')
+            .update({ cover_letter_path: uploadResult.path })
+            .eq('id', jobId)
+
+          if (updateError) {
+            console.error('Failed to update job with cover letter path:', updateError)
+          }
+
+          return NextResponse.json({
+            success: true,
+            path: uploadResult.path,
+            url: uploadResult.url
+          })
+        } else {
+          throw new Error('Failed to upload cover letter to storage')
+        }
+      } catch (storageError) {
+        console.error('Failed to store cover letter PDF:', storageError)
+        return NextResponse.json({ error: 'Failed to store cover letter PDF' }, { status: 500 })
+      }
+    }
+
+    // Return PDF directly if no job_id provided (preview mode)
     return new NextResponse(buffer, {
       headers: {
         'Content-Type': 'application/pdf',

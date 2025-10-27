@@ -62,7 +62,9 @@ export async function POST(request: NextRequest) {
       tags: body.tags || [],
       client_name: body.client_name,
       outcome: body.outcome,
-      link_live: body.link_live ?? null
+      link_live: body.link_live ?? null,
+      logo: body.logo ?? null,
+      logo_type: body.logo_type ?? null
     }
 
     const extendedInsert = {
@@ -128,6 +130,8 @@ export async function PUT(request: NextRequest) {
       client_name: body.client_name,
       outcome: body.outcome,
       link_live: body.link_live ?? null,
+      logo: body.logo ?? null,
+      logo_type: body.logo_type ?? null,
       updated_at: new Date().toISOString()
     }
 
@@ -167,9 +171,52 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: fallbackError.message }, { status: 400 })
     }
 
-    return NextResponse.json({ ...fallbackData, __warning: 'optional_fields_skipped' })
+  return NextResponse.json({ ...fallbackData, __warning: 'optional_fields_skipped' })
   } catch {
     return NextResponse.json({ error: 'Failed to update project' }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  if (!supabase) {
+    return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  }
+
+  try {
+    const { searchParams } = new URL(request.url)
+    let projectId = searchParams.get('id')
+
+    if (!projectId) {
+      const body = await request.json().catch(() => null)
+      projectId = body?.id ?? null
+    }
+
+    if (!projectId) {
+      return NextResponse.json({ error: 'Project ID required' }, { status: 400 })
+    }
+
+    const { error: relationError } = await supabase
+      .from('job_application_projects')
+      .delete()
+      .eq('project_id', projectId)
+
+    if (relationError) {
+      console.error('Failed to remove project relations:', relationError)
+    }
+
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', projectId)
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Failed to delete project:', error)
+    return NextResponse.json({ error: 'Failed to delete project' }, { status: 500 })
   }
 }
 

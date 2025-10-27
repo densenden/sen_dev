@@ -22,9 +22,9 @@ import { cn } from '@/lib/utils'
 import type { Database } from '@/lib/supabase'
 
 const STATUS_OPTIONS = [
+  { value: 'in_progress', label: 'Documents ready' },
+  { value: 'sent', label: 'Application sent' },
   { value: 'pending', label: 'Pending' },
-  { value: 'in_progress', label: 'In Progress' },
-  { value: 'sent', label: 'Sent' },
   { value: 'denied', label: 'Denied' }
 ] as const
 
@@ -35,6 +35,8 @@ const MAX_PROJECT_SELECTION = 4
 type ProjectRow = Database['public']['Tables']['projects']['Row']
 
 const KEYWORD_REGEX = /[a-z0-9+#]+/gi
+
+const APPLICANT_FILE_STEM = 'DenisLeifKreuzer'
 
 type PreviewType = 'cv' | 'cover-letter'
 
@@ -229,12 +231,10 @@ export default function NewJobApplicationPage() {
       const payload = await response.json()
       let combined = ''
       let scrapedTitle = ''
-      let scrapedDescription = ''
       if (payload?.content) {
         try {
           const parsed = JSON.parse(payload.content)
           scrapedTitle = (parsed.h1 || parsed.title || '').toString().trim()
-          scrapedDescription = (parsed.description || '').toString().trim()
           combined = [parsed.title, parsed.description, parsed.h1, parsed.content]
             .filter(Boolean)
             .join('\n\n')
@@ -439,6 +439,20 @@ export default function NewJobApplicationPage() {
     await fetchPdf(type, { focusTab: true })
   }
 
+  const buildDownloadFileName = (type: PreviewType) => {
+    const rawCompany = form.company?.trim() ?? ''
+    const sanitizedCompany = rawCompany
+      .replace(/[^a-z0-9]+/gi, '')
+      .slice(0, 40)
+    const companySegment = sanitizedCompany || 'Company'
+
+    if (type === 'cv') {
+      return `CV_${APPLICANT_FILE_STEM}_${companySegment}.pdf`
+    }
+
+    return `Coverletter_${APPLICANT_FILE_STEM}_${companySegment}.pdf`
+  }
+
   const handleDownloadPdf = async (type: PreviewType) => {
     const existingUrl = pdfPreviews[type]
     const url = existingUrl || (await fetchPdf(type, { focusTab: false }))
@@ -447,7 +461,7 @@ export default function NewJobApplicationPage() {
 
     const link = document.createElement('a')
     link.href = url
-    link.download = type === 'cv' ? 'cv-preview.pdf' : 'cover-letter-preview.pdf'
+    link.download = buildDownloadFileName(type)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -479,7 +493,7 @@ export default function NewJobApplicationPage() {
           <p className="text-xs text-muted-foreground">
             {hasPdf
               ? 'Use the zoom controls or download the PDF below.'
-              : 'Generate a preview to display the PDF right here.'}
+              : 'Use the circular arrow beside the tab label to create a fresh preview.'}
           </p>
           <div className="flex items-center gap-1">
             <Button
@@ -540,8 +554,8 @@ export default function NewJobApplicationPage() {
           ) : (
             <div className="flex h-full items-center justify-center px-6 text-center text-sm text-muted-foreground">
               {type === 'cv'
-                ? 'Generate the CV preview to display it here.'
-                : 'Generate the cover-letter preview to display it here.'}
+                ? 'Use the circular arrow next to the CV tab to generate a preview.'
+                : 'Use the circular arrow next to the cover letter tab to generate a preview.'}
             </div>
           )}
         </div>
@@ -784,90 +798,18 @@ export default function NewJobApplicationPage() {
                   onChange={(event) => setForm((prev) => ({ ...prev, coverLetter: event.target.value }))}
                   placeholder="Generate and refine the AI draft here."
                 />
-                <div className="flex justify-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => handlePreviewPdf('cover-letter')}
-                    disabled={previewLoading['cover-letter']}
-                  >
-                    {previewLoading['cover-letter'] ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating…
-                      </>
-                    ) : (
-                      'Open Preview'
-                    )}
-                  </Button>
-                </div>
               </div>
           </CardContent>
         </Card>
 
-        <div className="rounded-lg border border-dashed border-muted-foreground/30 bg-muted/10 p-6">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div className="space-y-1">
-              <h3 className="text-base font-medium">PDF Preview</h3>
-              <p className="text-xs text-muted-foreground">
-                Preview cover letter and CV in-place—refresh the files with the buttons whenever needed.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => handlePreviewPdf('cover-letter')}
-                disabled={previewLoading['cover-letter']}
-              >
-                {previewLoading['cover-letter'] ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating…
-                  </>
-                ) : (
-                  'Preview Letter'
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => handlePreviewPdf('cv')}
-                disabled={previewLoading.cv}
-              >
-                {previewLoading.cv ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating…
-                  </>
-                ) : (
-                  'Preview CV'
-                )}
-              </Button>
-            </div>
-          </div>
-
-          <Tabs
-            value={activePreviewTab}
-            onValueChange={(value) => setActivePreviewTab(value as PreviewType)}
-            className="mt-4 w-full"
-          >
-            <TabsList>
-              <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
-              <TabsTrigger value="cv">CV</TabsTrigger>
-            </TabsList>
-            <TabsContent value="cover-letter">{renderPreviewPanel('cover-letter')}</TabsContent>
-            <TabsContent value="cv">{renderPreviewPanel('cv')}</TabsContent>
-          </Tabs>
-        </div>
-
         <Card>
           <CardHeader>
             <CardTitle>3. Projects & Assets</CardTitle>
-              <CardDescription>
-                Select matching projects, preview the PDFs, then save the application.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+            <CardDescription>
+              Select the portfolio work that should appear across your documents.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <Label>Matching projects</Label>
@@ -958,10 +900,10 @@ export default function NewJobApplicationPage() {
                   <p className="text-sm text-muted-foreground">No projects available yet.</p>
                 )}
 
-                {selectionError ? (
-                  <p className="text-xs text-destructive">{selectionError}</p>
-                ) : null}
-              </div>
+              {selectionError ? (
+                <p className="text-xs text-destructive">{selectionError}</p>
+              ) : null}
+            </div>
 
               {error ? (
                 <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -969,26 +911,89 @@ export default function NewJobApplicationPage() {
                 </div>
               ) : null}
 
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex gap-2">
-                  <Button type="button" variant="outline" onClick={() => handleDownloadPdf('cv')}>
-                    <Download className="mr-2 h-4 w-4" /> Download CV
-                  </Button>
-                  <Button type="button" variant="outline" onClick={() => handleDownloadPdf('cover-letter')}>
-                    <Download className="mr-2 h-4 w-4" /> Download Letter
-                  </Button>
-                </div>
-                <div className="flex gap-2">
-                  <Button type="button" variant="ghost" onClick={() => router.push('/admin?tab=job')}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={submitting}>
-                    {submitting ? 'Saving…' : 'Save Application'}
-                  </Button>
-                </div>
+          </CardContent>
+        </Card>
+
+        <div className="rounded-lg border border-dashed border-muted-foreground/30 bg-muted/10 p-6">
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <h3 className="text-base font-medium">PDF Preview</h3>
+              <p className="text-xs text-muted-foreground">
+                Switch between documents and refresh the active preview after making changes.
+              </p>
+            </div>
+
+            <Tabs
+              value={activePreviewTab}
+              onValueChange={(value) => setActivePreviewTab(value as PreviewType)}
+              className="w-full"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <TabsList className="flex flex-wrap items-center gap-2 bg-transparent p-0">
+                  <div className="flex items-center gap-1">
+                    <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handlePreviewPdf('cover-letter')}
+                      disabled={previewLoading['cover-letter']}
+                      aria-label="Recreate cover letter PDF"
+                    >
+                      {previewLoading['cover-letter'] ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <RotateCcw className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <TabsTrigger value="cv">CV</TabsTrigger>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handlePreviewPdf('cv')}
+                      disabled={previewLoading.cv}
+                      aria-label="Recreate CV PDF"
+                    >
+                      {previewLoading.cv ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <RotateCcw className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </TabsList>
               </div>
-            </CardContent>
-          </Card>
+              <TabsContent value="cover-letter">
+                {renderPreviewPanel('cover-letter')}
+              </TabsContent>
+              <TabsContent value="cv">
+                {renderPreviewPanel('cv')}
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-background/60 p-4">
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={() => handleDownloadPdf('cv')}>
+              <Download className="mr-2 h-4 w-4" /> Download CV
+            </Button>
+            <Button type="button" variant="outline" onClick={() => handleDownloadPdf('cover-letter')}>
+              <Download className="mr-2 h-4 w-4" /> Download Letter
+            </Button>
+          </div>
+          <div className="flex gap-2">
+            <Button type="button" variant="ghost" onClick={() => router.push('/admin?tab=job')}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={submitting}>
+              {submitting ? 'Saving…' : 'Save Application'}
+            </Button>
+          </div>
+        </div>
         </form>
       </main>
 

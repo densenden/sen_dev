@@ -27,6 +27,7 @@ export interface CVProjectEntry {
   techStack: string[]
   year?: string
   caseStudyUrl?: string
+  liveUrl?: string
   thumbnail?: string
 }
 

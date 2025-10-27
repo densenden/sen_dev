@@ -25,9 +25,7 @@ export const sampleCoverLetterData: CoverLetterData = {
   recipient: {
     company: 'Hochschule RheinMain',
     contactPerson: 'Johannes Luderschmidt',
-    role: 'Wissenschaftliche:r Mitarbeiter:in (m/w/d) im Drittmittelprojekt DiValuation',
-    addressLines: ['Kurt-Schumacher-Ring 18'],
-    city: '65343 Wiesbaden'
+    role: 'Wissenschaftliche:r Mitarbeiter:in (m/w/d) im Drittmittelprojekt DiValuation'
   },
   jobUrl: 'https://hs-rheinmain.de/jobs/divaluation',
   subject: 'Bewerbung als Wissenschaftliche:r Mitarbeiter:in (m/w/d) im Drittmittelprojekt DiValuation',

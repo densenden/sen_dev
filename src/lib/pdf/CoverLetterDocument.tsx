@@ -5,6 +5,8 @@ import type { CoverLetterData } from '@/lib/pdf/types'
 import { ensurePdfFonts } from '@/lib/pdf/fonts'
 import { ContactIcon, ICON_COLOR, getContactIconData } from '@/lib/pdf/icon-utils'
 
+const FULL_CV_URL = 'https://dev.sen.studio/cv'
+
 ensurePdfFonts()
 
 interface CoverLetterDocumentProps {
@@ -28,6 +30,25 @@ const styles = StyleSheet.create({
   },
   headerInfo: {
     flex: 1
+  },
+  headerMeta: {
+    alignItems: 'flex-end',
+    flexDirection: 'column'
+  },
+  headerLinkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6
+  },
+  headerIcon: {
+    width: 9,
+    height: 9,
+    marginRight: 4,
+    marginTop: -2
+  },
+  headerLinkText: {
+    fontSize: 8,
+    color: '#1d4ed8'
   },
   name: {
     fontSize: 20,
@@ -56,7 +77,7 @@ const styles = StyleSheet.create({
     width: 9,
     height: 9,
     marginLeft: 2,
-    marginTop: -3
+    marginTop: -12
   },
   headerDate: {
     fontSize: 9,
@@ -82,12 +103,12 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   footer: {
-    marginTop: 28
+    marginTop: 12
   },
   signature: {
-    width: 120,
-    height: 48,
-    marginTop: 10,
+    width: 144,
+    height: 58,
+    marginTop: 6,
     objectFit: 'contain'
   },
   link: {
@@ -113,25 +134,31 @@ export function CoverLetterDocument({ data, signatureUrl }: CoverLetterDocumentP
               socials={data.applicant.socials}
             />
           </View>
-          <Text style={styles.headerDate}>{data.date}</Text>
+          <View style={styles.headerMeta}>
+            <View style={styles.headerLinkRow}>
+              <ContactIconSvg name="globe" style={styles.headerIcon} />
+              <Link src={FULL_CV_URL} style={styles.link}>
+                <Text style={styles.headerLinkText}>dev.sen.studio/cv</Text>
+              </Link>
+            </View>
+            <Text style={styles.headerDate}>{data.date}</Text>
+          </View>
         </View>
 
         <View style={styles.separator} />
 
         <View style={styles.recipientBlock}>
           <Text>{data.recipient.company}</Text>
-          {data.recipient.addressLines?.map((line, index) => (
-            <Text key={`recipient-address-${index}`}>{line}</Text>
-          ))}
-          {data.recipient.city ? <Text>{data.recipient.city}</Text> : null}
         </View>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text style={styles.subject} wrap={false}>
-            Bewerbung als {data.recipient.role}
+            {data.subject}
           </Text>
           {data.jobUrl ? (
-            <ExternalLinkIcon href={data.jobUrl} />
+            <View style={{ marginLeft: 6 }}>
+              <ExternalLinkIcon href={data.jobUrl} />
+            </View>
           ) : null}
         </View>
 
@@ -139,11 +166,11 @@ export function CoverLetterDocument({ data, signatureUrl }: CoverLetterDocumentP
           <Text key={`paragraph-${index}`} style={styles.paragraph}>{paragraph}</Text>
         ))}
 
-        <View style={styles.footer}>
-          <Text>Mit freundlichen Grüßen</Text>
-          {signatureUrl ? <Image src={signatureUrl} style={styles.signature} alt="Signature" /> : null}
-          <Text style={{ marginTop: 12 }}>{data.applicant.fullName}</Text>
-        </View>
+        {signatureUrl ? (
+          <View style={styles.footer}>
+            <Image src={signatureUrl} style={styles.signature} alt="Signature" />
+          </View>
+        ) : null}
       </Page>
     </Document>
   )
@@ -194,11 +221,13 @@ function ContactRow({
   return <View style={styles.contactRow}>{items}</View>
 }
 
-function ContactIconSvg({ name }: { name: ContactIcon }) {
+function ContactIconSvg({ name, style }: { name: ContactIcon; style?: Record<string, unknown> }) {
   const icon = getContactIconData(name)
   return (
-    <Svg viewBox={icon.viewBox} style={styles.contactIcon}>
-      <Path d={icon.path} fill={ICON_COLOR} />
+    <Svg viewBox={icon.viewBox} style={style ?? styles.contactIcon}>
+      {icon.paths.map((path, index) => (
+        <Path key={`${name}-path-${index}`} d={path} fill={ICON_COLOR} />
+      ))}
     </Svg>
   )
 }
@@ -208,7 +237,9 @@ function ExternalLinkIcon({ href }: { href: string }) {
   return (
     <Link src={href} style={styles.contactLink}>
       <Svg viewBox={icon.viewBox} style={styles.inlineIcon}>
-        <Path d={icon.path} fill={ICON_COLOR} />
+        {icon.paths.map((path, index) => (
+          <Path key={`external-path-${index}`} d={path} fill={ICON_COLOR} />
+        ))}
       </Svg>
     </Link>
   )

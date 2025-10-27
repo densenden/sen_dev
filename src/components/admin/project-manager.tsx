@@ -1,17 +1,67 @@
 "use client"
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Edit2, Trash2, ExternalLink, Github, Clock } from "lucide-react"
+import { Plus, Edit2, Trash2, ExternalLink, Github, Clock, Loader2 } from "lucide-react"
 import { useProjects } from '@/hooks/use-data'
+
+interface ActionState {
+  error: string | null
+  message: string | null
+}
 
 export default function ProjectManager() {
   const { projects, loading, error } = useProjects()
+  const [items, setItems] = useState(projects)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [{ error: actionError, message: actionMessage }, setActionState] = useState<ActionState>({
+    error: null,
+    message: null
+  })
+
+  useEffect(() => {
+    setItems(projects)
+  }, [projects])
 
   if (loading) {
     return <div className="text-center py-8">Loading projects...</div>
+  }
+
+  const handleDeleteProject = async (projectId: string, projectTitle: string) => {
+    if (deletingId) return
+
+    const confirmed = window.confirm(`Delete “${projectTitle}”? This action cannot be undone.`)
+    if (!confirmed) {
+      return
+    }
+
+    setDeletingId(projectId)
+    setActionState({ error: null, message: null })
+
+    try {
+      const response = await fetch(`/api/projects?id=${projectId}`, {
+        method: 'DELETE'
+      })
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null)
+        throw new Error(payload?.error || 'Failed to delete project')
+      }
+
+      setItems((prev) => prev.filter((project) => project.id !== projectId))
+      setActionState({ error: null, message: 'Project deleted successfully.' })
+    } catch (deleteError) {
+      console.error(deleteError)
+      setActionState({
+        error: deleteError instanceof Error ? deleteError.message : 'Failed to delete project',
+        message: null
+      })
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   return (
@@ -35,13 +85,25 @@ export default function ProjectManager() {
         </div>
       )}
 
-      {projects.length === 0 ? (
+      {actionError ? (
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {actionError}
+        </div>
+      ) : null}
+
+      {actionMessage ? (
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          {actionMessage}
+        </div>
+      ) : null}
+
+      {items.length === 0 ? (
         <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
           No projects yet. Click New Project to add your first case study.
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {projects.map((project) => (
+          {items.map((project) => (
             <Card key={project.id} className="group h-full">
               <CardHeader>
                 <div className="flex items-start justify-between gap-4">
@@ -67,8 +129,17 @@ export default function ProjectManager() {
                         <Edit2 className="w-4 h-4" />
                       </Button>
                     </Link>
-                    <Button size="sm" variant="ghost" disabled>
-                      <Trash2 className="w-4 h-4" />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDeleteProject(project.id, project.title)}
+                      disabled={Boolean(deletingId)}
+                    >
+                      {deletingId === project.id ? (
+                        <LoaderIcon />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -121,4 +192,8 @@ export default function ProjectManager() {
       )}
     </div>
   )
+}
+
+function LoaderIcon() {
+  return <Loader2 className="h-4 w-4 animate-spin" />
 }

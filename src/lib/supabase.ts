@@ -1,10 +1,15 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
 
 // Only create client if we have real credentials
-export const supabase = supabaseUrl.includes('placeholder') ? null : createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = supabaseUrl.includes('placeholder') ? null : createSupabaseClient(supabaseUrl, supabaseAnonKey)
+
+// Export createClient function for use in components
+export function createClient() {
+  return createSupabaseClient(supabaseUrl, supabaseAnonKey)
+}
 
 export type Json =
   | string

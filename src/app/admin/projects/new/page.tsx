@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   ArrowLeft,
   Save,
@@ -22,6 +23,8 @@ import {
 import Image from 'next/image'
 import { generateProjectContent, createFallbackContent } from '@/lib/ai-content-generator'
 import { uploadProjectImage, deleteProjectImage } from '@/lib/storage'
+
+type LogoType = 'text' | 'image' | 'svg' | 'icon'
 
 type FormState = {
   title: string
@@ -39,6 +42,8 @@ type FormState = {
   development_time_weeks: number | null
   is_featured: boolean
   screenshots: string[]
+  logo: string
+  logo_type: LogoType
 }
 
 const emptyForm: FormState = {
@@ -56,7 +61,9 @@ const emptyForm: FormState = {
   video_demo: '',
   development_time_weeks: null,
   is_featured: false,
-  screenshots: []
+  screenshots: [],
+  logo: '',
+  logo_type: 'text'
 }
 
 interface StatusMessage {
@@ -82,6 +89,8 @@ export default function CreateProjectPage() {
   const [deletingImage, setDeletingImage] = useState<string | null>(null)
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const logoFileInputRef = useRef<HTMLInputElement>(null)
+  const [logoUploading, setLogoUploading] = useState(false)
 
   const handleArrayInputChange = (field: 'tech_stack' | 'tags', value: string) => {
     const items = value.split(',').map(item => item.trim()).filter(Boolean)
@@ -95,6 +104,33 @@ export default function CreateProjectPage() {
     }
     const parsed = parseInt(value, 10)
     setForm(prev => ({ ...prev, development_time_weeks: Number.isNaN(parsed) ? prev.development_time_weeks : parsed }))
+  }
+
+  const handleLogoTypeChange = (value: LogoType) => {
+    setForm((prev) => {
+      if (value === 'text') {
+        const fallback = (prev.title || '').slice(0, 2).toUpperCase()
+        return {
+          ...prev,
+          logo_type: value,
+          logo: prev.logo_type === 'text' && prev.logo ? prev.logo : fallback
+        }
+      }
+
+      if (value === 'icon') {
+        return {
+          ...prev,
+          logo_type: value,
+          logo: prev.logo_type === 'icon' ? prev.logo : ''
+        }
+      }
+
+      return {
+        ...prev,
+        logo_type: value,
+        logo: prev.logo_type === value ? prev.logo : ''
+      }
+    })
   }
 
   const handleGenerateContent = async () => {
@@ -212,6 +248,50 @@ export default function CreateProjectPage() {
     }
   }
 
+  const handleLogoUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    if (!form.slug) {
+      setStatusMessage({ type: 'error', text: 'Set a slug before uploading a logo.' })
+      return
+    }
+
+    const file = files[0]
+    if (!file.type.startsWith('image/')) {
+      setStatusMessage({ type: 'error', text: 'Logo must be an image or SVG file.' })
+      return
+    }
+
+    setLogoUploading(true)
+    setStatusMessage(null)
+
+    try {
+      const url = await uploadProjectImage(file, form.slug, { folder: 'logo' })
+      const isSvg = file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')
+      setForm((prev) => ({
+        ...prev,
+        logo: url,
+        logo_type: isSvg ? 'svg' : 'image'
+      }))
+      setStatusMessage({ type: 'success', text: 'Logo uploaded successfully.' })
+    } catch (error) {
+      console.error('Logo upload failed:', error)
+      setStatusMessage({ type: 'error', text: 'Logo upload failed. Please try again.' })
+    } finally {
+      setLogoUploading(false)
+      if (logoFileInputRef.current) {
+        logoFileInputRef.current.value = ''
+      }
+    }
+  }
+
+  const handleClearLogo = () => {
+    setForm((prev) => ({
+      ...prev,
+      logo: (prev.title || '').slice(0, 2).toUpperCase(),
+      logo_type: 'text'
+    }))
+  }
+
   const handleSave = async () => {
     if (!form.title || !form.slug || !form.summary || !form.description) {
       setStatusMessage({ type: 'error', text: 'Title, slug, summary, and description are required.' })
@@ -222,6 +302,17 @@ export default function CreateProjectPage() {
     setStatusMessage(null)
 
     try {
+      const logoValue = (() => {
+        if (form.logo_type === 'text') {
+          const fallback = form.logo || form.title.substring(0, 2)
+          return fallback ? fallback.toUpperCase() : null
+        }
+        if (form.logo_type === 'icon') {
+          return form.logo || null
+        }
+        return form.logo || null
+      })()
+
       const response = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -240,7 +331,9 @@ export default function CreateProjectPage() {
           video_demo: form.video_demo || null,
           development_time_weeks: form.development_time_weeks,
           is_featured: form.is_featured,
-          screenshots: form.screenshots
+          screenshots: form.screenshots,
+          logo: logoValue,
+          logo_type: logoValue ? form.logo_type : null
         })
       })
 
@@ -373,14 +466,15 @@ export default function CreateProjectPage() {
                   <Input
                     id="title"
                     value={form.title}
-                    onChange={(event) => {
-                      const value = event.target.value
-                      setForm(prev => ({
-                        ...prev,
-                        title: value,
-                        slug: !slugManuallyEdited && value ? generateSlug(value) : prev.slug
-                      }))
-                    }}
+                  onChange={(event) => {
+                    const value = event.target.value
+                    setForm(prev => ({
+                      ...prev,
+                      title: value,
+                      slug: !slugManuallyEdited && value ? generateSlug(value) : prev.slug,
+                      logo: prev.logo_type === 'text' ? (value.slice(0, 2).toUpperCase()) : prev.logo
+                    }))
+                  }}
                     placeholder="Enter project title"
                   />
                 </div>
@@ -508,6 +602,92 @@ export default function CreateProjectPage() {
                   onChange={(event) => setForm(prev => ({ ...prev, video_demo: event.target.value }))}
                   placeholder="https://youtu.be/demo"
                 />
+              </div>
+
+              <div className="border rounded-lg p-4 space-y-4">
+                <div>
+                  <Label>Logo Presentation</Label>
+                  <p className="text-xs text-muted-foreground">Displayed on project cards across the site.</p>
+                </div>
+                <div className="max-w-xs">
+                  <Select value={form.logo_type} onValueChange={(value) => handleLogoTypeChange(value as LogoType)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select logo type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="text">Text initials</SelectItem>
+                      <SelectItem value="svg">Uploaded SVG</SelectItem>
+                      <SelectItem value="image">Uploaded image</SelectItem>
+                      <SelectItem value="icon">Icon key</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {form.logo_type === 'text' ? (
+                  <div>
+                    <Label htmlFor="logo_text">Logo Text</Label>
+                    <Input
+                      id="logo_text"
+                      value={form.logo}
+                      maxLength={4}
+                      onChange={(event) => setForm(prev => ({ ...prev, logo: event.target.value.toUpperCase() }))}
+                      placeholder="MM"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Up to 4 characters, shown inside a badge.</p>
+                  </div>
+                ) : null}
+
+                {form.logo_type === 'icon' ? (
+                  <div>
+                    <Label htmlFor="logo_icon">Icon key</Label>
+                    <Input
+                      id="logo_icon"
+                      value={form.logo}
+                      onChange={(event) => setForm(prev => ({ ...prev, logo: event.target.value }))}
+                      placeholder="mic"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Provide the Lucide icon identifier (e.g. mic, sparkles).</p>
+                  </div>
+                ) : null}
+
+                {(form.logo_type === 'svg' || form.logo_type === 'image') ? (
+                  <div className="space-y-2">
+                    {form.logo ? (
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-lg border border-dashed bg-muted/20 flex items-center justify-center overflow-hidden">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={form.logo} alt="Project logo" className="max-w-full max-h-full" />
+                        </div>
+                        <Button type="button" variant="ghost" onClick={handleClearLogo}>
+                          Remove logo
+                        </Button>
+                      </div>
+                    ) : null}
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => logoFileInputRef.current?.click()}
+                        disabled={logoUploading}
+                      >
+                        {logoUploading ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Upload className="w-4 h-4 mr-2" />
+                        )}
+                        {logoUploading ? 'Uploading…' : 'Upload logo'}
+                      </Button>
+                      <input
+                        ref={logoFileInputRef}
+                        type="file"
+                        accept=".svg,image/*"
+                        className="hidden"
+                        onChange={(event) => handleLogoUpload(event.target.files)}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">SVG preferred. PNG/JPG supported for image logos.</p>
+                  </div>
+                ) : null}
               </div>
 
               <div className="space-y-3">
