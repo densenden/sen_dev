@@ -86,15 +86,10 @@ async function loadSelectedProjects(projectIds: string[]): Promise<CVProjectEntr
 function renderPdfWithChildProcess(payload: Record<string, unknown>): Promise<Buffer> {
   const scriptPath = path.resolve(process.cwd(), 'scripts/render-pdf.tsx')
 
-  // Try tsx first (local dev), fall back to node (production)
-  const isDev = process.env.NODE_ENV === 'development'
-  const executable = isDev
-    ? path.resolve(process.cwd(), 'node_modules', '.bin', process.platform === 'win32' ? 'tsx.cmd' : 'tsx')
-    : 'node'
-
-  const args = isDev
-    ? [scriptPath, 'cv']
-    : ['--require', 'tsx/cjs', scriptPath, 'cv']
+  // Use tsx from node_modules for both dev and production
+  const tsxPath = path.resolve(process.cwd(), 'node_modules', '.bin', 'tsx')
+  const executable = tsxPath
+  const args = [scriptPath, 'cv']
 
   return new Promise((resolveBuffer, reject) => {
     const child = spawn(executable, args, {

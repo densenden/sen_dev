@@ -14,15 +14,10 @@ export const dynamic = 'force-dynamic'
 async function renderPdfWithChildProcess(payload: Record<string, unknown>): Promise<Buffer> {
   const scriptPath = path.resolve(process.cwd(), 'scripts/render-pdf.tsx')
 
-  // Try tsx first (local dev), fall back to node (production)
-  const isDev = process.env.NODE_ENV === 'development'
-  const executable = isDev
-    ? path.resolve(process.cwd(), 'node_modules', '.bin', process.platform === 'win32' ? 'tsx.cmd' : 'tsx')
-    : 'node'
-
-  const args = isDev
-    ? [scriptPath, 'cover-letter']
-    : ['--require', 'tsx/cjs', scriptPath, 'cover-letter']
+  // Use tsx from node_modules for both dev and production
+  const tsxPath = path.resolve(process.cwd(), 'node_modules', '.bin', 'tsx')
+  const executable = tsxPath
+  const args = [scriptPath, 'cover-letter']
 
   return new Promise((resolveBuffer, reject) => {
     const child = spawn(executable, args, {
