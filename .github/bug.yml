@@ -1,0 +1,28 @@
+name: 🐞 Bug Report
+description: Melde einen Fehler, der gegen definierte Qualitätsstandards verstößt
+title: "[Bug]: "
+labels: ["bug", "qm"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Beschreibung
+      placeholder: Was ist passiert?
+  - type: input
+    id: project
+    attributes:
+      label: Projekt
+      placeholder: z. B. Forkit, MemeMachine
+  - type: textarea
+    id: steps
+    attributes:
+      label: Schritte zur Reproduktion
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Schweregrad
+      options: [Low, Medium, High]
+  - type: textarea
+    id: fix
+    attributes:
+      label: Lösungsvorschlag / Verantwortlicher

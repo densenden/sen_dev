@@ -1,0 +1,21 @@
+name: ♻️ Change Request
+description: Beantrage eine Prozess-, Design- oder Codeänderung
+title: "[Change]: "
+labels: ["change", "enhancement"]
+body:
+  - type: textarea
+    id: reason
+    attributes:
+      label: Grund für Änderung
+  - type: textarea
+    id: scope
+    attributes:
+      label: Betroffene Komponenten / Prozesse
+  - type: input
+    id: owner
+    attributes:
+      label: Verantwortlicher
+  - type: input
+    id: due
+    attributes:
+      label: Zieltermin

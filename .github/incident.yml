@@ -1,0 +1,30 @@
+name: 🚨 Incident Report
+description: Dokumentiere einen sicherheits- oder systemkritischen Vorfall
+title: "[Incident]: "
+labels: ["incident", "urgent"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Kurzbeschreibung
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity Level
+      options: [Critical, Major, Minor]
+  - type: textarea
+    id: impact
+    attributes:
+      label: Betroffene Systeme / Kunden
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Ereignisverlauf (T0, T+…)
+  - type: textarea
+    id: rootcause
+    attributes:
+      label: Root Cause / Ursache
+  - type: textarea
+    id: actions
+    attributes:
+      label: Maßnahmen (Corrective/Preventive)

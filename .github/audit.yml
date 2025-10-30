@@ -1,0 +1,22 @@
+name: 📋 Audit Finding
+description: Dokumentiere eine Feststellung aus einem Audit oder Review
+title: "[Audit]: "
+labels: ["audit", "review"]
+body:
+  - type: textarea
+    id: observation
+    attributes:
+      label: Beobachtung
+  - type: textarea
+    id: deviation
+    attributes:
+      label: Abweichung / Empfehlung
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Gewichtung
+      options: [Minor, Major, Critical]
+  - type: textarea
+    id: action
+    attributes:
+      label: Korrekturmaßnahme / Frist
