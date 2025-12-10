@@ -251,13 +251,22 @@
   .text-primary-readable {
     @apply text-primary bg-white px-3 py-1 rounded-full shadow-sm;
   }
-  
+
   .dark .text-primary-readable {
     @apply bg-primary/10 shadow-none;
   }
-  
+
   .code .text-primary-readable {
     @apply bg-secondary border border-border shadow-none rounded-none px-2 py-0;
+  }
+
+  /* Hero headlines - always white for visibility on glass/image backgrounds */
+  .text-hero {
+    @apply text-white drop-shadow-sm;
+  }
+
+  .text-hero-muted {
+    @apply text-white/80;
   }
 }
 

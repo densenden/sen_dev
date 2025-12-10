@@ -1,111 +1,131 @@
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - sencodev",
-  description: "Privacy policy and data protection information for sencodev users",
+  title: "Privacy Policy - SEN.CO",
+  description: "Privacy policy and data protection information for SEN.CO UG",
 }
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-24">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <h1 className="text-4xl font-bold mb-8 text-slate-900 dark:text-white">Privacy Policy (Datenschutzerklärung)</h1>
-        
-        <div className="bg-white dark:bg-slate-800 rounded-lg p-8 shadow-sm">
-          <div className="prose prose-slate dark:prose-invert max-w-none">
-            <p className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded border border-yellow-200 dark:border-yellow-800">
-              <strong>⚠️ Legal Template</strong><br />
-              This privacy policy template needs to be reviewed and customized by a legal professional to ensure GDPR compliance and accuracy for your specific business operations.
-            </p>
-            
-            <h2>1. Data Protection at a Glance</h2>
-            
-            <h3>General Information</h3>
-            <p>
-              The following information provides an overview of what happens to your personal data when you visit this website. Personal data is any data that can personally identify you.
-            </p>
-            
-            <h3>Data Collection on This Website</h3>
-            <h4>Who is responsible for data collection on this website?</h4>
-            <p>
-              Data processing on this website is carried out by the website operator. You can find the operator's contact details in the "Contact" section of this privacy policy.
-            </p>
-            
-            <h4>How do we collect your data?</h4>
-            <p>
-              Your data is collected in various ways. On the one hand, this is data that you provide to us. This can be data that you enter in a contact form, for example. Other data is collected automatically by our IT systems when you visit the website.
-            </p>
-            
-            <h2>2. General Information and Mandatory Information</h2>
-            
-            <h3>Data Protection</h3>
-            <p>
-              The operators of these pages take the protection of your personal data very seriously. We treat your personal data confidentially and in accordance with the statutory data protection regulations and this privacy policy.
-            </p>
-            
-            <h3>Contact</h3>
-            <p>
-              If you have questions about data protection, please write to us at:<br />
-              Email: [contact@sencodev.com]<br />
-              Address: [To be filled from business registration]
-            </p>
-            
-            <h2>3. Data Collection on This Website</h2>
-            
-            <h3>Cookies</h3>
-            <p>
-              Some of our web pages use cookies. Cookies do not harm your computer and do not contain viruses. Cookies help make our website more user-friendly, efficient, and secure.
-            </p>
-            
-            <h3>Server Log Files</h3>
-            <p>
-              The website provider automatically collects and stores information in server log files, which your browser automatically transmits to us. These are:
-            </p>
-            <ul>
-              <li>Browser type and browser version</li>
-              <li>Operating system used</li>
-              <li>Referrer URL</li>
-              <li>Host name of the accessing computer</li>
-              <li>Time of server request</li>
-              <li>IP address</li>
+    <div className="min-h-screen bg-background py-24">
+      <div className="container mx-auto px-8 max-w-4xl">
+        <h1 className="text-4xl md:text-5xl font-light mb-12 text-foreground">
+          Privacy Policy
+        </h1>
+
+        <div className="space-y-12">
+          {/* Section 1 */}
+          <section className="space-y-4">
+            <h2 className="text-2xl font-light text-foreground">1. Data Controller</h2>
+            <div className="text-muted-foreground space-y-2">
+              <p className="font-medium text-foreground">SEN.CO UG (haftungsbeschränkt)</p>
+              <p>Paradiesgasse 53, 60594 Frankfurt am Main</p>
+              <p>Managing Director: Denis Kreuzer</p>
+              <p>Email: sound@sen.studio</p>
+              <p>Phone: +49 15566179807</p>
+            </div>
+          </section>
+
+          {/* Section 2 */}
+          <section className="space-y-6">
+            <h2 className="text-2xl font-light text-foreground">2. Collection and Storage of Personal Data</h2>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-foreground">a) When Visiting the Website</h3>
+              <p className="text-muted-foreground">
+                Upon accessing the site, browsers automatically transmit information to the server. The company collects and temporarily stores:
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
+                <li>IP address of the requesting computer</li>
+                <li>Date and time of access</li>
+                <li>Name and URL of the retrieved file</li>
+                <li>Website from which access occurs (referrer URL)</li>
+                <li>Browser used and operating system information</li>
+                <li>Name of the access provider</li>
+              </ul>
+              <p className="text-muted-foreground">
+                This data supports website functionality, user experience, system security evaluation, and administrative purposes. The legal foundation is Art. 6 Para. 1 S. 1 lit. f GDPR based on legitimate organizational interests.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-foreground">b) When Using the Contact Form</h3>
+              <p className="text-muted-foreground">
+                The contact form requires a valid email address to respond to inquiries. Additional information is voluntary. Processing is authorized by Art. 6 Para. 1 S. 1 lit. a GDPR through your consent.
+              </p>
+            </div>
+          </section>
+
+          {/* Section 3 */}
+          <section className="space-y-4">
+            <h2 className="text-2xl font-light text-foreground">3. Data Sharing</h2>
+            <p className="text-muted-foreground">Personal data sharing occurs only when:</p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
+              <li>You provide explicit consent</li>
+              <li>Legal claims require disclosure and no overriding interest exists</li>
+              <li>Legal obligation mandates disclosure</li>
+              <li>Contract processing with you requires it</li>
             </ul>
-            
-            <h3>Contact Form</h3>
-            <p>
-              If you send us inquiries via the contact form, your details from the inquiry form, including the contact details you provide there, will be stored by us for the purpose of processing the inquiry and in case of follow-up questions.
+          </section>
+
+          {/* Section 4 */}
+          <section className="space-y-4">
+            <h2 className="text-2xl font-light text-foreground">4. Cookies</h2>
+            <p className="text-muted-foreground">
+              Small files are automatically created and stored on your device. These support necessary purposes and protect organizational and third-party interests under GDPR Article 6.
             </p>
-            
-            <h2>4. Analytics and Advertising</h2>
-            
-            <h3>Google Analytics</h3>
-            <p>
-              This website uses Google Analytics, a web analytics service provided by Google Inc. ("Google"). The information generated by the cookie about your use of this website is usually transmitted to a Google server in the USA and stored there.
-            </p>
-            
-            <h2>5. Your Rights</h2>
-            
-            <p>You have the following rights:</p>
-            <ul>
-              <li>Right of access to your personal data</li>
-              <li>Right to rectification of inaccurate personal data</li>
-              <li>Right to erasure of your personal data</li>
-              <li>Right to restriction of processing</li>
-              <li>Right to data portability</li>
-              <li>Right to object to processing</li>
-              <li>Right to withdraw consent</li>
+          </section>
+
+          {/* Section 5 */}
+          <section className="space-y-4">
+            <h2 className="text-2xl font-light text-foreground">5. Data Subject Rights</h2>
+            <p className="text-muted-foreground">You may:</p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
+              <li>Request information about your processed personal data</li>
+              <li>Request correction or completion of inaccurate data</li>
+              <li>Request deletion unless processing is legally necessary</li>
+              <li>Request processing restrictions</li>
+              <li>Receive data in structured format or request transfer</li>
+              <li>Revoke consent at any time</li>
+              <li>File complaints with supervisory authorities</li>
             </ul>
-            
-            <h2>6. Contact Information</h2>
-            <p>
-              If you have questions about this privacy policy or about data protection in general, please contact us at:<br />
-              <strong>Email:</strong> [privacy@sencodev.com]<br />
-              <strong>Postal Address:</strong> [To be filled]
+          </section>
+
+          {/* Section 6 */}
+          <section className="space-y-4">
+            <h2 className="text-2xl font-light text-foreground">6. Right to Object</h2>
+            <p className="text-muted-foreground">
+              Under GDPR Article 21, you may object to processing based on legitimate interests if circumstances warrant it.
             </p>
-            
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-8">
-              Last updated: [Date to be filled]
+          </section>
+
+          {/* Section 7 */}
+          <section className="space-y-4">
+            <h2 className="text-2xl font-light text-foreground">7. Data Security</h2>
+            <p className="text-muted-foreground">
+              The company employs SSL procedure (Secure Socket Layer) with the highest encryption supported by your browser.
             </p>
-          </div>
+          </section>
+
+          {/* Section 8 */}
+          <section className="space-y-4">
+            <h2 className="text-2xl font-light text-foreground">8. Updates to this Privacy Policy</h2>
+            <p className="text-muted-foreground">
+              This policy, dated September 2024, may be updated due to website developments or regulatory changes.
+            </p>
+          </section>
+
+          {/* Section 9 */}
+          <section className="space-y-4">
+            <h2 className="text-2xl font-light text-foreground">9. Contact</h2>
+            <p className="text-muted-foreground">
+              For policy questions, contact: <a href="mailto:sound@sen.studio" className="text-primary hover:underline">sound@sen.studio</a>
+            </p>
+          </section>
+
+          <p className="text-xs text-muted-foreground/60 pt-8 border-t border-border">
+            Last updated: September 2024
+          </p>
         </div>
       </div>
     </div>

@@ -25,7 +25,6 @@ const packages = [
     name: "Impulse Sprint",
     description: "Perfect for testing ideas and quick market validation",
     icon: Zap,
-    price: "€1,500 - €3,000",
     duration: "2-3 days",
     ideal: "Entrepreneurs with a clear vision",
     color: "primary",
@@ -49,7 +48,6 @@ const packages = [
     name: "Starter Sprint",
     description: "Comprehensive foundation for serious startups",
     icon: Rocket,
-    price: "€4,000 - €8,000", 
     duration: "5-7 days",
     ideal: "Startups ready to launch",
     color: "accent",
@@ -76,8 +74,7 @@ const packages = [
     name: "Launch Ready",
     description: "Everything needed for a professional market entry",
     icon: Crown,
-    price: "€12,000 - €20,000",
-    duration: "1-2 weeks", 
+    duration: "1-2 weeks",
     ideal: "Scale-ready businesses",
     color: "secondary",
     features: [
@@ -105,7 +102,6 @@ const packages = [
     name: "Creator+ Build",
     description: "Premium solution for ambitious visionaries",
     icon: Star,
-    price: "€15,000 - €20,000",
     duration: "2-3 weeks",
     ideal: "Enterprise-level projects",
     color: "primary",
@@ -134,7 +130,6 @@ const packages = [
     name: "Co-Founder Tech Partner",
     description: "Ongoing technical leadership and development",
     icon: Users,
-    price: "€3,000 - €8,000/month",
     duration: "Ongoing retainer",
     ideal: "Growing companies",
     color: "accent",
@@ -160,18 +155,16 @@ const packages = [
 ]
 
 const addOns = [
-  { name: "AI Integration", price: "€2,000 - €8,000", description: "GPT, Vision, Voice capabilities" },
-  { name: "Mobile App", price: "€5,000 - €15,000", description: "Native iOS/Android or React Native" },
-  { name: "Advanced Analytics", price: "€1,500 - €3,000", description: "Custom dashboards & reporting" },
-  { name: "API Development", price: "€2,000 - €6,000", description: "RESTful or GraphQL APIs" },
-  { name: "Brand Identity", price: "€3,000 - €8,000", description: "Logo, colors, typography, guidelines" },
-  { name: "SEO Optimization", price: "€1,000 - €3,000", description: "Technical SEO & content strategy" }
+  { name: "AI Integration", description: "GPT, Vision, Voice capabilities" },
+  { name: "Mobile App", description: "Native iOS/Android or React Native" },
+  { name: "Advanced Analytics", description: "Custom dashboards & reporting" },
+  { name: "API Development", description: "RESTful or GraphQL APIs" },
+  { name: "Brand Identity", description: "Logo, colors, typography, guidelines" },
+  { name: "SEO Optimization", description: "Technical SEO & content strategy" }
 ]
 
 export default function PackagesPage() {
-  // Get unique random images for this page
-  const uniqueImages = getUniqueRandomImages(4)
-  const [heroImage, packagesImage, addonsImage, processImage] = uniqueImages
+  const [heroImage, packagesImage, addonsImage, processImage] = getUniqueRandomImages(4)
 
   return (
     <div className="min-h-screen">
@@ -214,38 +207,13 @@ export default function PackagesPage() {
                 transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
                 className="mb-16"
               >
-                <h1 className="text-7xl md:text-8xl lg:text-9xl font-light leading-none tracking-wide mb-8 text-white">
-                  <motion.span 
-                    className="block"
-                    initial={{ opacity: 0, filter: "blur(10px)" }}
-                    animate={{ opacity: 1, filter: "blur(0px)" }}
-                    transition={{ duration: 1.2, delay: 0.8 }}
-                  >
-                    Choose Your
-                  </motion.span>
-                  <motion.span 
-                    className="block text-primary"
-                    initial={{ opacity: 0, filter: "blur(10px)" }}
-                    animate={{ opacity: 1, filter: "blur(0px)" }}
-                    transition={{ duration: 1.2, delay: 1 }}
-                  >
-                    Sprint
-                  </motion.span>
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-light leading-tight mb-8 text-hero">
+                  Choose Your Sprint
                 </h1>
-                
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 1.2 }}
-                  className="max-w-3xl mx-auto space-y-6"
-                >
-                  <p className="text-2xl font-light text-white/90 leading-relaxed">
-                    Transparent pricing, clear deliverables, and rapid execution.
-                  </p>
-                  <p className="text-xl font-light text-white/80">
-                    Every package is designed to deliver maximum value for your <span className="text-accent">investment</span>.
-                  </p>
-                </motion.div>
+
+                <p className="text-xl md:text-2xl font-light text-hero-muted leading-relaxed max-w-3xl mx-auto">
+                  Clear deliverables, rapid execution, and tailored solutions for your project
+                </p>
               </motion.div>
             </motion.div>
           </div>
@@ -264,8 +232,8 @@ export default function PackagesPage() {
               transition={{ duration: 0.8 }}
               className="text-center mb-20"
             >
-              <h2 className="text-4xl md:text-5xl font-light mb-6">
-                <span className="text-primary">Development</span> Packages
+              <h2 className="text-4xl md:text-5xl font-light mb-6 text-foreground">
+                Development Packages
               </h2>
               <p className="text-lg font-light text-muted-foreground max-w-2xl mx-auto">
                 From rapid prototypes to enterprise solutions, find the perfect fit for your project.
@@ -313,10 +281,6 @@ export default function PackagesPage() {
                     </p>
 
                     <div className="space-y-4 mb-8">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-light text-muted-foreground">Investment</span>
-                        <span className="text-lg font-light text-foreground">{pkg.price}</span>
-                      </div>
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-light text-muted-foreground">Timeline</span>
                         <span className="text-sm font-light text-foreground">{pkg.duration}</span>
@@ -379,8 +343,8 @@ export default function PackagesPage() {
               transition={{ duration: 0.8 }}
               className="text-center mb-20"
             >
-              <h2 className="text-4xl md:text-5xl font-light mb-6">
-                <span className="text-secondary">Add-On</span> Services
+              <h2 className="text-4xl md:text-5xl font-light mb-6 text-foreground">
+                Add-On Services
               </h2>
               <p className="text-lg font-light text-muted-foreground max-w-2xl mx-auto">
                 Enhance any package with specialized features and capabilities.
@@ -397,12 +361,7 @@ export default function PackagesPage() {
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                   className="white-tile p-6"
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-light text-foreground">{addon.name}</h3>
-                    <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-light text-xs">
-                      {addon.price}
-                    </Badge>
-                  </div>
+                  <h3 className="text-lg font-light text-foreground mb-4">{addon.name}</h3>
                   <p className="text-sm font-light text-muted-foreground">
                     {addon.description}
                   </p>
@@ -433,8 +392,8 @@ export default function PackagesPage() {
               transition={{ duration: 0.8 }}
               className="text-center mb-20"
             >
-              <h2 className="text-4xl md:text-5xl font-light mb-6">
-                <span className="text-accent">How It</span> Works
+              <h2 className="text-4xl md:text-5xl font-light mb-6 text-foreground">
+                How It Works
               </h2>
               <p className="text-lg font-light text-muted-foreground max-w-2xl mx-auto">
                 A transparent process from first contact to final delivery.
@@ -504,8 +463,8 @@ export default function PackagesPage() {
             transition={{ duration: 0.8 }}
             className="glass-primary rounded-3xl p-16 max-w-4xl mx-auto text-center"
           >
-            <h2 className="text-3xl md:text-4xl font-light mb-6">
-              Not sure which package <span className="text-primary">fits</span>?
+            <h2 className="text-3xl md:text-4xl font-light mb-6 text-foreground">
+              Not sure which package fits?
             </h2>
             <p className="text-lg font-light text-muted-foreground mb-8 max-w-2xl mx-auto">
               Let's discuss your project and find the perfect solution for your needs and budget.

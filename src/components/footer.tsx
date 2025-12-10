@@ -7,8 +7,9 @@ import { useThemeTransition } from "@/hooks/use-theme-transition"
 import { Sun, Moon, Code } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
-import { T } from "gt-next"
+import { T } from "@/components/translation"
 import LanguageToggle from "./language-toggle"
+import { ExternalLinkModal } from "./external-link-modal"
 
 const footerLinks = [
   {
@@ -29,6 +30,7 @@ const footerLinks = [
       { label: "About Denis", labelId: "footer-about-denis", href: "/about" },
       { label: "Contact", labelId: "footer-contact", href: "/contact" },
       { label: "Portfolio", labelId: "footer-portfolio", href: "/projects" },
+      { label: "Investment", labelId: "footer-investment", href: "https://gamma.app/docs/Studio-Sen-Creative-Tech-Studio-Investment-Opportunity-cn6xoop523aihgg", external: true },
     ]
   },
   {
@@ -106,33 +108,56 @@ export default function Footer() {
                     {sectionIndex === 2 && <T id="footer-legal">Legal</T>}
                   </h3>
                   <ul className="space-y-3">
-                    {section.links.map((link, linkIndex) => (
-                      <li key={linkIndex}>
-                        <Link
-                          href={link.href}
-                          target={link.href.startsWith('http') ? '_blank' : undefined}
-                          rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                          className="text-xs font-light text-muted-foreground hover:text-primary transition-colors duration-300"
-                        >
+                    {section.links.map((link, linkIndex) => {
+                      const linkContent = (
+                        <>
                           {/* Services Section */}
                           {sectionIndex === 0 && linkIndex === 0 && <T id="footer-about">About</T>}
                           {sectionIndex === 0 && linkIndex === 1 && <T id="footer-philosophy">Philosophy</T>}
                           {sectionIndex === 0 && linkIndex === 2 && <T id="footer-services-link">Services</T>}
                           {sectionIndex === 0 && linkIndex === 3 && <T id="footer-packages">Packages</T>}
                           {sectionIndex === 0 && linkIndex === 4 && <T id="footer-projects">Projects</T>}
-                          
+
                           {/* Company Section */}
                           {sectionIndex === 1 && linkIndex === 0 && <T id="footer-about-denis">About Denis</T>}
                           {sectionIndex === 1 && linkIndex === 1 && <T id="footer-contact">Contact</T>}
                           {sectionIndex === 1 && linkIndex === 2 && <T id="footer-portfolio">Portfolio</T>}
-                          
+                          {sectionIndex === 1 && linkIndex === 3 && <T id="footer-investment">Investment</T>}
+
                           {/* Legal Section */}
                           {sectionIndex === 2 && linkIndex === 0 && <T id="footer-imprint">Imprint</T>}
                           {sectionIndex === 2 && linkIndex === 1 && <T id="footer-privacy">Privacy Policy</T>}
                           {sectionIndex === 2 && linkIndex === 2 && <T id="footer-terms">Terms of Service</T>}
-                        </Link>
-                      </li>
-                    ))}
+                        </>
+                      )
+
+                      // Use ExternalLinkModal for links marked as external
+                      if ('external' in link && link.external) {
+                        return (
+                          <li key={linkIndex}>
+                            <ExternalLinkModal
+                              href={link.href}
+                              className="text-xs font-light text-muted-foreground hover:text-primary transition-colors duration-300"
+                            >
+                              {linkContent}
+                            </ExternalLinkModal>
+                          </li>
+                        )
+                      }
+
+                      return (
+                        <li key={linkIndex}>
+                          <Link
+                            href={link.href}
+                            target={link.href.startsWith('http') ? '_blank' : undefined}
+                            rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                            className="text-xs font-light text-muted-foreground hover:text-primary transition-colors duration-300"
+                          >
+                            {linkContent}
+                          </Link>
+                        </li>
+                      )
+                    })}
                   </ul>
                 </motion.div>
               ))}
