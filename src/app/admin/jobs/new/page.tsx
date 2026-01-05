@@ -319,21 +319,26 @@ export default function NewJobApplicationPage() {
 
       setForm((prev) => ({
         ...prev,
-        role: data.role || prev.role,
-        company: data.company || prev.company,
-        jobUrl: data.jobUrl || prev.jobUrl,
-        contactName: data.contactName || prev.contactName || fallback.contactName,
-        contactEmail: data.contactEmail || prev.contactEmail || fallback.contactEmail,
-        location: data.location || prev.location || fallback.location,
-        jobDescription: data.jobDescription || prev.jobDescription,
+        // Preserve existing values from scraping/user input, only fill if empty
+        role: prev.role || data.role,
+        company: prev.company || data.company,
+        jobUrl: prev.jobUrl || data.jobUrl,
+        contactName: prev.contactName || data.contactName || fallback.contactName,
+        contactEmail: prev.contactEmail || data.contactEmail || fallback.contactEmail,
+        location: prev.location || data.location || fallback.location,
+        jobDescription: prev.jobDescription || data.jobDescription,
+        // Always use new AI-generated cover letter
         coverLetter: data.coverLetter || prev.coverLetter,
         notes: prev.notes || fallback.notes,
         status: prev.status || data.status || 'pending',
         appliedDate: prev.appliedDate || data.appliedDate || today,
+        // Only suggest projects if user hasn't already selected any
         projectIds:
-          suggestedProjectIds.length > 0
-            ? suggestedProjectIds
-            : prev.projectIds.slice(0, MAX_PROJECT_SELECTION)
+          prev.projectIds.length > 0
+            ? prev.projectIds
+            : suggestedProjectIds.length > 0
+              ? suggestedProjectIds
+              : prev.projectIds.slice(0, MAX_PROJECT_SELECTION)
       }))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to generate AI draft')
