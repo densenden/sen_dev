@@ -25,7 +25,17 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  serverExternalPackages: ['@react-pdf/renderer', '@react-pdf/fontkit'],
+  serverExternalPackages: [
+    '@react-pdf/renderer',
+    '@react-pdf/fontkit',
+    '@react-pdf/layout',
+    '@react-pdf/pdfkit',
+    '@react-pdf/primitives',
+    '@react-pdf/fns',
+    '@react-pdf/stylesheet',
+    '@react-pdf/textkit',
+    '@react-pdf/image',
+  ],
 };
 
 export default nextConfig;
