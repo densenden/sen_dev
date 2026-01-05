@@ -11,6 +11,39 @@ import { uploadJobDocument } from '@/lib/storage'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+// External PDF service (Railway/Render deployment)
+async function renderPdfExternal(data: CoverLetterData, signatureUrl?: string): Promise<Buffer> {
+  const serviceUrl = process.env.PDF_SERVICE_URL
+  if (!serviceUrl) {
+    throw new Error('PDF_SERVICE_URL not configured')
+  }
+
+  const response = await fetch(`${serviceUrl}/api/pdf/cover-letter`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data, signatureUrl })
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }))
+    throw new Error(error.error || `PDF service returned ${response.status}`)
+  }
+
+  const arrayBuffer = await response.arrayBuffer()
+  return Buffer.from(arrayBuffer)
+}
+
+// Direct rendering fallback
+async function renderPdfDirect(data: CoverLetterData, signatureUrl?: string): Promise<Buffer> {
+  try {
+    const { renderCoverLetterPdf } = await import('@/lib/pdf/CoverLetterDocument')
+    return await renderCoverLetterPdf(data, signatureUrl)
+  } catch (error) {
+    console.error('Direct PDF rendering failed:', error)
+    throw new Error(`Failed to render PDF: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
 async function renderPdfWithChildProcess(payload: Record<string, unknown>): Promise<Buffer> {
   const scriptPath = path.resolve(process.cwd(), 'scripts/render-pdf.tsx')
 
@@ -58,6 +91,24 @@ async function renderPdfWithChildProcess(payload: Record<string, unknown>): Prom
   })
 }
 
+// Choose rendering method based on environment
+async function renderPdf(data: CoverLetterData, signatureUrl?: string): Promise<Buffer> {
+  // Use external PDF service if configured (recommended for Vercel)
+  if (process.env.PDF_SERVICE_URL) {
+    return renderPdfExternal(data, signatureUrl)
+  }
+
+  // On Vercel or production, try direct import
+  const useDirectImport = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production'
+
+  if (useDirectImport) {
+    return renderPdfDirect(data, signatureUrl)
+  }
+
+  // Fallback to child process in development
+  return renderPdfWithChildProcess({ data, signatureUrl })
+}
+
 
 export async function POST(request: Request) {
   try {
@@ -86,11 +137,9 @@ export async function POST(request: Request) {
           : sampleCoverLetterData.body
     }
 
-    const signaturePath = body?.signatureUrl || `${process.cwd()}/public/Unterschrift_Denis-Kreuzer_DK.png`
-    const buffer = await renderPdfWithChildProcess({
-      data,
-      signatureUrl: signaturePath
-    })
+    // Use public URL for signature - file paths don't work on Vercel serverless
+    const signatureUrl = body?.signatureUrl || 'https://dev.sen.studio/Unterschrift_Denis-Kreuzer_DK.png'
+    const buffer = await renderPdf(data, signatureUrl)
 
     // If job_id is provided, store the PDF in the bucket and update the job record
     if (jobId) {
@@ -100,8 +149,8 @@ export async function POST(request: Request) {
         if (uploadResult) {
           // Update the job application record with the new cover letter path
           const supabase = getServiceSupabase()
-          const { error: updateError } = await supabase
-            .from('job_applications')
+          const { error: updateError } = await (supabase
+            .from('job_applications') as any)
             .update({ cover_letter_path: uploadResult.path })
             .eq('id', jobId)
 
@@ -124,7 +173,7 @@ export async function POST(request: Request) {
     }
 
     // Return PDF directly if no job_id provided (preview mode)
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'inline; filename="cover-letter-preview.pdf"'
