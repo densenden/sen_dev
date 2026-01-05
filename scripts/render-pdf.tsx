@@ -14,6 +14,16 @@ import type { CVData, CoverLetterData } from '../src/lib/pdf/types'
 
 type RenderType = 'cover-letter' | 'cv'
 
+interface CoverLetterPayload {
+  data?: CoverLetterData
+  signatureUrl?: string
+}
+
+interface CVPayload {
+  data?: CVData
+  portraitUrl?: string
+}
+
 async function readPayload(): Promise<any> {
   const chunks: Uint8Array[] = []
 
@@ -45,6 +55,17 @@ async function renderCv(payload: any) {
   return renderToBuffer(element)
 }
 
+// Export functions for direct use (Vercel-compatible)
+export async function renderCoverLetterPdf(payload: CoverLetterPayload): Promise<Buffer> {
+  await ensurePdfFonts()
+  return renderCoverLetter(payload)
+}
+
+export async function renderCvPdf(payload: CVPayload): Promise<Buffer> {
+  await ensurePdfFonts()
+  return renderCv(payload)
+}
+
 async function main() {
   const type = process.argv[2] as RenderType | undefined
   if (type !== 'cover-letter' && type !== 'cv') {
@@ -53,7 +74,7 @@ async function main() {
 
   const payload = await readPayload()
 
-  ensurePdfFonts()
+  await ensurePdfFonts()
 
   const buffer = type === 'cover-letter' ? await renderCoverLetter(payload) : await renderCv(payload)
   const base64 = buffer.toString('base64')
