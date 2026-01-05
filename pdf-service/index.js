@@ -16,9 +16,9 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// Use OTF format from rsms.me (official Inter font source) - matching serverless version
-const INTER_REGULAR = 'https://rsms.me/inter/font-files/Inter-Regular.otf';
-const INTER_SEMIBOLD = 'https://rsms.me/inter/font-files/Inter-SemiBold.otf';
+// Use TTF format from Google Fonts (most reliable for @react-pdf/renderer)
+const INTER_REGULAR = 'https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfMZg.ttf';
+const INTER_SEMIBOLD = 'https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYMZg.ttf';
 
 try {
   Font.register({
