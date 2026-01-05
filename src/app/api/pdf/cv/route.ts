@@ -21,7 +21,8 @@ function resolvePortraitUrl(input?: string | null) {
     return input
   }
 
-  return path.join(process.cwd(), 'public', 'denis.png')
+  // Use public URL - file paths don't work on Vercel serverless
+  return 'https://dev.sen.studio/denis.png'
 }
 
 function mapProjectToCvEntry(project: ProjectRow): CVProjectEntry {
@@ -67,7 +68,7 @@ async function loadSelectedProjects(projectIds: string[]): Promise<CVProjectEntr
     }
 
     const projectMap = new Map<string, ProjectRow>()
-    for (const project of data) {
+    for (const project of data as ProjectRow[]) {
       projectMap.set(project.id, project)
     }
 
@@ -80,6 +81,39 @@ async function loadSelectedProjects(projectIds: string[]): Promise<CVProjectEntr
   } catch (error) {
     console.error('Unexpected error while loading selected projects for CV PDF:', error)
     return []
+  }
+}
+
+// External PDF service (Railway/Render deployment)
+async function renderPdfExternal(data: CVData, portraitUrl?: string): Promise<Buffer> {
+  const serviceUrl = process.env.PDF_SERVICE_URL
+  if (!serviceUrl) {
+    throw new Error('PDF_SERVICE_URL not configured')
+  }
+
+  const response = await fetch(`${serviceUrl}/api/pdf/cv`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data, portraitUrl })
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }))
+    throw new Error(error.error || `PDF service returned ${response.status}`)
+  }
+
+  const arrayBuffer = await response.arrayBuffer()
+  return Buffer.from(arrayBuffer)
+}
+
+// Direct rendering fallback
+async function renderPdfDirect(data: CVData, portraitUrl?: string): Promise<Buffer> {
+  try {
+    const { renderCvPdf } = await import('@/lib/pdf/CVDocument')
+    return await renderCvPdf(data, portraitUrl)
+  } catch (error) {
+    console.error('Direct PDF rendering failed:', error)
+    throw new Error(`Failed to render PDF: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
@@ -128,6 +162,24 @@ function renderPdfWithChildProcess(payload: Record<string, unknown>): Promise<Bu
   })
 }
 
+// Choose rendering method based on environment
+async function renderPdf(data: CVData, portraitUrl?: string): Promise<Buffer> {
+  // Use external PDF service if configured (recommended for Vercel)
+  if (process.env.PDF_SERVICE_URL) {
+    return renderPdfExternal(data, portraitUrl)
+  }
+
+  // On Vercel or production, try direct import
+  const useDirectImport = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production'
+
+  if (useDirectImport) {
+    return renderPdfDirect(data, portraitUrl)
+  }
+
+  // Fallback to child process in development
+  return renderPdfWithChildProcess({ data, portraitUrl })
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}))
@@ -152,10 +204,7 @@ export async function POST(request: Request) {
     }
     const portraitUrl = resolvePortraitUrl(body?.portraitUrl)
 
-    const buffer = await renderPdfWithChildProcess({
-      data,
-      portraitUrl
-    })
+    const buffer = await renderPdf(data, portraitUrl)
 
     // If job_id is provided, store the PDF in the bucket and update the job record
     if (jobId) {
@@ -165,8 +214,8 @@ export async function POST(request: Request) {
         if (uploadResult) {
           // Update the job application record with the new CV path
           const supabase = getServiceSupabase()
-          const { error: updateError } = await supabase
-            .from('job_applications')
+          const { error: updateError } = await (supabase
+            .from('job_applications') as any)
             .update({ cv_path: uploadResult.path })
             .eq('id', jobId)
 
@@ -189,7 +238,7 @@ export async function POST(request: Request) {
     }
 
     // Return PDF directly if no job_id provided (preview mode)
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'inline; filename="cv-preview.pdf"'

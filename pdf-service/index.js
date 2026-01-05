@@ -158,6 +158,145 @@ function CoverLetterDocument({ data, signatureUrl }) {
   );
 }
 
+// CV Document styles
+const cvStyles = StyleSheet.create({
+  page: { padding: 48, fontFamily: 'Inter', fontSize: 10, color: '#1f2933', lineHeight: 1.5 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
+  headerInfo: { flex: 1 },
+  name: { fontSize: 22, fontWeight: 600, color: '#0f172a', marginBottom: 4 },
+  title: { fontSize: 12, color: '#64748b', marginBottom: 8 },
+  contactRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, fontSize: 8.5, color: '#64748b' },
+  contactLink: { color: '#1d4ed8', textDecoration: 'none' },
+  contactIcon: { width: 10, height: 10, marginTop: -4 },
+  portrait: { width: 80, height: 80, borderRadius: 40, objectFit: 'cover' },
+  separator: { height: 1, backgroundColor: '#e2e8f0', marginVertical: 16 },
+  sectionTitle: { fontSize: 12, fontWeight: 600, color: '#0f172a', marginBottom: 10 },
+  sectionContent: { marginBottom: 16 },
+  experienceItem: { marginBottom: 12 },
+  experienceHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
+  experienceTitle: { fontSize: 11, fontWeight: 600, color: '#1e293b' },
+  experienceCompany: { fontSize: 10, color: '#64748b' },
+  experienceDate: { fontSize: 9, color: '#94a3b8' },
+  experienceDescription: { fontSize: 9.5, color: '#475569', marginTop: 4 },
+  skillsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  skillTag: { backgroundColor: '#f1f5f9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4, fontSize: 9 },
+  projectItem: { marginBottom: 12, padding: 10, backgroundColor: '#f8fafc', borderRadius: 6 },
+  projectTitle: { fontSize: 11, fontWeight: 600, color: '#1e293b', marginBottom: 4 },
+  projectSummary: { fontSize: 9.5, color: '#475569', marginBottom: 6 },
+  projectTech: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
+  projectTechTag: { backgroundColor: '#e0e7ff', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 3, fontSize: 8, color: '#3730a3' },
+  educationItem: { marginBottom: 8 },
+  educationTitle: { fontSize: 10, fontWeight: 600, color: '#1e293b' },
+  educationInstitution: { fontSize: 9.5, color: '#64748b' },
+  link: { color: '#1d4ed8', textDecoration: 'none' }
+});
+
+function CVContactRow({ email, phone, city, linktree, socials }) {
+  const items = [];
+  if (email) items.push(React.createElement(Text, { key: 'email' }, email));
+  if (phone) items.push(React.createElement(Text, { key: 'phone' }, phone));
+  if (city) items.push(React.createElement(Text, { key: 'city' }, city));
+  if (linktree) {
+    items.push(React.createElement(Link, { key: 'linktree', src: linktree, style: cvStyles.contactLink },
+      React.createElement(ContactIconSvg, { name: 'linktree' })
+    ));
+  }
+  socials?.forEach((social, index) => {
+    const lower = social.label.toLowerCase();
+    let icon = null;
+    if (lower.includes('linkedin')) icon = 'linkedin';
+    if (lower.includes('github')) icon = 'github';
+    if (icon) {
+      items.push(React.createElement(Link, { key: `social-${index}`, src: social.url, style: cvStyles.contactLink },
+        React.createElement(ContactIconSvg, { name: icon })
+      ));
+    }
+  });
+  return React.createElement(View, { style: cvStyles.contactRow }, items);
+}
+
+function CVDocument({ data, portraitUrl }) {
+  return React.createElement(Document, null,
+    React.createElement(Page, { size: 'A4', style: cvStyles.page },
+      // Header
+      React.createElement(View, { style: cvStyles.headerRow },
+        React.createElement(View, { style: cvStyles.headerInfo },
+          React.createElement(Text, { style: cvStyles.name }, data.personal?.fullName || 'Name'),
+          data.personal?.title && React.createElement(Text, { style: cvStyles.title }, data.personal.title),
+          React.createElement(CVContactRow, {
+            email: data.personal?.email,
+            phone: data.personal?.phone,
+            city: data.personal?.city,
+            linktree: data.personal?.linktree,
+            socials: data.personal?.socials
+          })
+        ),
+        portraitUrl && React.createElement(Image, { src: portraitUrl, style: cvStyles.portrait })
+      ),
+
+      React.createElement(View, { style: cvStyles.separator }),
+
+      // Summary
+      data.summary && React.createElement(View, { style: cvStyles.sectionContent },
+        React.createElement(Text, { style: cvStyles.sectionTitle }, 'Summary'),
+        React.createElement(Text, { style: { fontSize: 10, color: '#475569' } }, data.summary)
+      ),
+
+      // Experience
+      data.experience?.length > 0 && React.createElement(View, { style: cvStyles.sectionContent },
+        React.createElement(Text, { style: cvStyles.sectionTitle }, 'Experience'),
+        ...data.experience.map((exp, index) =>
+          React.createElement(View, { key: `exp-${index}`, style: cvStyles.experienceItem },
+            React.createElement(View, { style: cvStyles.experienceHeader },
+              React.createElement(Text, { style: cvStyles.experienceTitle }, exp.title),
+              React.createElement(Text, { style: cvStyles.experienceDate }, `${exp.startDate || ''} - ${exp.endDate || 'Present'}`)
+            ),
+            React.createElement(Text, { style: cvStyles.experienceCompany }, exp.company),
+            exp.description && React.createElement(Text, { style: cvStyles.experienceDescription }, exp.description)
+          )
+        )
+      ),
+
+      // Skills
+      data.skills?.length > 0 && React.createElement(View, { style: cvStyles.sectionContent },
+        React.createElement(Text, { style: cvStyles.sectionTitle }, 'Skills'),
+        React.createElement(View, { style: cvStyles.skillsContainer },
+          ...data.skills.map((skill, index) =>
+            React.createElement(Text, { key: `skill-${index}`, style: cvStyles.skillTag }, skill)
+          )
+        )
+      ),
+
+      // Projects
+      data.projects?.length > 0 && React.createElement(View, { style: cvStyles.sectionContent },
+        React.createElement(Text, { style: cvStyles.sectionTitle }, 'Projects'),
+        ...data.projects.map((project, index) =>
+          React.createElement(View, { key: `project-${index}`, style: cvStyles.projectItem },
+            React.createElement(Text, { style: cvStyles.projectTitle }, project.title),
+            project.summary && React.createElement(Text, { style: cvStyles.projectSummary }, project.summary),
+            project.techStack?.length > 0 && React.createElement(View, { style: cvStyles.projectTech },
+              ...project.techStack.map((tech, techIndex) =>
+                React.createElement(Text, { key: `tech-${techIndex}`, style: cvStyles.projectTechTag }, tech)
+              )
+            )
+          )
+        )
+      ),
+
+      // Education
+      data.education?.length > 0 && React.createElement(View, { style: cvStyles.sectionContent },
+        React.createElement(Text, { style: cvStyles.sectionTitle }, 'Education'),
+        ...data.education.map((edu, index) =>
+          React.createElement(View, { key: `edu-${index}`, style: cvStyles.educationItem },
+            React.createElement(Text, { style: cvStyles.educationTitle }, edu.degree),
+            React.createElement(Text, { style: cvStyles.educationInstitution }, `${edu.institution}${edu.year ? ` (${edu.year})` : ''}`)
+          )
+        )
+      )
+    )
+  );
+}
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -180,6 +319,27 @@ app.post('/api/pdf/cover-letter', async (req, res) => {
     res.send(buffer);
   } catch (error) {
     console.error('PDF generation failed:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// CV endpoint
+app.post('/api/pdf/cv', async (req, res) => {
+  try {
+    const { data, portraitUrl } = req.body;
+
+    if (!data) {
+      return res.status(400).json({ error: 'Missing data' });
+    }
+
+    const element = React.createElement(CVDocument, { data, portraitUrl });
+    const buffer = await renderToBuffer(element);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="cv.pdf"');
+    res.send(buffer);
+  } catch (error) {
+    console.error('CV PDF generation failed:', error);
     res.status(500).json({ error: error.message });
   }
 });
