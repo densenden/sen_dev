@@ -3,6 +3,15 @@ import cors from 'cors';
 import React from 'react';
 import { renderToBuffer, Font, Document, Page, Text, View, StyleSheet, Link, Image, Svg, Path } from '@react-pdf/renderer';
 
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Rejection:', err);
+});
+
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -11,13 +20,18 @@ app.use(express.json({ limit: '10mb' }));
 const INTER_REGULAR = 'https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.18/files/inter-latin-400-normal.woff';
 const INTER_SEMIBOLD = 'https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.18/files/inter-latin-600-normal.woff';
 
-Font.register({
-  family: 'Inter',
-  fonts: [
-    { src: INTER_REGULAR, fontWeight: 400 },
-    { src: INTER_SEMIBOLD, fontWeight: 600 }
-  ]
-});
+try {
+  Font.register({
+    family: 'Inter',
+    fonts: [
+      { src: INTER_REGULAR, fontWeight: 400 },
+      { src: INTER_SEMIBOLD, fontWeight: 600 }
+    ]
+  });
+  console.log('Fonts registered successfully');
+} catch (err) {
+  console.error('Font registration failed:', err);
+}
 
 const ICON_COLOR = '#1d4ed8';
 
@@ -37,6 +51,10 @@ const CONTACT_ICON_SVGS = {
   external: {
     viewBox: '0 -960 960 960',
     paths: ['M224.62-160q-27.62 0-46.12-18.5Q160-197 160-224.62v-510.76q0-27.62 18.5-46.12Q197-800 224.62-800h224.61v40H224.62q-9.24 0-16.93 7.69-7.69 7.69-7.69 16.93v510.76q0 9.24 7.69 16.93 7.69 7.69 16.93 7.69h510.76q9.24 0 16.93-7.69 7.69-7.69 7.69-16.93v-224.61h40v224.61q0 27.62-18.5 46.12Q763-160 735.38-160H224.62Zm164.92-201.23-28.31-28.31L731.69-760H560v-40h240v240h-40v-171.69L389.54-361.23Z']
+  },
+  info: {
+    viewBox: '0 -960 960 960',
+    paths: ['M480-680q17 0 28.5-11.5T520-720q0-17-11.5-28.5T480-760q-17 0-28.5 11.5T440-720q0 17 11.5 28.5T480-680Zm-40 320h80v-240h-80v240ZM80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H240L80-80Zm126-240h594v-480H160v525l46-45Zm-46 0v-480 480Z']
   },
   globe: {
     viewBox: '0 0 24 24',
@@ -72,31 +90,446 @@ const coverLetterStyles = StyleSheet.create({
   link: { color: '#1d4ed8', textDecoration: 'none' }
 });
 
+// CV styles (matching the serverless version)
+const cvStyles = StyleSheet.create({
+  page: {
+    padding: 48,
+    fontFamily: 'Inter',
+    fontSize: 9,
+    color: '#1f2933',
+    lineHeight: 1.5
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 28
+  },
+  headerInfo: {
+    flex: 1,
+    paddingRight: 24
+  },
+  headerActions: {
+    alignItems: 'flex-end',
+    flexDirection: 'column'
+  },
+  headerLinkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8
+  },
+  headerIcon: {
+    width: 10,
+    height: 10,
+    marginRight: 4,
+    marginTop: -2
+  },
+  headerLinkText: {
+    fontSize: 8,
+    color: '#1d4ed8'
+  },
+  name: {
+    fontSize: 18,
+    fontWeight: 600,
+    color: '#0f172a',
+    letterSpacing: 0.4
+  },
+  title: {
+    fontSize: 12,
+    fontWeight: 500,
+    color: '#475569',
+    marginTop: 12,
+    marginBottom: 14
+  },
+  contactRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 12,
+    fontSize: 8.5,
+    color: '#64748b'
+  },
+  contactLink: {
+    color: '#1d4ed8',
+    textDecoration: 'none'
+  },
+  contactIcon: {
+    width: 10,
+    height: 10,
+    marginTop: -4
+  },
+  avatar: {
+    width: 68,
+    height: 84,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    objectFit: 'cover'
+  },
+  section: {
+    marginBottom: 14
+  },
+  sectionTitle: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: '#64748b',
+    letterSpacing: 1.1,
+    textTransform: 'uppercase'
+  },
+  sectionBody: {
+    marginTop: 6,
+    gap: 6
+  },
+  bodyText: {
+    fontSize: 10,
+    color: '#1e293b',
+    lineHeight: 1.4
+  },
+  compactText: {
+    fontSize: 9,
+    color: '#1e293b',
+    lineHeight: 1.0
+  },
+  bulletList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 0,
+    marginTop: 0
+  },
+  bulletItem: {
+    flexDirection: 'row',
+    marginBottom: -0.5
+  },
+  bulletSymbol: {
+    width: 10,
+    color: '#1d4ed8'
+  },
+  bulletContent: {
+    flex: 1,
+    color: '#1e293b',
+    lineHeight: 0.8
+  },
+  experienceCompany: {
+    fontWeight: 600,
+    fontSize: 12,
+    color: '#1f2937'
+  },
+  experienceRole: {
+    color: '#475569',
+    marginTop: 2
+  },
+  experienceMeta: {
+    fontSize: 9,
+    color: '#94a3b8',
+    marginTop: 1,
+    marginBottom: 1
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#e2e8f0',
+    marginVertical: 6
+  },
+  link: {
+    color: '#1d4ed8',
+    textDecoration: 'none'
+  },
+  projectGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: 6,
+    columnGap: 6
+  },
+  projectCard: {
+    width: '48%',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 10,
+    flexDirection: 'column',
+    gap: 6
+  },
+  projectHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start'
+  },
+  projectLinks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end'
+  },
+  projectIcon: {
+    width: 9,
+    height: 9,
+    marginTop: -2
+  },
+  projectIconSpacing: {
+    marginLeft: 6
+  },
+  projectMeta: {
+    fontSize: 9,
+    color: '#94a3b8',
+    marginBottom: 2
+  },
+  projectDescription: {
+    color: '#1e293b',
+    lineHeight: 0.5
+  },
+  externalIcon: {
+    width: 9,
+    height: 9,
+    marginLeft: 2,
+    marginTop: -3
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4
+  },
+  footer: {
+    marginTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+    paddingTop: 6,
+    alignItems: 'flex-start'
+  },
+  statusText: {
+    fontSize: 8,
+    color: '#94a3b8'
+  }
+});
+
+const FULL_CV_URL = 'https://dev.sen.studio/cv';
+
 function ContactIconSvg({ name, style }) {
   const icon = getContactIconData(name);
   if (!icon) return null;
-  return React.createElement(Svg, { viewBox: icon.viewBox, style: style || coverLetterStyles.contactIcon },
+  return React.createElement(Svg, { viewBox: icon.viewBox, style: style || cvStyles.contactIcon },
     icon.paths.map((path, index) => React.createElement(Path, { key: `${name}-path-${index}`, d: path, fill: ICON_COLOR }))
   );
 }
 
 function ExternalLinkIcon({ href }) {
   const icon = getContactIconData('external');
-  return React.createElement(Link, { src: href, style: coverLetterStyles.contactLink },
-    React.createElement(Svg, { viewBox: icon.viewBox, style: coverLetterStyles.inlineIcon },
+  return React.createElement(Link, { src: href, style: cvStyles.link },
+    React.createElement(Svg, { viewBox: icon.viewBox, style: cvStyles.externalIcon },
       icon.paths.map((path, index) => React.createElement(Path, { key: `external-path-${index}`, d: path, fill: ICON_COLOR }))
     )
   );
 }
 
-function ContactRow({ email, phone, city, linktree, socials }) {
+function ProjectIconLink({ href, icon, style }) {
+  const iconData = getContactIconData(icon);
+  const linkStyle = style ? [cvStyles.link, style] : cvStyles.link;
+  return React.createElement(Link, { src: href, style: linkStyle },
+    React.createElement(Svg, { viewBox: iconData.viewBox, style: cvStyles.projectIcon },
+      iconData.paths.map((path, index) => React.createElement(Path, { key: `${icon}-path-${index}`, d: path, fill: ICON_COLOR }))
+    )
+  );
+}
+
+function BulletList({ items }) {
+  return React.createElement(View, { style: cvStyles.bulletList },
+    items.map((item, index) =>
+      React.createElement(View, { key: `${item}-${index}`, style: cvStyles.bulletItem },
+        React.createElement(Text, { style: cvStyles.bulletSymbol }, '•'),
+        React.createElement(Text, { style: cvStyles.bulletContent }, item)
+      )
+    )
+  );
+}
+
+function CVContactRow({ contact }) {
+  const items = [];
+
+  if (contact.email) {
+    items.push(React.createElement(Text, { key: 'email' }, contact.email));
+  }
+  if (contact.phone) {
+    items.push(React.createElement(Text, { key: 'phone' }, contact.phone));
+  }
+  if (contact.location) {
+    items.push(React.createElement(Text, { key: 'location' }, contact.location));
+  }
+  if (contact.linktree) {
+    items.push(React.createElement(Link, { key: 'linktree', src: contact.linktree, style: cvStyles.contactLink },
+      React.createElement(ContactIconSvg, { name: 'linktree' })
+    ));
+  }
+  contact.socials?.forEach((social, index) => {
+    const lower = social.label.toLowerCase();
+    let icon = null;
+    if (lower.includes('linkedin')) icon = 'linkedin';
+    if (lower.includes('github')) icon = 'github';
+    if (icon) {
+      items.push(React.createElement(Link, { key: `social-${index}`, src: social.url, style: cvStyles.contactLink },
+        React.createElement(ContactIconSvg, { name: icon })
+      ));
+    }
+  });
+
+  return React.createElement(View, { style: cvStyles.contactRow }, items);
+}
+
+function ExperienceEntry({ entry }) {
+  const highlights = entry.highlights.slice(0, 2);
+  return React.createElement(View, { style: { marginBottom: 10 } },
+    React.createElement(Text, { style: cvStyles.experienceCompany }, entry.company),
+    React.createElement(Text, { style: cvStyles.experienceRole }, entry.role),
+    React.createElement(View, { style: cvStyles.metaRow },
+      React.createElement(Text, { style: cvStyles.experienceMeta },
+        `${entry.startDate} – ${entry.endDate}${entry.location ? ` • ${entry.location}` : ''}`
+      ),
+      entry.website ? React.createElement(ExternalLinkIcon, { href: entry.website }) : null
+    ),
+    React.createElement(BulletList, { items: highlights })
+  );
+}
+
+function ProjectEntry({ project }) {
+  const hasLinks = Boolean(project.caseStudyUrl || project.liveUrl);
+  return React.createElement(View, { style: cvStyles.projectCard },
+    React.createElement(View, { style: cvStyles.projectHeader },
+      React.createElement(Text, { style: cvStyles.experienceCompany }, project.title),
+      hasLinks ? React.createElement(View, { style: cvStyles.projectLinks },
+        project.caseStudyUrl ? React.createElement(ProjectIconLink, { href: project.caseStudyUrl, icon: 'info' }) : null,
+        project.liveUrl ? React.createElement(ProjectIconLink, {
+          href: project.liveUrl,
+          icon: 'globe',
+          style: project.caseStudyUrl ? cvStyles.projectIconSpacing : undefined
+        }) : null
+      ) : null
+    ),
+    React.createElement(Text, { style: cvStyles.projectMeta },
+      `${project.year ? `${project.year} • ` : ''}${project.techStack.join(', ')}`
+    ),
+    React.createElement(Text, { style: cvStyles.projectDescription }, project.summary)
+  );
+}
+
+function CVDocument({ data, portraitUrl, creationDate }) {
+  const generatedDate = creationDate || new Intl.DateTimeFormat('de-DE', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  }).format(new Date());
+
+  const summaryParagraph = Array.isArray(data.summaryLines) && data.summaryLines.length > 0
+    ? data.summaryLines.join(' ')
+    : (data.summary || '').replace(/\s+/g, ' ').trim();
+
+  const technicalSkillsParagraph = (data.technicalSkills || [])
+    .map((group) => `${group.label}: ${group.items.join(', ')}`)
+    .join(' • ');
+
+  return React.createElement(Document, null,
+    React.createElement(Page, { size: 'A4', style: cvStyles.page, wrap: true },
+      // Header
+      React.createElement(View, { style: cvStyles.headerRow },
+        React.createElement(View, { style: cvStyles.headerInfo },
+          React.createElement(Text, { style: cvStyles.name }, data.fullName),
+          React.createElement(Text, { style: cvStyles.title }, data.title),
+          React.createElement(CVContactRow, { contact: data.contact })
+        ),
+        React.createElement(View, { style: cvStyles.headerActions },
+          React.createElement(View, { style: [cvStyles.headerLinkRow, !portraitUrl && { marginBottom: 0 }] },
+            React.createElement(ContactIconSvg, { name: 'globe', style: cvStyles.headerIcon }),
+            React.createElement(Link, { src: FULL_CV_URL, style: cvStyles.link },
+              React.createElement(Text, { style: cvStyles.headerLinkText }, 'dev.sen.studio/cv')
+            )
+          ),
+          portraitUrl ? React.createElement(Image, { src: portraitUrl, style: cvStyles.avatar }) : null
+        )
+      ),
+
+      // Summary
+      React.createElement(View, { style: cvStyles.section },
+        React.createElement(Text, { style: cvStyles.sectionTitle }, 'Summary'),
+        React.createElement(Text, { style: [cvStyles.bodyText, { marginTop: 8 }] }, summaryParagraph)
+      ),
+
+      React.createElement(View, { style: cvStyles.divider }),
+
+      // Experience
+      React.createElement(View, { style: cvStyles.section },
+        React.createElement(Text, { style: cvStyles.sectionTitle }, 'Experience'),
+        ...(data.experience || []).map((entry, index) =>
+          React.createElement(ExperienceEntry, { key: `${entry.company}-${index}`, entry })
+        )
+      ),
+
+      // Education
+      React.createElement(View, { style: cvStyles.section },
+        React.createElement(Text, { style: cvStyles.sectionTitle }, 'Education'),
+        ...(data.education || []).map((degree, index) =>
+          React.createElement(View, { key: `${degree.institution}-${index}`, style: { marginBottom: 14 } },
+            React.createElement(Text, { style: [cvStyles.experienceCompany, { fontSize: 12 }] }, degree.institution),
+            React.createElement(Text, { style: cvStyles.experienceRole }, degree.program),
+            React.createElement(Text, { style: cvStyles.experienceMeta },
+              `${degree.startYear} – ${degree.endYear}`
+            ),
+            degree.details ? React.createElement(BulletList, { items: degree.details }) : null
+          )
+        )
+      ),
+
+      React.createElement(View, { style: cvStyles.divider }),
+
+      // Technical Skills
+      React.createElement(View, { style: cvStyles.section },
+        React.createElement(Text, { style: cvStyles.sectionTitle }, 'Technical Skills'),
+        React.createElement(Text, { style: [cvStyles.bodyText, { marginTop: 8 }] }, technicalSkillsParagraph)
+      ),
+
+      // Soft Skills
+      data.softSkills && data.softSkills.length > 0 ? React.createElement(View, { style: cvStyles.section },
+        React.createElement(Text, { style: cvStyles.sectionTitle }, 'Soft Skills'),
+        React.createElement(Text, { style: [cvStyles.bodyText, { marginTop: 6 }] }, data.softSkills.join(', '))
+      ) : null,
+
+      // Languages
+      data.languages && data.languages.length > 0 ? React.createElement(View, { style: cvStyles.section },
+        React.createElement(Text, { style: cvStyles.sectionTitle }, 'Languages'),
+        React.createElement(Text, { style: cvStyles.bodyText }, data.languages.join(', '))
+      ) : null,
+
+      // Interests
+      data.interests && data.interests.length > 0 ? React.createElement(View, { style: cvStyles.section },
+        React.createElement(Text, { style: cvStyles.sectionTitle }, 'Interests'),
+        React.createElement(Text, { style: cvStyles.bodyText }, data.interests.join(', '))
+      ) : null,
+
+      // Projects
+      data.projects && data.projects.length > 0 ? React.createElement(View, { style: cvStyles.section },
+        React.createElement(View, { style: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' } },
+          React.createElement(Text, { style: cvStyles.sectionTitle }, 'Matching Projects'),
+          React.createElement(Link, { src: 'https://dev.sen.studio/projects', style: [cvStyles.link, { fontSize: 9 }] }, 'see all projects')
+        ),
+        React.createElement(View, { style: cvStyles.projectGrid },
+          ...data.projects.map((project, index) =>
+            React.createElement(ProjectEntry, { key: `${project.title}-${index}`, project })
+          )
+        )
+      ) : null,
+
+      // Footer
+      React.createElement(View, { style: cvStyles.footer },
+        React.createElement(Text, { style: cvStyles.statusText }, `Status: ${generatedDate}`)
+      )
+    )
+  );
+}
+
+// Cover Letter components
+function CoverLetterContactRow({ email, phone, city, linktree, socials }) {
   const items = [];
   if (email) items.push(React.createElement(Text, { key: 'email' }, email));
   if (phone) items.push(React.createElement(Text, { key: 'phone' }, phone));
   if (city) items.push(React.createElement(Text, { key: 'city' }, city));
   if (linktree) {
     items.push(React.createElement(Link, { key: 'linktree', src: linktree, style: coverLetterStyles.contactLink },
-      React.createElement(ContactIconSvg, { name: 'linktree' })
+      React.createElement(ContactIconSvg, { name: 'linktree', style: coverLetterStyles.contactIcon })
     ));
   }
   socials?.forEach((social, index) => {
@@ -106,11 +539,20 @@ function ContactRow({ email, phone, city, linktree, socials }) {
     if (lower.includes('github')) icon = 'github';
     if (icon) {
       items.push(React.createElement(Link, { key: `social-${index}`, src: social.url, style: coverLetterStyles.contactLink },
-        React.createElement(ContactIconSvg, { name: icon })
+        React.createElement(ContactIconSvg, { name: icon, style: coverLetterStyles.contactIcon })
       ));
     }
   });
   return React.createElement(View, { style: coverLetterStyles.contactRow }, items);
+}
+
+function CoverLetterExternalLinkIcon({ href }) {
+  const icon = getContactIconData('external');
+  return React.createElement(Link, { src: href, style: coverLetterStyles.contactLink },
+    React.createElement(Svg, { viewBox: icon.viewBox, style: coverLetterStyles.inlineIcon },
+      icon.paths.map((path, index) => React.createElement(Path, { key: `external-path-${index}`, d: path, fill: ICON_COLOR }))
+    )
+  );
 }
 
 function CoverLetterDocument({ data, signatureUrl }) {
@@ -120,7 +562,7 @@ function CoverLetterDocument({ data, signatureUrl }) {
       React.createElement(View, { style: coverLetterStyles.headerRow },
         React.createElement(View, { style: coverLetterStyles.headerInfo },
           React.createElement(Text, { style: coverLetterStyles.name }, data.applicant.fullName),
-          React.createElement(ContactRow, {
+          React.createElement(CoverLetterContactRow, {
             email: data.applicant.email,
             phone: data.applicant.phone,
             city: data.applicant.city,
@@ -145,7 +587,7 @@ function CoverLetterDocument({ data, signatureUrl }) {
       React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center' } },
         React.createElement(Text, { style: coverLetterStyles.subject, wrap: false }, data.subject),
         data.jobUrl ? React.createElement(View, { style: { marginLeft: 6 } },
-          React.createElement(ExternalLinkIcon, { href: data.jobUrl })
+          React.createElement(CoverLetterExternalLinkIcon, { href: data.jobUrl })
         ) : null
       ),
       ...paragraphs.map((paragraph, index) =>
@@ -154,145 +596,6 @@ function CoverLetterDocument({ data, signatureUrl }) {
       signatureUrl ? React.createElement(View, { style: coverLetterStyles.footer },
         React.createElement(Image, { src: signatureUrl, style: coverLetterStyles.signature })
       ) : null
-    )
-  );
-}
-
-// CV Document styles
-const cvStyles = StyleSheet.create({
-  page: { padding: 48, fontFamily: 'Inter', fontSize: 10, color: '#1f2933', lineHeight: 1.5 },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
-  headerInfo: { flex: 1 },
-  name: { fontSize: 22, fontWeight: 600, color: '#0f172a', marginBottom: 4 },
-  title: { fontSize: 12, color: '#64748b', marginBottom: 8 },
-  contactRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, fontSize: 8.5, color: '#64748b' },
-  contactLink: { color: '#1d4ed8', textDecoration: 'none' },
-  contactIcon: { width: 10, height: 10, marginTop: -4 },
-  portrait: { width: 80, height: 80, borderRadius: 40, objectFit: 'cover' },
-  separator: { height: 1, backgroundColor: '#e2e8f0', marginVertical: 16 },
-  sectionTitle: { fontSize: 12, fontWeight: 600, color: '#0f172a', marginBottom: 10 },
-  sectionContent: { marginBottom: 16 },
-  experienceItem: { marginBottom: 12 },
-  experienceHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  experienceTitle: { fontSize: 11, fontWeight: 600, color: '#1e293b' },
-  experienceCompany: { fontSize: 10, color: '#64748b' },
-  experienceDate: { fontSize: 9, color: '#94a3b8' },
-  experienceDescription: { fontSize: 9.5, color: '#475569', marginTop: 4 },
-  skillsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  skillTag: { backgroundColor: '#f1f5f9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4, fontSize: 9 },
-  projectItem: { marginBottom: 12, padding: 10, backgroundColor: '#f8fafc', borderRadius: 6 },
-  projectTitle: { fontSize: 11, fontWeight: 600, color: '#1e293b', marginBottom: 4 },
-  projectSummary: { fontSize: 9.5, color: '#475569', marginBottom: 6 },
-  projectTech: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
-  projectTechTag: { backgroundColor: '#e0e7ff', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 3, fontSize: 8, color: '#3730a3' },
-  educationItem: { marginBottom: 8 },
-  educationTitle: { fontSize: 10, fontWeight: 600, color: '#1e293b' },
-  educationInstitution: { fontSize: 9.5, color: '#64748b' },
-  link: { color: '#1d4ed8', textDecoration: 'none' }
-});
-
-function CVContactRow({ email, phone, city, linktree, socials }) {
-  const items = [];
-  if (email) items.push(React.createElement(Text, { key: 'email' }, email));
-  if (phone) items.push(React.createElement(Text, { key: 'phone' }, phone));
-  if (city) items.push(React.createElement(Text, { key: 'city' }, city));
-  if (linktree) {
-    items.push(React.createElement(Link, { key: 'linktree', src: linktree, style: cvStyles.contactLink },
-      React.createElement(ContactIconSvg, { name: 'linktree' })
-    ));
-  }
-  socials?.forEach((social, index) => {
-    const lower = social.label.toLowerCase();
-    let icon = null;
-    if (lower.includes('linkedin')) icon = 'linkedin';
-    if (lower.includes('github')) icon = 'github';
-    if (icon) {
-      items.push(React.createElement(Link, { key: `social-${index}`, src: social.url, style: cvStyles.contactLink },
-        React.createElement(ContactIconSvg, { name: icon })
-      ));
-    }
-  });
-  return React.createElement(View, { style: cvStyles.contactRow }, items);
-}
-
-function CVDocument({ data, portraitUrl }) {
-  return React.createElement(Document, null,
-    React.createElement(Page, { size: 'A4', style: cvStyles.page },
-      // Header
-      React.createElement(View, { style: cvStyles.headerRow },
-        React.createElement(View, { style: cvStyles.headerInfo },
-          React.createElement(Text, { style: cvStyles.name }, data.personal?.fullName || 'Name'),
-          data.personal?.title && React.createElement(Text, { style: cvStyles.title }, data.personal.title),
-          React.createElement(CVContactRow, {
-            email: data.personal?.email,
-            phone: data.personal?.phone,
-            city: data.personal?.city,
-            linktree: data.personal?.linktree,
-            socials: data.personal?.socials
-          })
-        ),
-        portraitUrl && React.createElement(Image, { src: portraitUrl, style: cvStyles.portrait })
-      ),
-
-      React.createElement(View, { style: cvStyles.separator }),
-
-      // Summary
-      data.summary && React.createElement(View, { style: cvStyles.sectionContent },
-        React.createElement(Text, { style: cvStyles.sectionTitle }, 'Summary'),
-        React.createElement(Text, { style: { fontSize: 10, color: '#475569' } }, data.summary)
-      ),
-
-      // Experience
-      data.experience?.length > 0 && React.createElement(View, { style: cvStyles.sectionContent },
-        React.createElement(Text, { style: cvStyles.sectionTitle }, 'Experience'),
-        ...data.experience.map((exp, index) =>
-          React.createElement(View, { key: `exp-${index}`, style: cvStyles.experienceItem },
-            React.createElement(View, { style: cvStyles.experienceHeader },
-              React.createElement(Text, { style: cvStyles.experienceTitle }, exp.title),
-              React.createElement(Text, { style: cvStyles.experienceDate }, `${exp.startDate || ''} - ${exp.endDate || 'Present'}`)
-            ),
-            React.createElement(Text, { style: cvStyles.experienceCompany }, exp.company),
-            exp.description && React.createElement(Text, { style: cvStyles.experienceDescription }, exp.description)
-          )
-        )
-      ),
-
-      // Skills
-      data.skills?.length > 0 && React.createElement(View, { style: cvStyles.sectionContent },
-        React.createElement(Text, { style: cvStyles.sectionTitle }, 'Skills'),
-        React.createElement(View, { style: cvStyles.skillsContainer },
-          ...data.skills.map((skill, index) =>
-            React.createElement(Text, { key: `skill-${index}`, style: cvStyles.skillTag }, skill)
-          )
-        )
-      ),
-
-      // Projects
-      data.projects?.length > 0 && React.createElement(View, { style: cvStyles.sectionContent },
-        React.createElement(Text, { style: cvStyles.sectionTitle }, 'Projects'),
-        ...data.projects.map((project, index) =>
-          React.createElement(View, { key: `project-${index}`, style: cvStyles.projectItem },
-            React.createElement(Text, { style: cvStyles.projectTitle }, project.title),
-            project.summary && React.createElement(Text, { style: cvStyles.projectSummary }, project.summary),
-            project.techStack?.length > 0 && React.createElement(View, { style: cvStyles.projectTech },
-              ...project.techStack.map((tech, techIndex) =>
-                React.createElement(Text, { key: `tech-${techIndex}`, style: cvStyles.projectTechTag }, tech)
-              )
-            )
-          )
-        )
-      ),
-
-      // Education
-      data.education?.length > 0 && React.createElement(View, { style: cvStyles.sectionContent },
-        React.createElement(Text, { style: cvStyles.sectionTitle }, 'Education'),
-        ...data.education.map((edu, index) =>
-          React.createElement(View, { key: `edu-${index}`, style: cvStyles.educationItem },
-            React.createElement(Text, { style: cvStyles.educationTitle }, edu.degree),
-            React.createElement(Text, { style: cvStyles.educationInstitution }, `${edu.institution}${edu.year ? ` (${edu.year})` : ''}`)
-          )
-        )
-      )
     )
   );
 }
@@ -326,13 +629,13 @@ app.post('/api/pdf/cover-letter', async (req, res) => {
 // CV endpoint
 app.post('/api/pdf/cv', async (req, res) => {
   try {
-    const { data, portraitUrl } = req.body;
+    const { data, portraitUrl, creationDate } = req.body;
 
     if (!data) {
       return res.status(400).json({ error: 'Missing data' });
     }
 
-    const element = React.createElement(CVDocument, { data, portraitUrl });
+    const element = React.createElement(CVDocument, { data, portraitUrl, creationDate });
     const buffer = await renderToBuffer(element);
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -345,6 +648,7 @@ app.post('/api/pdf/cv', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`PDF Service running on port ${PORT}`);
+const HOST = '0.0.0.0';
+app.listen(PORT, HOST, () => {
+  console.log(`PDF Service running on ${HOST}:${PORT}`);
 });
