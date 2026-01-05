@@ -16,9 +16,9 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// Register Inter fonts (using jsDelivr CDN for static TTF files)
-const INTER_REGULAR = 'https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.18/files/inter-latin-400-normal.woff';
-const INTER_SEMIBOLD = 'https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.18/files/inter-latin-600-normal.woff';
+// Use OTF format from rsms.me (official Inter font source) - matching serverless version
+const INTER_REGULAR = 'https://rsms.me/inter/font-files/Inter-Regular.otf';
+const INTER_SEMIBOLD = 'https://rsms.me/inter/font-files/Inter-SemiBold.otf';
 
 try {
   Font.register({
