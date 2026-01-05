@@ -1,10 +1,5 @@
-import path from 'node:path'
-import React from 'react'
-
-import { renderToBuffer } from '@react-pdf/renderer'
-
 import { cvProfileBase, defaultProjectHighlights } from '@/lib/pdf/profile'
-import { CVDocument } from '@/lib/pdf/CVDocument'
+import { renderCvPdf } from '@/lib/pdf/CVDocument'
 import type { CVData, CVProjectEntry } from '@/lib/pdf/types'
 import { supabase } from '@/lib/supabase'
 
@@ -46,13 +41,7 @@ export async function buildCvData(projectIds: string[]): Promise<CVData> {
 
 export async function renderCvDocument(projectIds: string[]): Promise<Buffer> {
   const data = await buildCvData(projectIds)
-  const portraitUrl = path.join(process.cwd(), 'public', 'denis.png')
-  const creationDate = new Intl.DateTimeFormat('de-DE', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric'
-  }).format(new Date())
-
-  const element = React.createElement(CVDocument, { data, portraitUrl, creationDate })
-  return renderToBuffer(element)
+  // Use public URL - file paths don't work on Vercel serverless
+  const portraitUrl = 'https://dev.sen.studio/denis.png'
+  return renderCvPdf(data, portraitUrl)
 }

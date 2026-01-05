@@ -7,7 +7,14 @@ import { ContactIcon, ICON_COLOR, getContactIconData } from '@/lib/pdf/icon-util
 
 const FULL_CV_URL = 'https://dev.sen.studio/cv'
 
-ensurePdfFonts()
+// Helper function to render PDF - uses pdf().toBuffer() for better serverless compatibility
+export async function renderCoverLetterPdf(data: CoverLetterData, signatureUrl?: string): Promise<Buffer> {
+  // Dynamic import to avoid issues with module initialization in serverless
+  const { pdf } = await import('@react-pdf/renderer')
+  await ensurePdfFonts()
+  const doc = pdf(React.createElement(CoverLetterDocument, { data, signatureUrl }))
+  return await doc.toBuffer()
+}
 
 interface CoverLetterDocumentProps {
   data: CoverLetterData
@@ -168,7 +175,7 @@ export function CoverLetterDocument({ data, signatureUrl }: CoverLetterDocumentP
 
         {signatureUrl ? (
           <View style={styles.footer}>
-            <Image src={signatureUrl} style={styles.signature} alt="Signature" />
+            <Image src={signatureUrl} style={styles.signature} />
           </View>
         ) : null}
       </Page>

@@ -5,7 +5,14 @@ import type { CVData, CVExperienceEntry, CVProjectEntry } from '@/lib/pdf/types'
 import { ensurePdfFonts } from '@/lib/pdf/fonts'
 import { ContactIcon, ICON_COLOR, getContactIconData } from '@/lib/pdf/icon-utils'
 
-ensurePdfFonts()
+// Helper function to render PDF - uses pdf().toBuffer() for better serverless compatibility
+export async function renderCvPdf(data: CVData, portraitUrl?: string): Promise<Buffer> {
+  // Dynamic import to avoid issues with module initialization in serverless
+  const { pdf } = await import('@react-pdf/renderer')
+  await ensurePdfFonts()
+  const doc = pdf(React.createElement(CVDocument, { data, portraitUrl }))
+  return await doc.toBuffer()
+}
 
 interface CVDocumentProps {
   data: CVData
@@ -13,7 +20,6 @@ interface CVDocumentProps {
   creationDate?: string
 }
 
-const ICON_COLOR = '#1d4ed8'
 const FULL_CV_URL = 'https://dev.sen.studio/cv'
 
 const styles = StyleSheet.create({
@@ -393,7 +399,7 @@ export function CVDocument({ data, portraitUrl, creationDate }: CVDocumentProps)
                 <Text style={styles.headerLinkText}>dev.sen.studio/cv</Text>
               </Link>
             </View>
-            {portraitUrl ? <Image src={portraitUrl} style={styles.avatar} alt="Portrait" /> : null}
+            {portraitUrl ? <Image src={portraitUrl} style={styles.avatar} /> : null}
           </View>
         </View>
 
