@@ -11,6 +11,8 @@ import { uploadJobDocument } from '@/lib/storage'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+type PdfVariant = 'tech' | 'gastronomy'
+
 // External PDF service (Railway/Render deployment)
 async function renderPdfExternal(data: CoverLetterData, signatureUrl?: string): Promise<Buffer> {
   const serviceUrl = process.env.PDF_SERVICE_URL
@@ -34,10 +36,10 @@ async function renderPdfExternal(data: CoverLetterData, signatureUrl?: string): 
 }
 
 // Direct rendering fallback
-async function renderPdfDirect(data: CoverLetterData, signatureUrl?: string): Promise<Buffer> {
+async function renderPdfDirect(data: CoverLetterData, signatureUrl?: string, variant?: PdfVariant): Promise<Buffer> {
   try {
     const { renderCoverLetterPdf } = await import('@/lib/pdf/CoverLetterDocument')
-    return await renderCoverLetterPdf(data, signatureUrl)
+    return await renderCoverLetterPdf(data, signatureUrl, variant)
   } catch (error) {
     console.error('Direct PDF rendering failed:', error)
     throw new Error(`Failed to render PDF: ${error instanceof Error ? error.message : String(error)}`)
@@ -45,11 +47,10 @@ async function renderPdfDirect(data: CoverLetterData, signatureUrl?: string): Pr
 }
 
 async function renderPdfWithChildProcess(payload: Record<string, unknown>): Promise<Buffer> {
-  const scriptPath = path.resolve(process.cwd(), 'scripts/render-pdf.tsx')
+  const scriptPath = path.resolve(process.cwd(), 'scripts/render-pdf.cjs')
 
-  // Use tsx from node_modules for both dev and production
-  const tsxPath = path.resolve(process.cwd(), 'node_modules', '.bin', 'tsx')
-  const executable = tsxPath
+  // Use pre-compiled CJS bundle — no tsx needed at runtime
+  const executable = process.execPath
   const args = [scriptPath, 'cover-letter']
 
   return new Promise((resolveBuffer, reject) => {
@@ -92,21 +93,14 @@ async function renderPdfWithChildProcess(payload: Record<string, unknown>): Prom
 }
 
 // Choose rendering method based on environment
-async function renderPdf(data: CoverLetterData, signatureUrl?: string): Promise<Buffer> {
+async function renderPdf(data: CoverLetterData, signatureUrl?: string, variant?: PdfVariant): Promise<Buffer> {
   // Use external PDF service if configured (recommended for Vercel)
   if (process.env.PDF_SERVICE_URL) {
     return renderPdfExternal(data, signatureUrl)
   }
 
-  // On Vercel or production, try direct import
-  const useDirectImport = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production'
-
-  if (useDirectImport) {
-    return renderPdfDirect(data, signatureUrl)
-  }
-
-  // Fallback to child process in development
-  return renderPdfWithChildProcess({ data, signatureUrl })
+  // Use child process to avoid React/JSX conflicts with Next.js bundler
+  return renderPdfWithChildProcess({ data, signatureUrl, variant })
 }
 
 
@@ -115,7 +109,8 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}))
     const incoming = (body?.data as CoverLetterData | undefined) ?? sampleCoverLetterData
     const jobId = body?.job_id as string | undefined
-    
+    const variant: PdfVariant | undefined = body?.job_type === 'gastronomy' ? 'gastronomy' : undefined
+
     const data: CoverLetterData = {
       ...incoming,
       applicant: incoming.applicant ?? sampleCoverLetterData.applicant,
@@ -139,13 +134,13 @@ export async function POST(request: Request) {
 
     // Use public URL for signature - file paths don't work on Vercel serverless
     const signatureUrl = body?.signatureUrl || 'https://dev.sen.studio/Unterschrift_Denis-Kreuzer_DK.png'
-    const buffer = await renderPdf(data, signatureUrl)
+    const buffer = await renderPdf(data, signatureUrl, variant)
 
     // If job_id is provided, store the PDF in the bucket and update the job record
     if (jobId) {
       try {
         const uploadResult = await uploadJobDocument(jobId, 'cover_letter', buffer, 'cover-letter.pdf')
-        
+
         if (uploadResult) {
           // Update the job application record with the new cover letter path
           const supabase = getServiceSupabase()

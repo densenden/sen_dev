@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 import { CheckCircle2, Download, Loader2, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react'
 
@@ -17,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useProjects } from '@/hooks/use-data'
-import { sampleCoverLetterData } from '@/lib/pdf/sample-data'
+import { sampleCoverLetterData, sampleGastroCoverLetterData } from '@/lib/pdf/sample-data'
 import { cn } from '@/lib/utils'
 import type { Database } from '@/lib/supabase'
 
@@ -29,6 +29,8 @@ const STATUS_OPTIONS = [
 ] as const
 
 type StatusValue = (typeof STATUS_OPTIONS)[number]['value']
+
+type JobType = 'tech' | 'gastronomy'
 
 const MAX_PROJECT_SELECTION = 4
 
@@ -167,8 +169,20 @@ const initialFormState: JobFormState = {
 }
 
 export default function NewJobApplicationPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <NewJobApplicationContent />
+    </Suspense>
+  )
+}
+
+function NewJobApplicationContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { projects } = useProjects()
+
+  const jobType: JobType = (searchParams.get('type') === 'gastronomy' ? 'gastronomy' : 'tech')
+  const isGastronomy = jobType === 'gastronomy'
 
   const [form, setForm] = useState<JobFormState>(initialFormState)
   const [scraping, setScraping] = useState(false)
@@ -275,17 +289,23 @@ export default function NewJobApplicationPage() {
     setError(null)
 
     try {
+      const draftPayload: Record<string, unknown> = {
+        role: form.role,
+        company: form.company,
+        job_url: form.jobUrl,
+        job_description: form.jobDescription,
+        contact_name: form.contactName,
+        job_type: jobType
+      }
+
+      if (!isGastronomy) {
+        draftPayload.project_ids = form.projectIds
+      }
+
       const response = await fetch('/api/jobs/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          role: form.role,
-          company: form.company,
-          job_url: form.jobUrl,
-          job_description: form.jobDescription,
-          contact_name: form.contactName,
-          project_ids: form.projectIds
-        })
+        body: JSON.stringify(draftPayload)
       })
 
       if (!response.ok) {
@@ -298,7 +318,7 @@ export default function NewJobApplicationPage() {
       const today = new Date().toISOString().slice(0, 10)
 
       const suggestedProjectIds =
-        projects.length > 0
+        !isGastronomy && projects.length > 0
           ? suggestProjectIds(projects, {
               role: data.role || form.role,
               company: data.company || form.company,
@@ -332,9 +352,10 @@ export default function NewJobApplicationPage() {
         notes: prev.notes || fallback.notes,
         status: prev.status || data.status || 'pending',
         appliedDate: prev.appliedDate || data.appliedDate || today,
-        // Only suggest projects if user hasn't already selected any
-        projectIds:
-          prev.projectIds.length > 0
+        // Only suggest projects if user hasn't already selected any (tech only)
+        projectIds: isGastronomy
+          ? []
+          : prev.projectIds.length > 0
             ? prev.projectIds
             : suggestedProjectIds.length > 0
               ? suggestedProjectIds
@@ -375,14 +396,19 @@ export default function NewJobApplicationPage() {
   const fetchPdf = async (type: PreviewType, { focusTab = true }: { focusTab?: boolean } = {}) => {
     const endpoint = type === 'cv' ? '/api/pdf/cv' : '/api/pdf/cover-letter'
 
+    const applicantData = isGastronomy
+      ? sampleGastroCoverLetterData.applicant
+      : sampleCoverLetterData.applicant
+
     const payload =
       type === 'cv'
         ? {
-            project_ids: form.projectIds
+            project_ids: isGastronomy ? [] : form.projectIds,
+            job_type: jobType
           }
         : {
             data: {
-              applicant: sampleCoverLetterData.applicant,
+              applicant: applicantData,
               recipient: {
                 company: form.company || 'Unternehmen',
                 contactPerson: form.contactName || undefined,
@@ -390,13 +416,14 @@ export default function NewJobApplicationPage() {
               },
               jobUrl: form.jobUrl || undefined,
               subject: `Bewerbung als ${form.role || 'Position'}`,
-              body: form.coverLetter || sampleCoverLetterData.body,
+              body: form.coverLetter || (isGastronomy ? sampleGastroCoverLetterData.body : sampleCoverLetterData.body),
               date: new Intl.DateTimeFormat('de-DE', {
                 day: '2-digit',
                 month: 'long',
                 year: 'numeric'
               }).format(new Date())
-            }
+            },
+            job_type: jobType
           }
 
     setPreviewLoading((prev) => ({ ...prev, [type]: true }))
@@ -574,7 +601,7 @@ export default function NewJobApplicationPage() {
     setError(null)
 
     try {
-      const payload = {
+      const payload: Record<string, unknown> = {
         role: form.role,
         company: form.company,
         job_url: form.jobUrl || null,
@@ -585,7 +612,11 @@ export default function NewJobApplicationPage() {
         location: form.location || null,
         notes: form.notes || null,
         job_description: form.jobDescription || null,
-        project_ids: form.projectIds
+        job_type: jobType
+      }
+
+      if (!isGastronomy) {
+        payload.project_ids = form.projectIds
       }
 
       const response = await fetch('/api/jobs', {
@@ -607,6 +638,11 @@ export default function NewJobApplicationPage() {
     }
   }
 
+  const pageTitle = isGastronomy ? 'New Gastronomy Application' : 'New Tech Application'
+  const pageDescription = isGastronomy
+    ? 'Research the posting, generate AI assets for a gastronomy position, then save everything in one flow.'
+    : 'Research the posting, generate AI assets, then save everything in one flow.'
+
   return (
     <div className="min-h-screen bg-background">
       <AdminNav />
@@ -614,9 +650,9 @@ export default function NewJobApplicationPage() {
       <main className="container mx-auto max-w-3xl py-10">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold">New Job Application</h1>
+            <h1 className="text-2xl font-semibold">{pageTitle}</h1>
             <p className="text-sm text-muted-foreground">
-              Research the posting, generate AI assets, then save everything in one flow.
+              {pageDescription}
             </p>
           </div>
           <Link href="/admin?tab=job">
@@ -645,7 +681,7 @@ export default function NewJobApplicationPage() {
                     className="md:flex-1"
                   />
                   <Button type="button" onClick={handleScrape} disabled={scraping}>
-                    {scraping ? 'Fetching…' : 'Scrape Posting'}
+                    {scraping ? 'Fetching...' : 'Scrape Posting'}
                   </Button>
                 </div>
               </div>
@@ -654,10 +690,11 @@ export default function NewJobApplicationPage() {
                 <Label htmlFor="job-description">Raw description</Label>
                 <Textarea
                   id="job-description"
-                  rows={6}
+                  rows={4}
                   value={form.jobDescription}
                   onChange={(event) => setForm((prev) => ({ ...prev, jobDescription: event.target.value }))}
                   placeholder="Paste or review the extracted job description here."
+                  className="max-h-[200px] overflow-y-auto font-mono text-sm"
                 />
                 <p className="text-xs text-muted-foreground">
                   Edit the text before generating if the scrape was not perfect.
@@ -671,7 +708,7 @@ export default function NewJobApplicationPage() {
               {drafting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating…
+                  Generating...
                 </>
               ) : (
                 'Generate AI Draft'
@@ -685,7 +722,7 @@ export default function NewJobApplicationPage() {
               </div>
             ) : null}
             <p className="text-xs text-muted-foreground">
-              {drafting ? 'Generating cover letter draft…' : 'Generate an AI draft once the job description looks good.'}
+              {drafting ? 'Generating cover letter draft...' : 'Generate an AI draft once the job description looks good.'}
             </p>
           </div>
 
@@ -784,13 +821,14 @@ export default function NewJobApplicationPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="notes">Internal notes</Label>
+                <Label htmlFor="notes">Internal notes (not used in documents)</Label>
                 <Textarea
                   id="notes"
-                  rows={3}
+                  rows={2}
                   value={form.notes}
                   onChange={(event) => setForm((prev) => ({ ...prev, notes: event.target.value }))}
-                  placeholder="Next follow-up, warm intro, tone preferences..."
+                  placeholder="Follow-up reminders, warm intro notes, interview prep..."
+                  className="max-h-[100px] overflow-y-auto"
                 />
               </div>
 
@@ -807,117 +845,119 @@ export default function NewJobApplicationPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>3. Projects & Assets</CardTitle>
-            <CardDescription>
-              Select the portfolio work that should appear across your documents.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <Label>Matching projects</Label>
-                  <span className="text-xs text-muted-foreground">
-                    {form.projectIds.length}/{MAX_PROJECT_SELECTION} selected
-                  </span>
-                </div>
-
-                {projects.length > 0 ? (
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {projects.map((project) => {
-                      const isSelected = form.projectIds.includes(project.id)
-                      const reachedLimit = form.projectIds.length >= MAX_PROJECT_SELECTION && !isSelected
-                      const keywords = Array.isArray(project.tags) ? project.tags.slice(0, 4) : []
-                      const techStack = Array.isArray(project.tech_stack)
-                        ? Array.from(new Set(project.tech_stack)).slice(0, 6)
-                        : []
-
-                      return (
-                        <button
-                          key={project.id}
-                          type="button"
-                          onClick={() => handleToggleProject(project.id)}
-                          aria-pressed={isSelected}
-                          aria-disabled={reachedLimit}
-                          className={cn(
-                            'group flex h-full flex-col gap-3 rounded-xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
-                            isSelected
-                              ? 'border-primary bg-primary/5 shadow-sm'
-                              : 'hover:border-primary/40 hover:bg-muted/40',
-                            reachedLimit ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
-                          )}
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="space-y-1">
-                              <p className="text-sm font-medium leading-snug text-foreground">
-                                {project.title}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {project.client_name}
-                              </p>
-                            </div>
-                            <CheckCircle2
-                              aria-hidden
-                              className={cn(
-                                'h-5 w-5 shrink-0 text-primary transition-opacity',
-                                isSelected ? 'opacity-100' : 'opacity-0'
-                              )}
-                            />
-                          </div>
-
-                          <p className="text-xs text-muted-foreground">
-                            {project.summary}
-                          </p>
-
-                          {keywords.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
-                              {keywords.map((keyword) => (
-                                <Badge
-                                  key={`${project.id}-keyword-${keyword}`}
-                                  variant="secondary"
-                                  className="text-[10px] uppercase tracking-wide"
-                                >
-                                  {keyword}
-                                </Badge>
-                              ))}
-                            </div>
-                          ) : null}
-
-                          {techStack.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
-                              {techStack.map((tech) => (
-                                <Badge
-                                  key={`${project.id}-tech-${tech}`}
-                                  variant="outline"
-                                  className="text-[10px]"
-                                >
-                                  {tech}
-                                </Badge>
-                              ))}
-                            </div>
-                          ) : null}
-                        </button>
-                      )
-                    })}
+        {!isGastronomy ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>3. Projects & Assets</CardTitle>
+              <CardDescription>
+                Select the portfolio work that should appear across your documents.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <Label>Matching projects</Label>
+                    <span className="text-xs text-muted-foreground">
+                      {form.projectIds.length}/{MAX_PROJECT_SELECTION} selected
+                    </span>
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No projects available yet.</p>
-                )}
 
-              {selectionError ? (
-                <p className="text-xs text-destructive">{selectionError}</p>
-              ) : null}
-            </div>
+                  {projects.length > 0 ? (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {projects.map((project) => {
+                        const isSelected = form.projectIds.includes(project.id)
+                        const reachedLimit = form.projectIds.length >= MAX_PROJECT_SELECTION && !isSelected
+                        const keywords = Array.isArray(project.tags) ? project.tags.slice(0, 4) : []
+                        const techStack = Array.isArray(project.tech_stack)
+                          ? Array.from(new Set(project.tech_stack)).slice(0, 6)
+                          : []
 
-              {error ? (
-                <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                  {error}
-                </div>
-              ) : null}
+                        return (
+                          <button
+                            key={project.id}
+                            type="button"
+                            onClick={() => handleToggleProject(project.id)}
+                            aria-pressed={isSelected}
+                            aria-disabled={reachedLimit}
+                            className={cn(
+                              'group flex h-full flex-col gap-3 rounded-xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
+                              isSelected
+                                ? 'border-primary bg-primary/5 shadow-sm'
+                                : 'hover:border-primary/40 hover:bg-muted/40',
+                              reachedLimit ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                            )}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="space-y-1">
+                                <p className="text-sm font-medium leading-snug text-foreground">
+                                  {project.title}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {project.client_name}
+                                </p>
+                              </div>
+                              <CheckCircle2
+                                aria-hidden
+                                className={cn(
+                                  'h-5 w-5 shrink-0 text-primary transition-opacity',
+                                  isSelected ? 'opacity-100' : 'opacity-0'
+                                )}
+                              />
+                            </div>
 
-          </CardContent>
-        </Card>
+                            <p className="text-xs text-muted-foreground">
+                              {project.summary}
+                            </p>
+
+                            {keywords.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {keywords.map((keyword) => (
+                                  <Badge
+                                    key={`${project.id}-keyword-${keyword}`}
+                                    variant="secondary"
+                                    className="text-[10px] uppercase tracking-wide"
+                                  >
+                                    {keyword}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : null}
+
+                            {techStack.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {techStack.map((tech) => (
+                                  <Badge
+                                    key={`${project.id}-tech-${tech}`}
+                                    variant="outline"
+                                    className="text-[10px]"
+                                  >
+                                    {tech}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : null}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No projects available yet.</p>
+                  )}
+
+                {selectionError ? (
+                  <p className="text-xs text-destructive">{selectionError}</p>
+                ) : null}
+              </div>
+
+                {error ? (
+                  <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                    {error}
+                  </div>
+                ) : null}
+
+            </CardContent>
+          </Card>
+        ) : null}
 
         <div className="rounded-lg border border-dashed border-muted-foreground/30 bg-muted/10 p-6">
           <div className="space-y-3">
@@ -983,11 +1023,11 @@ export default function NewJobApplicationPage() {
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-background/60 p-4">
           <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={() => handleDownloadPdf('cv')}>
-              <Download className="mr-2 h-4 w-4" /> Download CV
-            </Button>
             <Button type="button" variant="outline" onClick={() => handleDownloadPdf('cover-letter')}>
               <Download className="mr-2 h-4 w-4" /> Download Letter
+            </Button>
+            <Button type="button" variant="outline" onClick={() => handleDownloadPdf('cv')}>
+              <Download className="mr-2 h-4 w-4" /> Download CV
             </Button>
           </div>
           <div className="flex gap-2">
@@ -995,7 +1035,7 @@ export default function NewJobApplicationPage() {
               Cancel
             </Button>
             <Button type="submit" disabled={submitting}>
-              {submitting ? 'Saving…' : 'Save Application'}
+              {submitting ? 'Saving...' : 'Save Application'}
             </Button>
           </div>
         </div>

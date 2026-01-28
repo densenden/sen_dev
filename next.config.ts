@@ -25,6 +25,13 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  outputFileTracingIncludes: {
+    '/api/pdf/*': [
+      './src/lib/pdf/fonts/**/*',
+      './scripts/render-pdf.cjs',
+      './src/lib/pdf/**/*',
+    ],
+  },
   serverExternalPackages: [
     '@react-pdf/renderer',
     '@react-pdf/fontkit',

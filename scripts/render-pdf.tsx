@@ -44,14 +44,16 @@ async function readPayload(): Promise<any> {
 async function renderCoverLetter(payload: any) {
   const data = (payload?.data as CoverLetterData | undefined) ?? sampleCoverLetterData
   const signatureUrl = (payload?.signatureUrl as string | undefined) ?? undefined
-  const element = <CoverLetterDocument data={data} signatureUrl={signatureUrl} />
+  const variant = payload?.variant as 'tech' | 'gastronomy' | undefined
+  const element = <CoverLetterDocument data={data} signatureUrl={signatureUrl} variant={variant} />
   return renderToBuffer(element)
 }
 
 async function renderCv(payload: any) {
   const data = (payload?.data as CVData | undefined) ?? sampleCVData
   const portraitUrl = payload?.portraitUrl as string | undefined
-  const element = <CVDocument data={data} portraitUrl={portraitUrl} />
+  const variant = payload?.variant as 'tech' | 'gastronomy' | undefined
+  const element = <CVDocument data={data} portraitUrl={portraitUrl} variant={variant} />
   return renderToBuffer(element)
 }
 

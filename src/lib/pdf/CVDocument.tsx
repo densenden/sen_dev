@@ -5,43 +5,38 @@ import type { CVData, CVExperienceEntry, CVProjectEntry } from '@/lib/pdf/types'
 import { ensurePdfFonts } from '@/lib/pdf/fonts'
 import { ContactIcon, ICON_COLOR, getContactIconData } from '@/lib/pdf/icon-utils'
 
-// Helper function to render PDF - uses renderToStream for better serverless compatibility
-export async function renderCvPdf(data: CVData, portraitUrl?: string): Promise<Buffer> {
-  // Dynamic import to avoid issues with module initialization in serverless
-  const { renderToStream } = await import('@react-pdf/renderer')
+// Helper function to render PDF
+export async function renderCvPdf(data: CVData, portraitUrl?: string, variant?: 'tech' | 'gastronomy'): Promise<Buffer> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { renderToBuffer } = require('@react-pdf/renderer')
   await ensurePdfFonts()
 
-  const stream = await renderToStream(React.createElement(CVDocument, { data, portraitUrl }))
-
-  // Convert stream to buffer
-  const chunks: Uint8Array[] = []
-  for await (const chunk of stream) {
-    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk)
-  }
-  return Buffer.concat(chunks)
+  const element = React.createElement(CVDocument, { data, portraitUrl, variant })
+  return await renderToBuffer(element)
 }
 
 interface CVDocumentProps {
   data: CVData
   portraitUrl?: string
   creationDate?: string
+  variant?: 'tech' | 'gastronomy'
 }
 
 const FULL_CV_URL = 'https://dev.sen.studio/cv'
 
 const styles = StyleSheet.create({
   page: {
-    padding: 48,
+    padding: 44,
     fontFamily: 'Inter',
     fontSize: 9,
     color: '#1f2933',
-    lineHeight: 1.5
+    lineHeight: 1.35
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: 28
+    marginBottom: 22
   },
   headerInfo: {
     flex: 1,
@@ -76,8 +71,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 500,
     color: '#475569',
-    marginTop: 12,
-    marginBottom: 14
+    marginTop: 10,
+    marginBottom: 12
   },
   contactRow: {
     flexDirection: 'row',
@@ -105,7 +100,7 @@ const styles = StyleSheet.create({
     objectFit: 'cover'
   },
   section: {
-    marginBottom: 14
+    marginBottom: 10
   },
   sectionTitle: {
     fontSize: 9,
@@ -115,13 +110,13 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase'
   },
   sectionBody: {
-    marginTop: 6,
-    gap: 6
+    marginTop: 5,
+    gap: 5
   },
   bodyText: {
     fontSize: 10,
     color: '#1e293b',
-    lineHeight: 1.4
+    lineHeight: 1.3
   },
   compactText: {
     fontSize: 9,
@@ -131,12 +126,12 @@ const styles = StyleSheet.create({
   bulletList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 0,
-    marginTop: 0
+    gap: 1,
+    marginTop: 1
   },
   bulletItem: {
     flexDirection: 'row',
-    marginBottom: -0.5
+    marginBottom: 0
   },
   bulletSymbol: {
     width: 10,
@@ -145,7 +140,7 @@ const styles = StyleSheet.create({
   bulletContent: {
     flex: 1,
     color: '#1e293b',
-    lineHeight: 0.8
+    lineHeight: 1.25
   },
   experienceCompany: {
     fontWeight: 600,
@@ -165,7 +160,7 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: '#e2e8f0',
-    marginVertical: 6
+    marginVertical: 5
   },
   link: {
     color: '#1d4ed8',
@@ -175,17 +170,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    rowGap: 6,
-    columnGap: 6
+    rowGap: 5,
+    columnGap: 5
   },
   projectCard: {
     width: '48%',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    padding: 10,
+    padding: 8,
     flexDirection: 'column',
-    gap: 6
+    gap: 4
   },
   projectHeader: {
     flexDirection: 'row',
@@ -212,7 +207,7 @@ const styles = StyleSheet.create({
   },
   projectDescription: {
     color: '#1e293b',
-    lineHeight: 0.5
+    lineHeight: 1.2
   },
   externalIcon: {
     width: 9,
@@ -333,7 +328,7 @@ function BulletList({ items }: { items: string[] }) {
 function ExperienceEntry({ entry }: { entry: CVExperienceEntry }) {
   const highlights = entry.highlights.slice(0, 2)
   return (
-    <View style={{ marginBottom: 10 }}>
+    <View style={{ marginBottom: 8 }}>
       <Text style={styles.experienceCompany}>{entry.company}</Text>
       <Text style={styles.experienceRole}>{entry.role}</Text>
       <View style={styles.metaRow}>
@@ -375,7 +370,7 @@ function ProjectEntry({ project }: { project: CVProjectEntry }) {
   )
 }
 
-export function CVDocument({ data, portraitUrl, creationDate }: CVDocumentProps) {
+export function CVDocument({ data, portraitUrl, creationDate, variant }: CVDocumentProps) {
   const generatedDate = creationDate ?? new Intl.DateTimeFormat('de-DE', {
     day: '2-digit',
     month: 'long',
@@ -389,6 +384,8 @@ export function CVDocument({ data, portraitUrl, creationDate }: CVDocumentProps)
   const technicalSkillsParagraph = data.technicalSkills
     .map((group) => `${group.label}: ${group.items.join(', ')}`)
     .join(' • ')
+
+  const showProjects = variant !== 'gastronomy'
 
   return (
     <Document>
@@ -412,7 +409,7 @@ export function CVDocument({ data, portraitUrl, creationDate }: CVDocumentProps)
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Summary</Text>
-          <Text style={[styles.bodyText, { marginTop: 8 }]}>{summaryParagraph}</Text>
+          <Text style={[styles.bodyText, { marginTop: 6 }]}>{summaryParagraph}</Text>
         </View>
 
         <View style={styles.divider} />
@@ -426,10 +423,10 @@ export function CVDocument({ data, portraitUrl, creationDate }: CVDocumentProps)
 
 
 
-        <View style={styles.section}>
+        <View style={styles.section} break>
           <Text style={styles.sectionTitle}>Education</Text>
           {data.education.map((degree, index) => (
-            <View key={`${degree.institution}-${index}`} style={{ marginBottom: 14 }}>
+            <View key={`${degree.institution}-${index}`} style={{ marginBottom: 10 }}>
               <Text style={[styles.experienceCompany, { fontSize: 12 }]}>{degree.institution}</Text>
               <Text style={styles.experienceRole}>{degree.program}</Text>
               <Text style={styles.experienceMeta}>
@@ -444,13 +441,13 @@ export function CVDocument({ data, portraitUrl, creationDate }: CVDocumentProps)
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Technical Skills</Text>
-          <Text style={[styles.bodyText, { marginTop: 8 }]}>{technicalSkillsParagraph}</Text>
+          <Text style={[styles.bodyText, { marginTop: 6 }]}>{technicalSkillsParagraph}</Text>
         </View>
 
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Soft Skills</Text>
-          <Text style={[styles.bodyText, { marginTop: 6 }]}>{data.softSkills.join(', ')}</Text>
+          <Text style={[styles.bodyText, { marginTop: 5 }]}>{data.softSkills.join(', ')}</Text>
         </View>
 
 
@@ -466,17 +463,19 @@ export function CVDocument({ data, portraitUrl, creationDate }: CVDocumentProps)
         </View>
 
 
-        <View style={styles.section}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
-            <Text style={styles.sectionTitle}>Matching Projects</Text>
-            <Link src="https://dev.sen.studio/projects" style={[styles.link, { fontSize: 9 }]}>see all projects</Link>
+        {showProjects && (
+          <View style={styles.section}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <Text style={styles.sectionTitle}>Matching Projects</Text>
+              <Link src="https://dev.sen.studio/projects" style={[styles.link, { fontSize: 9 }]}>see all projects</Link>
+            </View>
+            <View style={styles.projectGrid}>
+              {data.projects.map((project, index) => (
+                <ProjectEntry key={`${project.title}-${index}`} project={project} />
+              ))}
+            </View>
           </View>
-          <View style={styles.projectGrid}>
-            {data.projects.map((project, index) => (
-              <ProjectEntry key={`${project.title}-${index}`} project={project} />
-            ))}
-          </View>
-        </View>
+        )}
 
 
         <View style={styles.footer}>

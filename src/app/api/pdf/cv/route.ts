@@ -15,6 +15,7 @@ export const dynamic = 'force-dynamic'
 const MAX_PROJECT_SELECTION = 4
 
 type ProjectRow = Database['public']['Tables']['projects']['Row']
+type PdfVariant = 'tech' | 'gastronomy'
 
 function resolvePortraitUrl(input?: string | null) {
   if (input) {
@@ -107,10 +108,10 @@ async function renderPdfExternal(data: CVData, portraitUrl?: string): Promise<Bu
 }
 
 // Direct rendering fallback
-async function renderPdfDirect(data: CVData, portraitUrl?: string): Promise<Buffer> {
+async function renderPdfDirect(data: CVData, portraitUrl?: string, variant?: PdfVariant): Promise<Buffer> {
   try {
     const { renderCvPdf } = await import('@/lib/pdf/CVDocument')
-    return await renderCvPdf(data, portraitUrl)
+    return await renderCvPdf(data, portraitUrl, variant)
   } catch (error) {
     console.error('Direct PDF rendering failed:', error)
     throw new Error(`Failed to render PDF: ${error instanceof Error ? error.message : String(error)}`)
@@ -118,11 +119,10 @@ async function renderPdfDirect(data: CVData, portraitUrl?: string): Promise<Buff
 }
 
 function renderPdfWithChildProcess(payload: Record<string, unknown>): Promise<Buffer> {
-  const scriptPath = path.resolve(process.cwd(), 'scripts/render-pdf.tsx')
+  const scriptPath = path.resolve(process.cwd(), 'scripts/render-pdf.cjs')
 
-  // Use tsx from node_modules for both dev and production
-  const tsxPath = path.resolve(process.cwd(), 'node_modules', '.bin', 'tsx')
-  const executable = tsxPath
+  // Use pre-compiled CJS bundle — no tsx needed at runtime
+  const executable = process.execPath
   const args = [scriptPath, 'cv']
 
   return new Promise((resolveBuffer, reject) => {
@@ -163,21 +163,14 @@ function renderPdfWithChildProcess(payload: Record<string, unknown>): Promise<Bu
 }
 
 // Choose rendering method based on environment
-async function renderPdf(data: CVData, portraitUrl?: string): Promise<Buffer> {
+async function renderPdf(data: CVData, portraitUrl?: string, variant?: PdfVariant): Promise<Buffer> {
   // Use external PDF service if configured (recommended for Vercel)
   if (process.env.PDF_SERVICE_URL) {
     return renderPdfExternal(data, portraitUrl)
   }
 
-  // On Vercel or production, try direct import
-  const useDirectImport = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production'
-
-  if (useDirectImport) {
-    return renderPdfDirect(data, portraitUrl)
-  }
-
-  // Fallback to child process in development
-  return renderPdfWithChildProcess({ data, portraitUrl })
+  // Use child process to avoid React/JSX conflicts with Next.js bundler
+  return renderPdfWithChildProcess({ data, portraitUrl, variant })
 }
 
 export async function POST(request: Request) {
@@ -188,6 +181,7 @@ export async function POST(request: Request) {
       ? body.project_ids.filter((id: unknown): id is string => typeof id === 'string' && id.length > 0)
       : []
     const jobId = body?.job_id as string | undefined
+    const variant: PdfVariant | undefined = body?.job_type === 'gastronomy' ? 'gastronomy' : undefined
 
     let projects = baseData.projects
 
@@ -204,13 +198,13 @@ export async function POST(request: Request) {
     }
     const portraitUrl = resolvePortraitUrl(body?.portraitUrl)
 
-    const buffer = await renderPdf(data, portraitUrl)
+    const buffer = await renderPdf(data, portraitUrl, variant)
 
     // If job_id is provided, store the PDF in the bucket and update the job record
     if (jobId) {
       try {
         const uploadResult = await uploadJobDocument(jobId, 'cv', buffer, 'cv.pdf')
-        
+
         if (uploadResult) {
           // Update the job application record with the new CV path
           const supabase = getServiceSupabase()

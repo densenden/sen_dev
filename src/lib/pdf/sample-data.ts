@@ -48,3 +48,39 @@ export const sampleCoverLetterData: CoverLetterData = {
     'Ich freue mich über die Einladung zu einem persönlichen Gespräch.'
   ].join('\n')
 }
+
+export const sampleGastroCoverLetterData: CoverLetterData = {
+  applicant: {
+    fullName: 'Denis Leif Kreuzer',
+    street: 'Paradiesgasse 53',
+    city: '60594 Frankfurt am Main',
+    phone: '+49 176 2095 7038',
+    email: 'denis@kreuzer.dk',
+    socials: [
+      { label: 'LinkedIn', url: 'https://www.linkedin.com/in/denisleifkreuzer/' }
+    ]
+  },
+  recipient: {
+    company: 'Roomers Frankfurt',
+    contactPerson: undefined,
+    role: 'Frühstückskellner:in (m/w/d)'
+  },
+  jobUrl: 'https://www.hotelcareer.com/jobs/roomers-frankfurt-central-15009/fruhstuckskellner-in-m-w-d-3939292',
+  subject: 'Bewerbung als Frühstückskellner:in (m/w/d)',
+  date: new Intl.DateTimeFormat('de-DE', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  }).format(new Date()),
+  body: [
+    'Sehr geehrte Damen und Herren,',
+    '',
+    'mit großem Interesse habe ich Ihre Stellenausschreibung gelesen. Die Möglichkeit, Gäste in einem anspruchsvollen Umfeld zu betreuen und Teil eines engagierten Teams zu sein, begeistert mich.',
+    '',
+    'Ich bringe langjährige Erfahrung in der Leitung kreativer Teams, Kundenberatung und der Gestaltung einzigartiger Erlebnisse mit. Mein Gespür für Menschen, meine ruhige Art unter Druck und meine Liebe zum Detail machen mich zu einem zuverlässigen Ansprechpartner für Gäste und Kollegen.',
+    '',
+    'Service verstehe ich als Teil des Gesamterlebnisses. Ich freue mich darauf, diese Haltung in Ihr Team einzubringen.',
+    '',
+    'Über eine Einladung zum Gespräch freue ich mich sehr.'
+  ].join('\n')
+}

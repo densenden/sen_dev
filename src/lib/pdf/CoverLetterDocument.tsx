@@ -7,25 +7,20 @@ import { ContactIcon, ICON_COLOR, getContactIconData } from '@/lib/pdf/icon-util
 
 const FULL_CV_URL = 'https://dev.sen.studio/cv'
 
-// Helper function to render PDF - uses renderToStream for better serverless compatibility
-export async function renderCoverLetterPdf(data: CoverLetterData, signatureUrl?: string): Promise<Buffer> {
-  // Dynamic import to avoid issues with module initialization in serverless
-  const { renderToStream } = await import('@react-pdf/renderer')
+// Helper function to render PDF
+export async function renderCoverLetterPdf(data: CoverLetterData, signatureUrl?: string, variant?: 'tech' | 'gastronomy'): Promise<Buffer> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { renderToBuffer } = require('@react-pdf/renderer')
   await ensurePdfFonts()
 
-  const stream = await renderToStream(React.createElement(CoverLetterDocument, { data, signatureUrl }))
-
-  // Convert stream to buffer
-  const chunks: Uint8Array[] = []
-  for await (const chunk of stream) {
-    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk)
-  }
-  return Buffer.concat(chunks)
+  const element = React.createElement(CoverLetterDocument, { data, signatureUrl, variant })
+  return await renderToBuffer(element)
 }
 
 interface CoverLetterDocumentProps {
   data: CoverLetterData
   signatureUrl?: string
+  variant?: 'tech' | 'gastronomy'
 }
 
 const styles = StyleSheet.create({
@@ -131,8 +126,9 @@ const styles = StyleSheet.create({
   }
 })
 
-export function CoverLetterDocument({ data, signatureUrl }: CoverLetterDocumentProps) {
+export function CoverLetterDocument({ data, signatureUrl, variant }: CoverLetterDocumentProps) {
   const paragraphs = data.body.split('\n').filter(Boolean)
+  const isGastronomy = variant === 'gastronomy'
 
   return (
     <Document>
@@ -144,17 +140,23 @@ export function CoverLetterDocument({ data, signatureUrl }: CoverLetterDocumentP
               email={data.applicant.email}
               phone={data.applicant.phone}
               city={data.applicant.city}
-              linktree={data.applicant.linktree}
-              socials={data.applicant.socials}
+              linktree={isGastronomy ? undefined : data.applicant.linktree}
+              socials={isGastronomy
+                ? data.applicant.socials?.filter(s => s.label.toLowerCase().includes('linkedin'))
+                : data.applicant.socials
+              }
+              variant={variant}
             />
           </View>
           <View style={styles.headerMeta}>
-            <View style={styles.headerLinkRow}>
-              <ContactIconSvg name="globe" style={styles.headerIcon} />
-              <Link src={FULL_CV_URL} style={styles.link}>
-                <Text style={styles.headerLinkText}>dev.sen.studio/cv</Text>
-              </Link>
-            </View>
+            {!isGastronomy && (
+              <View style={styles.headerLinkRow}>
+                <ContactIconSvg name="globe" style={styles.headerIcon} />
+                <Link src={FULL_CV_URL} style={styles.link}>
+                  <Text style={styles.headerLinkText}>dev.sen.studio/cv</Text>
+                </Link>
+              </View>
+            )}
             <Text style={styles.headerDate}>{data.date}</Text>
           </View>
         </View>
@@ -195,21 +197,24 @@ function ContactRow({
   phone,
   city,
   linktree,
-  socials
+  socials,
+  variant
 }: {
   email: string
   phone: string
   city: string
   linktree?: string
   socials?: Array<{ label: string; url: string }>
+  variant?: 'tech' | 'gastronomy'
 }) {
   const items: React.ReactNode[] = []
+  const isGastronomy = variant === 'gastronomy'
 
   if (email) items.push(<Text key="email">{email}</Text>)
   if (phone) items.push(<Text key="phone">{phone}</Text>)
   if (city) items.push(<Text key="city">{city}</Text>)
 
-  if (linktree) {
+  if (!isGastronomy && linktree) {
     items.push(
       <Link key="linktree" src={linktree} style={styles.contactLink}>
         <ContactIconSvg name="linktree" />
@@ -221,7 +226,7 @@ function ContactRow({
     const lower = social.label.toLowerCase()
     let icon: ContactIcon | null = null
     if (lower.includes('linkedin')) icon = 'linkedin'
-    if (lower.includes('github')) icon = 'github'
+    if (!isGastronomy && lower.includes('github')) icon = 'github'
 
     if (icon) {
       items.push(

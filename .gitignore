@@ -48,6 +48,9 @@ secret*
 /public/uploads/*
 !/public/uploads/.gitkeep
 
+# compiled PDF renderer (built from scripts/render-pdf.tsx)
+scripts/render-pdf.cjs
+
 # vercel
 .vercel
 
